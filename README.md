@@ -29,5 +29,5 @@ We note that some of these functions relies heavily on the [pyshtools](https://s
 
 `Plt_faults` Plot the [Knampeyer et al. (2006)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2006JE002708) dataset of extensional and compressional tectonic features on Mars.
 
-Example scripts
-`Run_demo` A jupyter notebook that contains example scripts to determine flexure or moho relief under different assumptions, including Airy or Pratt isostasy? 
+# Example scripts
+`Run_demo` A jupyter notebook that contains example scripts to determine flexure, moho relief, and strain maps under different assumptions, including Airy or Pratt isostasy.
