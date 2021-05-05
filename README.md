@@ -37,7 +37,8 @@ We note that some of these functions relies heavily on the [pyshtools](https://s
 ## How to install and run ctplanet
 Download the ctplanet repository and install using pip (or pip3 depending on your installation).
 ```bash
-    git clone https://github.com/AB-Ares/Displacement_strain-planet.git
+    git clone https://github.com/AB-Ares/Displacement_strain_planet.git
+    cd Displacement_strain_planet/
     pip install .
 ```
 
