@@ -23,7 +23,7 @@ We note that some of these functions relies heavily on the [pyshtools](https://s
 
 `SH_deriv` Compute on the fly first and second order spherical harmonic derivatives with respect to colatitude and longitude.
 
-`SH_deriv_theta_phi` Compute and store first and second order spherical harmonic derivatives with respect to colatitude and longitude.
+`SH_deriv_store` Compute and store first and second order spherical harmonic derivatives with respect to colatitude and longitude.
 
 `Displacement_strains` Calculate the [Banerdt et al. (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) equations to determine strains from displacements with a correction to the $\theta,\phi$ term.
 
