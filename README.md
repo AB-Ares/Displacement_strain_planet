@@ -2,7 +2,7 @@
 
 # Displacement_strain_planet
 
-Crustal thickness, displacement, stress and strain maps on the sphere.
+Crustal thickness, displacement, stress and strain calculations on the sphere.
 
 # Description
 
