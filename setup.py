@@ -24,9 +24,9 @@ install_requires = ['pyshtools>=4.7.1', 'sympy<=1.7']
 setup(name='Displacement_strain_planet',
       version=versioneer.get_version(),
       cmdclass=versioneer.get_cmdclass(),
-      description='Create crustal thickness, displacement, stress and strain maps on the sphere.',
+      description='Planetary crustal thickness, displacement, stress and strain calculations in spherical harmonics.',
       long_description=long_description,
-      url='https://github.com/AB-Ares/Displacement_strain-planet',
+      url='https://github.com/AB-Ares/Displacement_strain_planet',
       author='Adrien Broquet',
       author_email='adrien.broquet@oca.eu',
       classifiers=[
