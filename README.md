@@ -2,7 +2,7 @@
 
 # Displacement_strain_planet
 
-Crustal thickness, displacement, stress and strain calculations on the sphere.
+Planetary crustal thickness, displacement, stress and strain calculations in spherical harmonics.
 
 ## Description
 
