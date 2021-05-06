@@ -44,7 +44,6 @@ lmax_calc = 90  # Maximum spherical harmonic degree to perform all
 pot_clm = pysh.datasets.Mars.GMM3(lmax=lmax_calc)
 topo_clm = pysh.datasets.Mars.MarsTopo2600(lmax=lmax_calc)
 
-
 R = topo_clm.coeffs[0, 0, 0]  # Mean planetary radius
 pot_clm = pot_clm.change_ref(r0=R)  # Downward continue to Mean
 # planetary radius
