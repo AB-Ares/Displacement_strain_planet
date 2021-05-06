@@ -37,16 +37,15 @@ We note that some of these functions rely heavily on the [pyshtools](https://sht
 `Mars_crust_displacement` A script that demonstrates how to calculate the moho-relief on Mars. The contributions from crustal thickness variations and displacement are shown assuming an elastic thickness of the lithosphere. This example is also shown in the jupyter notebook. We next make use of the infered displacement to predict the principal horizontal strains and principal angle, which can be compared with compressive tectonic features mapped by [Knampeyer et al. (2006)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2006JE002708). 
 
 ## How to install and run ctplanet
-Download the Displacement_strain_planet repository and install using pip (or pip3 depending on your installation).
+If you would like to modify the source code, download the Displacement_strain_planet repository and install using pip (or pip3 depending on your installation).
 ```bash
     git clone https://github.com/AB-Ares/Displacement_strain_planet.git
     cd Displacement_strain_planet/
     pip install .
 ```
-To install (or uninstall) Displacement-strain-planet via pip, use either command
+Alternatively, you can install Displacement-strain-planet via pip
 ```bash
     pip install Displacement-strain-planet
-    pip uninstall Displacement-strain-planet
 ```
 
 ## To run the example scripts
