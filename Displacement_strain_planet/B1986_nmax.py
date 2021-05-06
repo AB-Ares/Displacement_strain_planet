@@ -1074,11 +1074,11 @@ def Thin_shell_matrix_nmax(
             if iter > iter_max:
                 raise ValueError(
                     "%s not converging, maximum iteration reached at %i, " % (var_relief, iter)
-                    + "delta was %.4f (%s) and delta_max is %.4f (%s)."
+                    + "delta was %s (%s) and delta_max is %s (%s)."
                     % (
-                        "%s" % (delta / 1e3 if var_unit == "km" else delta),
+                        "%.4f" % (delta / 1e3 if var_unit == "km" else delta),
                         var_unit,
-                        "%s" % (delta_max / 1e3 if var_unit == "km" else delta_max),
+                        "%.4f" % (delta_max / 1e3 if var_unit == "km" else delta_max),
                         var_unit,
                     )
                 )
@@ -1086,11 +1086,11 @@ def Thin_shell_matrix_nmax(
             if delta > delta_out and iter != 1:
                 raise ValueError(
                     "%s not converging, stopped at iteration %i, " % (var_relief, iter)
-                    + "delta was %.4f (%s) and delta_out is %.4f (%s). Try modifying nmax%s"
+                    + "delta was %s (%s) and delta_out is %s (%s). Try modifying nmax%s"
                     % (
-                        "%s" % (delta / 1e3 if var_unit == "km" else delta),
+                        "%.4f" % (delta / 1e3 if var_unit == "km" else delta),
                         var_unit,
-                        "%s" % (delta_out / 1e3 if var_unit == "km" else delta_out),
+                        "%.4f" % (delta_out / 1e3 if var_unit == "km" else delta_out),
                         var_unit,
                         " or try filtering." if filter == 0 else ".",
                     )
