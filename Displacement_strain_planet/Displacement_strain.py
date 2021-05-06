@@ -419,7 +419,7 @@ def Principal_strain_angle(
     return min_strain, max_strain, sum_strain, principal_angle, principal_angle2
 
 
-def Plt_faults(
+def Plt_tecto_Mars(
     path,
     compression=False,
     extension=True,
