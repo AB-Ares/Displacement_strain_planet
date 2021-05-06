@@ -43,7 +43,7 @@ Notes
     SH_deriv                     Compute spherical harmonic derivatives (first and
                                  second order) on the fly.
 
-    SH_deriv_theta_phi           Compute and store spherical harmonic derivatives
+    SH_deriv_store               Compute and store spherical harmonic derivatives
                                  (first and second order).
 
     Displacement_strains         Calculate the Banerdt et al. (1986) equations to
@@ -62,7 +62,7 @@ from .B1986_nmax import Thin_shell_matrix_nmax
 from .B1986_nmax import DownContFilter
 
 from .Displacement_strain import SH_deriv
-from .Displacement_strain import SH_deriv_theta_phi
+from .Displacement_strain import SH_deriv_store
 from .Displacement_strain import Displacement_strains
 from .Displacement_strain import Principal_strain_angle
 from .Displacement_strain import Plt_tecto_Mars
@@ -81,7 +81,7 @@ __all__ = [
     "Thin_shell_matrix",
     "DownContFilter",
     "SH_deriv",
-    "SH_deriv_theta_phi",
+    "SH_deriv_store",
     "Displacement_strains",
     "Principal_strain_angle",
     "Plt_tecto_Mars",
