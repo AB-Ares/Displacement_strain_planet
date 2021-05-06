@@ -148,8 +148,8 @@ pysh.SHCoeffs.from_array(drhom_lm).expand(**args_expand).plot(
 print("Computing strains")  # This may take some time if it is the first time
 # Strains
 lmax_calc = 30  # Lower lmax_calc for faster computations
-Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp = SH_deriv_theta_phi(
-    lmax_calc, "%s" % (path)
+Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp = SH_deriv_store(
+    lmax_calc, path
 )
 
 colat_min = 0  # Minimum colatitude at which strain calculations are performed
