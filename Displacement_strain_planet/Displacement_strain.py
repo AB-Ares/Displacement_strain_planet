@@ -419,16 +419,24 @@ def Principal_strain_angle(
     return min_strain, max_strain, sum_strain, principal_angle, principal_angle2
 
 
-def Plt_faults(path, compression=False, extension=True, ax=None):
+def Plt_faults(
+    path,
+    compression=False,
+    extension=True,
+    ax=None,
+    compression_col="k",
+    extension_col="purple",
+    lw=1,
+):
 
     #############################################################
-    
+
     # Plot the Knapmeyer et al. (2006) tectonic dataset.
-    
+
     #############################################################
 
-    comp_fault_dat = np.loadtxt("%s/compdata.txt" % (path))
-    ext_fault_dat = np.loadtxt("%s/extedata.txt" % (path))
+    comp_fault_dat = np.loadtxt("%s/Knapmeyer_2006_compdata.txt" % (path))
+    ext_fault_dat = np.loadtxt("%s/Knapmeyer_2006_extedata.txt" % (path))
     ind_comp_fault = np.isin(comp_fault_dat, np.arange(1, 5143, dtype=float))
     ind_comp_fault_2 = np.where(ind_comp_fault)[0]
     ind_ext_fault = np.isin(ext_fault_dat, np.arange(1, 9676, dtype=float))
@@ -437,19 +445,19 @@ def Plt_faults(path, compression=False, extension=True, ax=None):
     if compression and not extension:
         faults_inds = ind_comp_fault_2
         faults_dats = comp_fault_dat
-        faults_cols = "k"
+        faults_cols = compression_col
     elif extension and not compression:
         faults_inds = ind_ext_fault_2
         faults_dats = ext_fault_dat
-        faults_cols = "k"
+        faults_cols = extension_col
     else:
         faults_inds = [ind_comp_fault_2, ind_ext_fault_2]
         faults_dats = [comp_fault_dat, ext_fault_dat]
-        faults_cols = ["k", "purple"]
+        faults_cols = [compression_col, extension_col]
 
     for faults, dat, col in zip([faults_inds], [faults_dats], [faults_cols]):
         for indx in range(1, int((len(faults) - 1) / 2)):
             ind_fault_check = range(faults[indx - 1] + 1, faults[indx])
             fault_dat_lon = dat[ind_fault_check][::2]
             fault_dat_lat = dat[ind_fault_check][1::2]
-            ax.plot((fault_dat_lon + 360) % 360, fault_dat_lat, color=col, lw=1)
+            ax.plot((fault_dat_lon + 360) % 360, fault_dat_lat, color=col, lw=lw)
