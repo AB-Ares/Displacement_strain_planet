@@ -29,7 +29,7 @@ We note that some of these functions rely heavily on the [pyshtools](https://sht
 
 `Principal_strain_angle` Calculate principal strains and angles.
 
-`Plt_faults` Plot the [Knampeyer et al. (2006)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2006JE002708) dataset of extensional and compressional tectonic features on Mars.
+`Plt_tecto_Mars` Plot the [Knampeyer et al. (2006)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2006JE002708) dataset of extensional and compressional tectonic features on Mars.
 
 ## Example scripts
 `Run_demo` A jupyter notebook that contains example scripts to determine flexure, moho-relief, and strains on Mars under different assumptions, including Airy or Pratt isostasy.
