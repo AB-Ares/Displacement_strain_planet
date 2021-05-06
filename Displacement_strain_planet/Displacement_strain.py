@@ -76,7 +76,7 @@ def SH_deriv(theta, phi, lmax):
     )
 
 
-def SH_deriv_theta_phi(lmax, path):
+def SH_deriv_store(lmax, path):
 
     #############################################################
     
@@ -237,7 +237,7 @@ def Displacement_strains(
                         repr(path)
                     )
                 )
-            Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp = SH_deriv_theta_phi(
+            Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp = SH_deriv_store(
                 lmax_calc, path
             )
     else:
