@@ -116,7 +116,7 @@ def Thin_shell_matrix(
     #############################################################
     
     # This file contains several functions that solve the Banerdt
-    # et al. (1986) thin shell model under different assumptions.
+    # (1986) thin shell model under different assumptions.
 
     ######## Note that a few corrections are made to the model:
     # 1) in eq (5), Banerdt forgot a ((R - c) / R) factor for
@@ -446,7 +446,7 @@ def Thin_shell_matrix(
                 " wdc_corr1 w_corr1 H_corr1 drho_corr1"
             )
 
-            # System of equations from Banerdt et al. (1986).
+            # System of equations from Banerdt (1986).
             Eqns = [
                 -G_lm1
                 + rhobconst
