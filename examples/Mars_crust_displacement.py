@@ -5,6 +5,40 @@ import pyshtools as pysh
 from cmcrameri import cm
 from Displacement_strain_planet import *
 
+#################################################################
+# In this example, we solve for the displacement of the surface of 
+# Mars by calling the function `Thin_shell_matrix_nmax`, assuming 
+# that the gravity and topography of the planet are compensated by 
+# a combination of crustal thickness variation and flexure. 
+# 3 assumptions are required to solve the system, and we here assume 
+# that the observed topography and geoid are known, and that there 
+# are no density variations in the interior.
+
+# More information can be found in the jupyter notebook Run_demo 
+
+# We will also make use of a downward continuation minimum-amplitude 
+# filter to damp unrealistic oscilations of the moho-relief 
+# For this, we call the optional argument filter, set it to "Ma", and 
+# set the degree at which the filter equals 0.5 to 50 with a call to 
+# filter_half.
+
+# The function ouputs the following spherical harmonic coefficients: \
+# w_lm flexure, \
+# A_lm poloidal term of the tangential displacement,  \
+# moho_relief_lm` moho relief,  \
+# dc_lm crustal thickness variation,  \
+# drhom_lm internal density variations,  \
+# omega_lm tangential load potential,  \
+# q_lm net load on the lithosphere,  \
+# Gc_lm geoid at the moho depth,  \
+# G_lm geoid at the surface, and \
+# H_lm topography.
+   
+# And the linear solution sols expressed as lambda functions 
+# of all components. Lambda functions can be used to re-calculate 
+# the same problem with different inputs very fast.
+#################################################################
+
 lmax_calc = 90  # Maximum spherical harmonic degree to perform all
 # calculations
 pot_clm = pysh.datasets.Mars.GMM3(lmax=lmax_calc)
