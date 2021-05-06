@@ -704,6 +704,7 @@ def Thin_shell_matrix_nmax(
     top_drho=50e3,
     delta_max=5,
     iter_max=250,
+    delta_out = 500e3,
 ):
 
     #############################################################
@@ -1072,19 +1073,19 @@ def Thin_shell_matrix_nmax(
 
             if iter > iter_max:
                 raise ValueError(
-                    "%s not converging, stopped at iteration %i, " % (var_relief, iter)
+                    "%s not converging, maximum iteration reached at %i, " % (var_relief, iter)
                     + "delta was %.4f (%s) and delta_max is %.4f (%s)."
                     % (delta / 1e3, var_unit, delta_max / 1e3, var_unit)
                 )
                 exit(1)
-            if delta > 500e3 and iter != 1:
+            if delta > delta_out and iter != 1:
                 raise ValueError(
                     "%s not converging, stopped at iteration %i, " % (var_relief, iter)
-                    + "delta was %.4f (%s) and delta_max is %.4f (%s). Try modifying nmax%s"
+                    + "delta was %.4f (%s) and delta_out is %.4f (%s). Try modifying nmax%s"
                     % (
                         delta / 1e3,
                         var_unit,
-                        delta_max / 1e3,
+                        delta_out / 1e3,
                         var_unit,
                         " or try filtering." if filter == 0 else ".",
                     )
