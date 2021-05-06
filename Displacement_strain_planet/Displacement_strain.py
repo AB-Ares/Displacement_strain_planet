@@ -211,9 +211,8 @@ def Displacement_strains(
 
     #############################################################
     
-    # Computes the Banerdt et al. (1986) equations
-    # to determine strains from displacements with a correction
-    #  to the theta_phi term.
+    # Computes the Banerdt (1986) equations to determine strains
+    # from displacements with a correction to the theta_phi term.
     
     #############################################################
     
