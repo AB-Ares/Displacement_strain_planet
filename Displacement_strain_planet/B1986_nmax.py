@@ -1031,11 +1031,11 @@ def Thin_shell_matrix_nmax(
                                 % (((w_grid - R) / 1e3).min())
                             )
                     else:
-                        delta = abs(grid_prev - rho_grid).max() * 1e3
+                        delta = abs(grid_prev - rho_grid).max()
                         if quiet is False:
                             print(
                                 "Iteration %i, Delta (kg m-3) = %.3f"
-                                % (iter, delta / 1e3)
+                                % (iter, delta)
                             )
                             print("Maximum density (kg m-3) = %.2f" % (rho_grid.max()))
                             print("Minimum density (kg m-3) = %.2f" % (rho_grid.min()))
@@ -1075,7 +1075,12 @@ def Thin_shell_matrix_nmax(
                 raise ValueError(
                     "%s not converging, maximum iteration reached at %i, " % (var_relief, iter)
                     + "delta was %.4f (%s) and delta_max is %.4f (%s)."
-                    % (delta / 1e3, var_unit, delta_max / 1e3, var_unit)
+                    % (
+                        "%s" % (delta / 1e3 if var_unit == "km" else delta),
+                        var_unit,
+                        "%s" % (delta_max / 1e3 if var_unit == "km" else delta_max),
+                        var_unit,
+                    )
                 )
                 exit(1)
             if delta > delta_out and iter != 1:
@@ -1083,9 +1088,9 @@ def Thin_shell_matrix_nmax(
                     "%s not converging, stopped at iteration %i, " % (var_relief, iter)
                     + "delta was %.4f (%s) and delta_out is %.4f (%s). Try modifying nmax%s"
                     % (
-                        delta / 1e3,
+                        "%s" % (delta / 1e3 if var_unit == "km" else delta),
                         var_unit,
-                        delta_out / 1e3,
+                        "%s" % (delta_out / 1e3 if var_unit == "km" else delta_out),
                         var_unit,
                         " or try filtering." if filter == 0 else ".",
                     )
