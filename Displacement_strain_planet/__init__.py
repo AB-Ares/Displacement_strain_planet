@@ -1,12 +1,12 @@
 """
 Displacement_strain_planet
 =======
-Displacement_strain_planet provides several functions an an example script
+Displacement_strain_planet provides several functions and example scripts
 for generating crustal thickness, displacement, gravity, lateral density
 variation, stress, and strain maps on a planet given a set of input
 constraints such as from observed gravity and topography data.
 
-These functions solve the Banerdt et al. (1986) thin shell model under
+These functions solve the Banerdt (1986) thin shell model under
 different assumptions. Various improvements have been made to the model
 including the possibility to account for finite-amplitude correction and
 filtering (Wieczorek & Phillips, 1998), lateral density variations at any
@@ -17,21 +17,19 @@ arbitrary depth and within the surface or moho relief (Wieczorek et al.,
 We note that some of these functions relies heavily on the pyshtools package.
 
 Notes
-    Thin_shell_matrix            Solves the Banerdt et al. (1986) system of
-                                 equations under the mass-sheet approximation
-                                 and assuming that potential internal density
-                                 variations are contained within a spherical
-                                 shell.
+    Thin_shell_matrix            Solves the Banerdt (1986) system of equations
+                                 under the mass-sheet approximation and assuming
+                                 that potential internal density variations are
+                                 contained within a spherical shell.
 
     DownContFilter               Compute the downward minimum-amplitude or
                                  -curvature filter of Wieczorek & Phillips,
                                  (1998).
 
-    Thin_shell_matrix_nmax       Solve the Banerdt et al. (1986) system of
-                                 equations with finite-amplitude correction
-                                 and accounting for the potential presence of
-                                 density variations within the surface or
-                                 moho reliefs.
+    Thin_shell_matrix_nmax       Solve the Banerdt (1986) system of equations
+                                 with finite-amplitude correction and accounting
+                                 for the potential presence of density variations
+                                 within the surface or moho reliefs.             
 
     corr_nmax_drho               Calculate the gravitational potential exterior
                                  to relief referenced to a spherical interface
@@ -46,13 +44,14 @@ Notes
     SH_deriv_store               Compute and store spherical harmonic derivatives
                                  (first and second order).
 
-    Displacement_strains         Calculate the Banerdt et al. (1986) equations to
+    Displacement_strains         Calculate the Banerdt (1986) equations to
                                  determine strains from displacements.
 
     Principal_strain_angle       Calculate principal strains and angles.
 
-    Plt_tecto_Mars               Plot the Knampeyer et al. (2006) dataset of extensional
-                                 and compressional tectonic features on Mars.
+    Plt_tecto_Mars               Plot the Knampeyer et al. (2006) dataset of 
+                                 extensional and compressional tectonic features
+                                 on Mars.
 """
 from ._version import get_versions
 
