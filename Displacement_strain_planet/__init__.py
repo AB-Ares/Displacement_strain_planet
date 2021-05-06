@@ -51,7 +51,7 @@ Notes
 
     Principal_strain_angle       Calculate principal strains and angles.
 
-    Plt_faults                   Plot the Knampeyer et al. (2006) dataset of extensional
+    Plt_tecto_Mars               Plot the Knampeyer et al. (2006) dataset of extensional
                                  and compressional tectonic features on Mars.
 """
 from ._version import get_versions
@@ -65,7 +65,7 @@ from .Displacement_strain import SH_deriv
 from .Displacement_strain import SH_deriv_theta_phi
 from .Displacement_strain import Displacement_strains
 from .Displacement_strain import Principal_strain_angle
-from .Displacement_strain import Plt_faults
+from .Displacement_strain import Plt_tecto_Mars
 
 del B1986_nmax
 del Displacement_strain
@@ -84,5 +84,5 @@ __all__ = [
     "SH_deriv_theta_phi",
     "Displacement_strains",
     "Principal_strain_angle",
-    "Plt_faults",
+    "Plt_tecto_Mars",
 ]
