@@ -206,6 +206,7 @@ def Displacement_strains(
     Y_lm_d2_p=None,
     Y_lm_d2_tp=None,
     path=None,
+    quiet=True
 ):
 
     #############################################################
@@ -215,7 +216,16 @@ def Displacement_strains(
     #  to the theta_phi term.
     
     #############################################################
-
+    
+    if lmax_calc != np.shape(A_lm)[2]:
+        if quiet is False:
+            print(
+                "Padding A_lm and w_lm to input lmax = %s, current lmax " % (lmax_calc)
+                + "is %s" % (np.shape(A_lm)[2])
+            )
+        A_lm = pysh.SHCoeffs.from_array(A_lm).pad(lmax=lmax_calc).coeffs
+        w_lm = pysh.SHCoeffs.from_array(w_lm).pad(lmax=lmax_calc).coeffs
+    
     n = 2 * lmax_calc + 2
 
     if precomp:
