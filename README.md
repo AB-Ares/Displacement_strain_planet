@@ -34,6 +34,8 @@ We note that some of these functions relies heavily on the [pyshtools](https://s
 ## Example script
 `Run_demo` A jupyter notebook that contains example scripts to determine flexure, moho relief, and strains under different assumptions, including Airy or Pratt isostasy.
 
+`Mars_crust_displacement` A script that demonstrates how to calculate the moho-relief on Mars. The contributions from crustal thickness variations and displacement are shown assuming an elastic thickness of the lithosphere. This example is also shown in the jupyter notebook.
+
 ## How to install and run ctplanet
 Download the ctplanet repository and install using pip (or pip3 depending on your installation).
 ```bash
