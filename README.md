@@ -13,7 +13,7 @@ These functions solve the [Banerdt et al. (1986)](https://agupubs.onlinelibrary.
 We note that some of these functions rely heavily on the [pyshtools](https://shtools.github.io/SHTOOLS/) package of [Wieczorek & Meschede (2018)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2018GC007529).
 
 ## Methods
-`Thin_shell_matrix` Solve the [Banerdt et al. (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of equations under the mass-sheet approximation and assuming that potential internal density variations are contained within a spherical shell. The system links 8 parameters expressed in spherical harmonics: the topography, geoid at the surface, geoid at the moho depth, net acting load on the lithosphere, tangential load potential, flexure of the lithosphere, crustal thickness variations, and internal density variations. 
+`Thin_shell_matrix` Solve the [Banerdt et al. (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of equations under the mass-sheet approximation and assuming that potential internal density variations are contained within a spherical shell. The system links 8 parameters expressed in spherical harmonics: the topography, geoid at the surface, geoid at the moho depth, net acting load on the lithosphere, tangential load potential, flexure of the lithosphere, crustal thickness variations, and internal density variations. Minor corrections have been made in the geoid equations.
 
 `Thin_shell_matrix_nmax` Solve the [Banerdt et al. (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of equations with finite-amplitude correction and accounting for the potential presence of density variations within the surface or moho reliefs.
 
@@ -25,7 +25,7 @@ We note that some of these functions rely heavily on the [pyshtools](https://sht
 
 `SH_deriv_store` Compute and store first and second-order spherical harmonic derivatives with respect to colatitude and longitude.
 
-`Displacement_strains` Calculate the [Banerdt et al. (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) equations to determine strains from displacements with a correction to the $\theta,\phi$ term.
+`Displacement_strains` Calculate the [Banerdt et al. (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) equations to determine strains from displacements with a correction to the shearing and twisting deformations.
 
 `Principal_strain_angle` Calculate principal strains and angles.
 
