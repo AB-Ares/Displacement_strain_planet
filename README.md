@@ -2,7 +2,7 @@
 
 # Displacement_strain_planet
 
-Planetary crustal thickness, displacement, stress and strain calculations in spherical harmonics.
+Planetary crustal thickness, displacement, stress, and strain calculations in spherical harmonics.
 
 ## Description
 
@@ -10,7 +10,7 @@ Planetary crustal thickness, displacement, stress and strain calculations in sph
 
 These functions solve the [Banerdt et al. (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of equations under different assumptions. Various improvements have been made to the model including the possibility to account for finite-amplitude correction and filtering [(Wieczorek & Phillips, 1998)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/97JE03136), lateral density variations at any arbitrary depth and within the surface or moho-relief [(Wieczorek et al., 2013)](https://science.sciencemag.org/content/early/2012/12/04/science.1231530?versioned=true), and density difference between the surface topography and crust [(Broquet & Wieczorek, 2019)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019JE005959). 
 
-We note that some of these functions relies heavily on the [pyshtools](https://shtools.github.io/SHTOOLS/) package of [Wieczorek & Meschede (2018)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2018GC007529).
+We note that some of these functions rely heavily on the [pyshtools](https://shtools.github.io/SHTOOLS/) package of [Wieczorek & Meschede (2018)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2018GC007529).
 
 ## Methods
 `Thin_shell_matrix` Solve the [Banerdt et al. (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of equations under the mass-sheet approximation and assuming that potential internal density variations are contained within a spherical shell. The system links 8 parameters expressed in spherical harmonics: the topography, geoid at the surface, geoid at the moho depth, net acting load on the lithosphere, tangential load potential, flexure of the lithosphere, crustal thickness variations, and internal density variations. 
@@ -19,11 +19,11 @@ We note that some of these functions relies heavily on the [pyshtools](https://s
 
 `DownContFilter` Compute the downward minimum-amplitude or -curvature filter of [Wieczorek & Phillips (1998)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/97JE03136).
 
-`corr_nmax_drho` Calculate the gravitational potential exterior to relief referenced to a spherical interface (with or without laterally varying density) difference between the mass-sheet case and when using the finite amplitude algorithm of [Wieczorek & Phillips (1998)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/97JE03136).
+`corr_nmax_drho` Calculate the gravitational potential exterior to relief referenced to a spherical interface (with or without laterally varying density) difference between the mass-sheet case and when using the finite-amplitude algorithm of [Wieczorek & Phillips (1998)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/97JE03136).
 
-`SH_deriv` Compute on the fly first and second order spherical harmonic derivatives with respect to colatitude and longitude.
+`SH_deriv` Compute on the fly first and second-order spherical harmonic derivatives with respect to colatitude and longitude.
 
-`SH_deriv_store` Compute and store first and second order spherical harmonic derivatives with respect to colatitude and longitude.
+`SH_deriv_store` Compute and store first and second-order spherical harmonic derivatives with respect to colatitude and longitude.
 
 `Displacement_strains` Calculate the [Banerdt et al. (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) equations to determine strains from displacements with a correction to the $\theta,\phi$ term.
 
