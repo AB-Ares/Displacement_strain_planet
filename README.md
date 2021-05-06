@@ -43,12 +43,9 @@ Download the Displacement_strain_planet repository and install using pip (or pip
     cd Displacement_strain_planet/
     pip install .
 ```
-Install Displacement-strain-planet via pip
+To install (or uninstall) Displacement-strain-planet via pip, use either command
 ```bash
     pip install Displacement-strain-planet
-```
-To uninstall Displacement-strain-planet from your system directory, use the command
-```bash
     pip uninstall Displacement-strain-planet
 ```
 
