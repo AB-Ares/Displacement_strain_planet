@@ -19,7 +19,7 @@ We note that some of these functions rely heavily on the [pyshtools](https://sht
 
 `DownContFilter` Compute the downward minimum-amplitude or -curvature filter of [Wieczorek & Phillips (1998)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/97JE03136).
 
-`corr_nmax_drho` Calculate the gravitational potential exterior to relief referenced to a spherical interface (with or without laterally varying density) difference between the mass-sheet case and when using the finite-amplitude algorithm of [Wieczorek & Phillips (1998)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/97JE03136).
+`corr_nmax_drho` Calculate the difference in gravitational potential exterior to relief referenced to a spherical interface (with or without laterally varying density) between the mass-sheet case and when using the finite-amplitude algorithm of [Wieczorek & Phillips (1998)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/97JE03136).
 
 `SH_deriv` Compute on the fly first and second-order spherical harmonic derivatives with respect to colatitude and longitude.
 
