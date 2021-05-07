@@ -17,12 +17,12 @@ arbitrary depth and within the surface or moho relief (Wieczorek et al.,
 We note that some of these functions relies heavily on the pyshtools package.
 
 Notes
-    Thin_shell_matrix            Solves the Banerdt (1986) system of equations
+    Thin_shell_matrix            Solves the Banerdt (1986) system of 5 equations
                                  under the mass-sheet approximation and assuming
                                  that potential internal density variations are
                                  contained within a spherical shell.
 
-    Thin_shell_matrix_nmax       Solve the Banerdt (1986) system of equations
+    Thin_shell_matrix_nmax       Solve the Banerdt (1986) system of 5 equations
                                  with finite-amplitude correction and accounting
                                  for the potential presence of density variations
                                  within the surface or moho reliefs.   
