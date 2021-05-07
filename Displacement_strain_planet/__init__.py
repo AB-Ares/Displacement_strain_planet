@@ -22,24 +22,24 @@ Notes
                                  that potential internal density variations are
                                  contained within a spherical shell.
 
-    DownContFilter               Compute the downward minimum-amplitude or
-                                 -curvature filter of Wieczorek & Phillips,
-                                 (1998).
-
     Thin_shell_matrix_nmax       Solve the Banerdt (1986) system of equations
                                  with finite-amplitude correction and accounting
                                  for the potential presence of density variations
-                                 within the surface or moho reliefs.             
+                                 within the surface or moho reliefs.   
 
-    corr_nmax_drho               Calculate the gravitational potential exterior
+    DownContFilter               Compute the downward minimum-amplitude or
+                                 -curvature filter of Wieczorek & Phillips,
+                                 (1998).          
+
+    corr_nmax_drho               Calculate the difference in gravitational exterior
                                  to relief referenced to a spherical interface
                                  (with or without laterally varying density)
-                                 difference between the mass-sheet case and when
-                                 using the finite amplitude algorithm of Wieczorek
-                                 (2007).
+                                 between the mass-sheet case and when using the
+                                 finite amplitude algorithm of Wieczorek & 
+                                 Phillips (1998).
 
-    SH_deriv                     Compute spherical harmonic derivatives (first and
-                                 second order) on the fly.
+    SH_deriv                     Compute on the fly spherical harmonic derivatives 
+                                 (first and second order).
 
     SH_deriv_store               Compute and store spherical harmonic derivatives
                                  (first and second order).
@@ -56,9 +56,9 @@ Notes
 from ._version import get_versions
 
 from .B1986_nmax import Thin_shell_matrix
-from .B1986_nmax import corr_nmax_drho
 from .B1986_nmax import Thin_shell_matrix_nmax
 from .B1986_nmax import DownContFilter
+from .B1986_nmax import corr_nmax_drho
 
 from .Displacement_strain import SH_deriv
 from .Displacement_strain import SH_deriv_store
@@ -75,10 +75,10 @@ del get_versions
 __author__ = "Adrien Broquet"
 
 __all__ = [
-    "Thin_shell_matrix_nmax",
-    "corr_nmax_drho",
     "Thin_shell_matrix",
+    "Thin_shell_matrix_nmax",
     "DownContFilter",
+    "corr_nmax_drho",
     "SH_deriv",
     "SH_deriv_store",
     "Displacement_strains",
