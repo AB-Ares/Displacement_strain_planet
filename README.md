@@ -32,9 +32,9 @@ We note that some of these functions rely heavily on the [pyshtools](https://sht
 `Plt_tecto_Mars` Plot the [Knampeyer et al. (2006)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2006JE002708) dataset of extensional and compressional tectonic features on Mars.
 
 ## Example scripts
-`Run_demo` A jupyter notebook that contains example scripts to determine flexure, moho-relief, and strains on Mars under different assumptions, including Airy or Pratt isostasy.
+`Run_demo` A jupyter notebook that contains example scripts to determine flexure, moho-relief, and strains on Mars under different assumptions, including Airy and Pratt isostasy, or due to the sole presence of a mantle plume.
 
-`Mars_crust_displacement` A script that demonstrates how to calculate the moho-relief on Mars. The contributions from crustal thickness variations and displacement are shown assuming an elastic thickness of the lithosphere. This example is also shown in the jupyter notebook. We next make use of the infered displacement to predict the principal horizontal strains and principal angle, which can be compared with compressive tectonic features mapped by [Knampeyer et al. (2006)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2006JE002708). 
+`Mars_crust_displacement` A script that demonstrates how to calculate the moho-relief and strains on Mars, as a function of the mean planetary crustal thickness and elastic thickness. The contributions from crustal thickness variations and displacement are shown assuming an elastic thickness of the lithosphere. We make use of the infered displacement to predict the principal horizontal strains and principal angle, which are compared to compressive tectonic features mapped by [Knampeyer et al. (2006)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2006JE002708). 
 
 ## How to install and run ctplanet
 If you would like to modify the source code, download the Displacement_strain_planet repository and install using pip (or pip3 depending on your installation).
