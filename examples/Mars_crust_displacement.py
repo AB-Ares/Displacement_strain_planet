@@ -3,7 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pyshtools as pysh
 from cmcrameri import cm
-from Displacement_strain_planet import *
+from Displacement_strain_planet import (
+    Thin_shell_matrix_nmax,
+    SH_deriv_store,
+    Displacement_strains,
+    Principal_strain_angle,
+    Plt_tecto_Mars,
+)
 
 #################################################################
 # In this example, we solve for the displacement of the surface of
@@ -148,9 +154,7 @@ pysh.SHCoeffs.from_array(drhom_lm).expand(**args_expand).plot(
 print("Computing strains")  # This may take some time if it is the first time
 # Strains
 lmax_calc = 30  # Lower lmax_calc for faster computations
-Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp = SH_deriv_store(
-    lmax_calc, path
-)
+Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp = SH_deriv_store(lmax_calc, path)
 
 colat_min = 0  # Minimum colatitude at which strain calculations are performed
 colat_max = 190  # Maximum colatitude
