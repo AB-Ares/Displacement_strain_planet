@@ -21,7 +21,7 @@ from Displacement_strain_planet import (
 # are no density variations in the interior.
 
 # Next, we will plot the associated principal horizontal strains,
-# along with the principal orientation, and show that these are
+# along with the principal angle, and show that these are
 # consistent with the tectonic mapping of Knampeyer et al. (2006).
 
 # More information can be found in the jupyter notebook Run_demo
@@ -249,6 +249,6 @@ ax4.quiver(
     color="g",
 )
 
-# Add compressional tectonic features from Knapmeyer et al. (2006)
-Plt_tecto_Mars(path, ax=ax4, compression=True, extension=False)
+# Add extensional tectonic features from Knapmeyer et al. (2006)
+Plt_tecto_Mars(path, ax=ax4, compression=False, extension=True)
 plt.show()
