@@ -381,42 +381,31 @@ def Displacement_strains(
     )
 
 
-def Principal_strain_angle(
-    eps_theta, eps_phi, eps_theta_phi, k_theta, k_phi, k_theta_phi
+def Principal_strainstress_angle(
+    s_theta1, s_phi1, s_theta_phi1, s_theta2, s_phi2, s_phi2
 ):
 
     #############################################################
 
-    # A function that computes principal strains and angles
+    # A function that computes principal strains, stress and their
+    # principal angles.
 
     #############################################################
 
-    strain_theta = -eps_theta - k_theta
-    strain_phi = -eps_phi - k_phi
-    strain_theta_phi = -eps_theta_phi - k_theta_phi
+    s_theta = -s_theta1 - s_theta2
+    s_phi = -s_phi1 - s_phi2
+    s_theta_phi = -s_theta_phi1 - s_phi2
     min_strain = 0.5 * (
-        strain_theta
-        + strain_phi
-        - np.sqrt((strain_theta - strain_phi) ** 2 + 4 * strain_theta_phi ** 2)
+        s_theta + s_phi - np.sqrt((s_theta - s_phi) ** 2 + 4 * s_theta_phi ** 2)
     )
     max_strain = 0.5 * (
-        strain_theta
-        + strain_phi
-        + np.sqrt((strain_theta - strain_phi) ** 2 + 4 * strain_theta_phi ** 2)
+        s_theta + s_phi + np.sqrt((s_theta - s_phi) ** 2 + 4 * s_theta_phi ** 2)
     )
     sum_strain = min_strain + max_strain
 
-    principal_angle = (
-        0.5
-        * np.arctan2(2 * strain_theta_phi, strain_theta - strain_phi)
-        * 180.0
-        / np.pi
-    )
+    principal_angle = 0.5 * np.arctan2(2 * s_theta_phi, s_theta - s_phi) * 180.0 / np.pi
     principal_angle2 = (
-        0.5
-        * np.arctan2(2 * strain_theta_phi, strain_phi - strain_theta)
-        * 180.0
-        / np.pi
+        0.5 * np.arctan2(2 * s_theta_phi, s_phi - s_theta) * 180.0 / np.pi
     )
 
     return min_strain, max_strain, sum_strain, principal_angle, principal_angle2
