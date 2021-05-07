@@ -250,5 +250,6 @@ ax4.quiver(
 )
 
 # Add extensional tectonic features from Knapmeyer et al. (2006)
+Plt_tecto_Mars(path, ax=ax3, compression=False, extension=True)
 Plt_tecto_Mars(path, ax=ax4, compression=False, extension=True)
 plt.show()
