@@ -90,7 +90,10 @@ def SH_deriv_store(lmax, path):
     poly_file = "%s/Y_lmsd1d2_lmax%s.npy" % (path, lmax)
 
     if Path(poly_file).exists() == 0:
-        print("Pre-compute SH derivatives")
+        print(
+            "Pre-compute SH derivatives, may take some"
+            + " time depending on lmax, input lmax is %s" % (lmax)
+        )
         index_size = int((lmax + 1) * (lmax + 2) / 2)
         Y_lm_d1_theta_a = np.zeros((n, 2 * n, 2, lmax + 1, lmax + 1))
         Y_lm_d1_phi_a = np.zeros((n, 2 * n, 2, lmax + 1, lmax + 1))
