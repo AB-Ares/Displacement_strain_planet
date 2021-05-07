@@ -10,7 +10,13 @@ Planetary crustal thickness, displacement, stress, and strain calculations in sp
 
 These functions solve the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of equations under different assumptions. Various improvements have been made to the model including the possibility to account for finite-amplitude correction and filtering [(Wieczorek & Phillips, 1998)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/97JE03136), lateral density variations at any arbitrary depth and within the surface or moho-relief [(Wieczorek et al., 2013)](https://science.sciencemag.org/content/early/2012/12/04/science.1231530?versioned=true), and density difference between the surface topography and crust [(Broquet & Wieczorek, 2019)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019JE005959). 
 
-We note that some of these functions rely heavily on the [pyshtools](https://shtools.github.io/SHTOOLS/) package of [Wieczorek & Meschede (2018)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2018GC007529).
+### Comments
+We note that some of these functions rely heavily on the [pyshtools](https://shtools.github.io/SHTOOLS/) package of [Wieczorek & Meschede (2018)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2018GC007529) that is used to perform the spherical harmonic transforms, and Legendre polynomial expansions.
+
+### Benchmarks
+Moho-relief calculations have been benchmarked to the [ctplanet](https://github.com/MarkWieczorek/ctplanet) package of Mark Wieczorek. 
+Displacement calculations have been benchmarked to the analytical model of [(Broquet & Wieczorek, 2019)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019JE005959).
+Strain calculations reproduce results published in the litterature (e.g., [Banerdt & Golombek 2000](https://www.lpi.usra.edu/meetings/lpsc2000/pdf/2038.pdf)). 
 
 ## Methods
 `Thin_shell_matrix` Solve the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of equations under the mass-sheet approximation and assuming that potential internal density variations are contained within a spherical shell. The system links 8 parameters expressed in spherical harmonics: the topography, geoid at the surface, geoid at the moho depth, net acting load on the lithosphere, tangential load potential, flexure of the lithosphere, crustal thickness variations, and internal density variations. Minor corrections have been made in the geoid equations.
