@@ -47,7 +47,8 @@ Notes
     Displacement_strains         Calculate the Banerdt (1986) equations to
                                  determine strains from displacements.
 
-    Principal_strain_angle       Calculate principal strains and angles.
+    Principal_strainstress_angle Calculate principal strains, stresses, and
+                                 their principal angles.
 
     Plt_tecto_Mars               Plot the Knampeyer et al. (2006) dataset of 
                                  extensional and compressional tectonic features
@@ -63,7 +64,7 @@ from .B1986_nmax import corr_nmax_drho
 from .Displacement_strain import SH_deriv
 from .Displacement_strain import SH_deriv_store
 from .Displacement_strain import Displacement_strains
-from .Displacement_strain import Principal_strain_angle
+from .Displacement_strain import Principal_strainstress_angle
 from .Displacement_strain import Plt_tecto_Mars
 
 del B1986_nmax
@@ -82,6 +83,6 @@ __all__ = [
     "SH_deriv",
     "SH_deriv_store",
     "Displacement_strains",
-    "Principal_strain_angle",
+    "Principal_strainstress_angle",
     "Plt_tecto_Mars",
 ]
