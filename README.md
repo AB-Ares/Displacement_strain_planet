@@ -33,7 +33,7 @@ Strain calculations reproduce results published in the literature (e.g., [Banerd
 
 `Displacement_strains` Calculate the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) equations to determine strains from displacements with a correction to the shearing and twisting deformations.
 
-`Principal_strain_angle` Calculate principal strains and angles.
+`Principal_strainstress_angle` Calculate principal strains, stresses and their principal angles.
 
 `Plt_tecto_Mars` Plot the [Knampeyer et al. (2006)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2006JE002708) dataset of extensional and compressional tectonic features on Mars.
 
