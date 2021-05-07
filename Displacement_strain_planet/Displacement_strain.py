@@ -1,5 +1,6 @@
 import numpy as np
 import pyshtools as pysh
+import matplotlib.pyplot as plt
 from pathlib import Path
 
 pi = np.pi
@@ -426,6 +427,7 @@ def Plt_tecto_Mars(
     compression_col="k",
     extension_col="purple",
     lw=1,
+    legend_show=True,
 ):
 
     #############################################################
@@ -441,22 +443,34 @@ def Plt_tecto_Mars(
     ind_ext_fault = np.isin(ext_fault_dat, np.arange(1, 9676, dtype=float))
     ind_ext_fault_2 = np.where(ind_ext_fault)[0]
 
-    if compression and not extension:
-        faults_inds = ind_comp_fault_2
-        faults_dats = comp_fault_dat
-        faults_cols = compression_col
-    elif extension and not compression:
-        faults_inds = ind_ext_fault_2
-        faults_dats = ext_fault_dat
-        faults_cols = extension_col
-    else:
-        faults_inds = [ind_comp_fault_2, ind_ext_fault_2]
-        faults_dats = [comp_fault_dat, ext_fault_dat]
-        faults_cols = [compression_col, extension_col]
+    if ax is None:
+        fig, ax = plt.subplots(1, 1)
 
-    for faults, dat, col in zip([faults_inds], [faults_dats], [faults_cols]):
+    faults_inds = [ind_comp_fault_2, ind_ext_fault_2]
+    faults_dats = [comp_fault_dat, ext_fault_dat]
+    faults_cols = [compression_col, extension_col]
+    labels = ["Compressional tectonic features", "Extensional tectonic features"]
+
+    if compression and not extension:
+        faults_inds = faults_inds[0]
+        faults_dats = faults_dats[0]
+        faults_cols = faults_cols[0]
+        labels = labels[0]
+    else:
+        faults_inds = faults_inds[1]
+        faults_dats = faults_dats[1]
+        faults_cols = faults_cols[1]
+        labels = labels[1]
+
+    for faults, dat, col, label in zip(
+        [faults_inds], [faults_dats], [faults_cols], [labels]
+    ):
+        ax.plot(np.nan, np.nan, color=col, lw=lw, label=label)
         for indx in range(1, int((len(faults) - 1) / 2)):
             ind_fault_check = range(faults[indx - 1] + 1, faults[indx])
             fault_dat_lon = dat[ind_fault_check][::2]
             fault_dat_lat = dat[ind_fault_check][1::2]
             ax.plot((fault_dat_lon + 360) % 360, fault_dat_lat, color=col, lw=lw)
+
+    if legend_show:
+        ax.legend()
