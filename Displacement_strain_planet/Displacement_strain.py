@@ -428,6 +428,7 @@ def Plt_tecto_Mars(
     extension_col="purple",
     lw=1,
     legend_show=True,
+    legend_loc="upper left",
 ):
 
     #############################################################
@@ -473,4 +474,4 @@ def Plt_tecto_Mars(
             ax.plot((fault_dat_lon + 360) % 360, fault_dat_lat, color=col, lw=lw)
 
     if legend_show:
-        ax.legend()
+        ax.legend(loc=legend_loc)
