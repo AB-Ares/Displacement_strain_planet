@@ -255,7 +255,7 @@ def Displacement_strains(
     # Some constants for the elastic model.
     Re = R - float(0.5 * Te)
     psi = 12.0 * Re ** 2 / Te ** 2
-    D = (E * (Te * Te * Te)) / (float(float(12) * (float(1) - v ** 2)))
+    D = (E * (Te * Te * Te)) / (float(12.0 * (1.0 - v ** 2)))
     DpsiTeR = (D * psi) / (Te * R ** 2)
     R_m1 = 1.0 / R
 
@@ -394,7 +394,7 @@ def Principal_strainstress_angle(
 
     s_theta = -s_theta1 - s_theta2
     s_phi = -s_phi1 - s_phi2
-    s_theta_phi = -s_theta_phi1 - s_theta_phi12
+    s_theta_phi = -s_theta_phi1 - s_theta_phi2
     min_strain = 0.5 * (
         s_theta + s_phi - np.sqrt((s_theta - s_phi) ** 2 + 4 * s_theta_phi ** 2)
     )
