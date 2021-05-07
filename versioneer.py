@@ -69,7 +69,8 @@ To use it:
      versioneer.versionfile_source = 'src/myproject/_version.py'
      versioneer.versionfile_build = 'myproject/_version.py'
      versioneer.tag_prefix = '' # tags are like 1.2.0
-     versioneer.parentdir_prefix = 'myproject-' # dirname like 'myproject-1.2.0'
+     versioneer.parentdir_prefix = 'myproject-'
+     # dirname like 'myproject-1.2.0'
  3: add the following arguments to the setup() call in your setup.py:
      version=versioneer.get_version(),
      cmdclass=versioneer.get_cmdclass(),
@@ -80,7 +81,9 @@ To use it:
  6: add both versioneer.py and the generated _version.py to your VCS
 """
 
-import os, sys, re
+import os
+import sys
+import re
 from distutils.core import Command
 from distutils.command.sdist import sdist as _sdist
 from distutils.command.build import build as _build
@@ -94,7 +97,7 @@ VCS = "git"
 IN_LONG_VERSION_PY = False
 
 
-LONG_VERSION_PY = '''
+LONG_VERSION_PY = """
 IN_LONG_VERSION_PY = True
 # This file helps to compute a version number in source trees obtained from
 # git-archive tarball (such as those provided by githubs download-from-tag
@@ -291,11 +294,12 @@ def get_versions(default={"version": "unknown", "full": ""}, verbose=False):
         ver = default
     return ver
 
-'''
+"""
 
 
 import subprocess
 import sys
+
 
 def run_command(args, cwd=None, verbose=False):
     try:
@@ -308,7 +312,7 @@ def run_command(args, cwd=None, verbose=False):
             print(e)
         return None
     stdout = p.communicate()[0].strip()
-    if sys.version >= '3':
+    if sys.version >= "3":
         stdout = stdout.decode()
     if p.returncode != 0:
         if verbose:
@@ -321,6 +325,7 @@ import sys
 import re
 import os.path
 
+
 def get_expanded_variables(versionfile_source):
     # the code embedded in _version.py can just fetch the value of these
     # variables. When used from setup.py, we don't want to import
@@ -328,7 +333,7 @@ def get_expanded_variables(versionfile_source):
     # used from _version.py.
     variables = {}
     try:
-        for line in open(versionfile_source,"r").readlines():
+        for line in open(versionfile_source, "r").readlines():
             if line.strip().startswith("git_refnames ="):
                 mo = re.search(r'=\s*"(.*)"', line)
                 if mo:
@@ -341,15 +346,16 @@ def get_expanded_variables(versionfile_source):
         pass
     return variables
 
+
 def versions_from_expanded_variables(variables, tag_prefix, verbose=False):
     refnames = variables["refnames"].strip()
     if refnames.startswith("$Format"):
         if verbose:
             print("variables are unexpanded, not using")
-        return {} # unexpanded, so not in an unpacked git-archive tarball
+        return {}  # unexpanded, so not in an unpacked git-archive tarball
     refs = set([r.strip() for r in refnames.strip("()").split(",")])
     for ref in list(refs):
-        if not re.search(r'\d', ref):
+        if not re.search(r"\d", ref):
             if verbose:
                 print("discarding '%s', no digits" % ref)
             refs.discard(ref)
@@ -367,13 +373,12 @@ def versions_from_expanded_variables(variables, tag_prefix, verbose=False):
             r = ref[len(tag_prefix):]
             if verbose:
                 print("picking %s" % r)
-            return { "version": r,
-                     "full": variables["full"].strip() }
+            return {"version": r, "full": variables["full"].strip()}
     # no suitable tags, so we use the full revision id
     if verbose:
         print("no suitable tags, using full revision id")
-    return { "version": variables["full"].strip(),
-             "full": variables["full"].strip() }
+    return {"version": variables["full"].strip(), "full": variables["full"].strip()}
+
 
 def versions_from_vcs(tag_prefix, versionfile_source, verbose=False):
     # this runs 'git' from the root of the source tree. That either means
@@ -390,7 +395,7 @@ def versions_from_vcs(tag_prefix, versionfile_source, verbose=False):
         here = os.path.abspath(__file__)
     except NameError:
         # some py2exe/bbfreeze/non-CPython implementations don't do __file__
-        return {} # not always correct
+        return {}  # not always correct
 
     # versionfile_source is the relative path from the top of the source tree
     # (where the .git directory might live) to this file. Invert this to find
@@ -409,8 +414,7 @@ def versions_from_vcs(tag_prefix, versionfile_source, verbose=False):
     GIT = "git"
     if sys.platform == "win32":
         GIT = "git.cmd"
-    stdout = run_command([GIT, "describe", "--tags", "--dirty", "--always"],
-                         cwd=root)
+    stdout = run_command([GIT, "describe", "--tags", "--dirty", "--always"], cwd=root)
     if stdout is None:
         return {}
     if not stdout.startswith(tag_prefix):
@@ -437,7 +441,7 @@ def versions_from_parentdir(parentdir_prefix, versionfile_source, verbose=False)
             here = os.path.abspath(__file__)
         except NameError:
             # py2exe/bbfreeze/non-CPython don't have __file__
-            return {} # without __file__, we have no hope
+            return {}  # without __file__, we have no hope
         # versionfile_source is the relative path from the top of the source
         # tree to _version.py. Invert this to find the root from __file__.
         root = here
@@ -454,12 +458,16 @@ def versions_from_parentdir(parentdir_prefix, versionfile_source, verbose=False)
     dirname = os.path.basename(root)
     if not dirname.startswith(parentdir_prefix):
         if verbose:
-            print("guessing rootdir is '%s', but '%s' doesn't start with prefix '%s'" %
-                  (root, dirname, parentdir_prefix))
+            print(
+                "guessing rootdir is '%s', but '%s' doesn't start with prefix '%s'"
+                % (root, dirname, parentdir_prefix)
+            )
         return None
     return {"version": dirname[len(parentdir_prefix):], "full": ""}
 
+
 import sys
+
 
 def do_vcs_install(versionfile_source, ipy):
     GIT = "git"
@@ -483,7 +491,7 @@ def do_vcs_install(versionfile_source, ipy):
         f.write("%s export-subst\n" % versionfile_source)
         f.close()
         run_command([GIT, "add", ".gitattributes"])
-    
+
 
 SHORT_VERSION_PY = """
 # This file was generated by 'versioneer.py' (0.7+) from
@@ -500,6 +508,7 @@ def get_versions(default={}, verbose=False):
 
 DEFAULT = {"version": "unknown", "full": "unknown"}
 
+
 def versions_from_file(filename):
     versions = {}
     try:
@@ -515,6 +524,7 @@ def versions_from_file(filename):
             versions["full"] = mo.group(1)
     return versions
 
+
 def write_to_version_file(filename, versions):
     f = open(filename, "w")
     f.write(SHORT_VERSION_PY % versions)
@@ -522,8 +532,9 @@ def write_to_version_file(filename, versions):
     print("set %s to '%s'" % (filename, versions["version"]))
 
 
-def get_best_versions(versionfile, tag_prefix, parentdir_prefix,
-                      default=DEFAULT, verbose=False):
+def get_best_versions(
+    versionfile, tag_prefix, parentdir_prefix, default=DEFAULT, verbose=False
+):
     # returns dict with two keys: 'version' and 'full'
     #
     # extract version from first of _version.py, 'git describe', parentdir.
@@ -536,44 +547,61 @@ def get_best_versions(versionfile, tag_prefix, parentdir_prefix,
     if variables:
         ver = versions_from_expanded_variables(variables, tag_prefix)
         if ver:
-            if verbose: print("got version from expanded variable %s" % ver)
+            if verbose:
+                print("got version from expanded variable %s" % ver)
             return ver
 
     ver = versions_from_file(versionfile)
     if ver:
-        if verbose: print("got version from file %s %s" % (versionfile, ver))
+        if verbose:
+            print("got version from file %s %s" % (versionfile, ver))
         return ver
 
     ver = versions_from_vcs(tag_prefix, versionfile_source, verbose)
     if ver:
-        if verbose: print("got version from git %s" % ver)
+        if verbose:
+            print("got version from git %s" % ver)
         return ver
 
     ver = versions_from_parentdir(parentdir_prefix, versionfile_source, verbose)
     if ver:
-        if verbose: print("got version from parentdir %s" % ver)
+        if verbose:
+            print("got version from parentdir %s" % ver)
         return ver
 
-    if verbose: print("got version from default %s" % ver)
+    if verbose:
+        print("got version from default %s" % ver)
     return default
+
 
 def get_versions(default=DEFAULT, verbose=False):
     assert versionfile_source is not None, "please set versioneer.versionfile_source"
     assert tag_prefix is not None, "please set versioneer.tag_prefix"
     assert parentdir_prefix is not None, "please set versioneer.parentdir_prefix"
-    return get_best_versions(versionfile_source, tag_prefix, parentdir_prefix,
-                             default=default, verbose=verbose)
+    return get_best_versions(
+        versionfile_source,
+        tag_prefix,
+        parentdir_prefix,
+        default=default,
+        verbose=verbose,
+    )
+
+
 def get_version(verbose=False):
     return get_versions(verbose=verbose)["version"]
+
 
 class cmd_version(Command):
     description = "report generated version string"
     user_options = []
     boolean_options = []
+
     def initialize_options(self):
         pass
+
     def finalize_options(self):
         pass
+
     def run(self):
         ver = get_version(verbose=True)
         print("Version is currently: %s" % ver)
@@ -591,6 +619,7 @@ class cmd_build(_build):
         f = open(target_versionfile, "w")
         f.write(SHORT_VERSION_PY % versions)
         f.close()
+
 
 class cmd_sdist(_sdist):
     def run(self):
@@ -611,29 +640,38 @@ class cmd_sdist(_sdist):
         f.write(SHORT_VERSION_PY % self._versioneer_generated_versions)
         f.close()
 
+
 INIT_PY_SNIPPET = """
 from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions
 """
 
+
 class cmd_update_files(Command):
     description = "modify __init__.py and create _version.py"
     user_options = []
     boolean_options = []
+
     def initialize_options(self):
         pass
+
     def finalize_options(self):
         pass
+
     def run(self):
         ipy = os.path.join(os.path.dirname(versionfile_source), "__init__.py")
         print(" creating %s" % versionfile_source)
         f = open(versionfile_source, "w")
-        f.write(LONG_VERSION_PY % {"DOLLAR": "$",
-                                   "TAG_PREFIX": tag_prefix,
-                                   "PARENTDIR_PREFIX": parentdir_prefix,
-                                   "VERSIONFILE_SOURCE": versionfile_source,
-                                   })
+        f.write(
+            LONG_VERSION_PY
+            % {
+                "DOLLAR": "$",
+                "TAG_PREFIX": tag_prefix,
+                "PARENTDIR_PREFIX": parentdir_prefix,
+                "VERSIONFILE_SOURCE": versionfile_source,
+            }
+        )
         f.close()
         try:
             old = open(ipy, "r").read()
@@ -648,9 +686,11 @@ class cmd_update_files(Command):
             print(" %s unmodified" % ipy)
         do_vcs_install(versionfile_source, ipy)
 
+
 def get_cmdclass():
-    return {'version': cmd_version,
-            'update_files': cmd_update_files,
-            'build': cmd_build,
-            'sdist': cmd_sdist,
-            }
+    return {
+        "version": cmd_version,
+        "update_files": cmd_update_files,
+        "build": cmd_build,
+        "sdist": cmd_sdist,
+    }
