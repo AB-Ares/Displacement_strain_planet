@@ -7,7 +7,7 @@ from Displacement_strain_planet import (
     Thin_shell_matrix_nmax,
     SH_deriv_store,
     Displacement_strains,
-    Principal_strain_angle,
+    Principal_strainstress_angle,
     Plt_tecto_Mars,
 )
 
@@ -194,7 +194,7 @@ kwargs_param_s = dict(
     sum_strain,
     principal_angle1,
     principal_angle2,
-) = Principal_strain_angle(eps_theta, eps_phi, omega, kappa_theta, kappa_phi, tau)
+) = Principal_strainstress_angle(eps_theta, eps_phi, omega, kappa_theta, kappa_phi, tau)
 
 args_plot = dict(tick_interval=[45, 30], colorbar="bottom", cmap=cm.vik)
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, **args_fig)
