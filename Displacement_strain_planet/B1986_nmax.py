@@ -22,22 +22,21 @@ def corr_nmax_drho(
 ):
 
     #############################################################
-    
+
     # This routine estimates the delta between the
     # finite-amplitude correction with and without density
     # variations and the mass-sheet case computed in the
     # thin-shell code.
     # The difference will be iteratively added to the thin-shell
     # code.
-    
+
     #############################################################
 
     # Finite-amplitude correction.
     MS_lm_nmax = pysh.SHCoeffs.from_zeros(lmax_calc).coeffs
     # This is the computation in Thin_shell_matrix.
     for l in range(1, lmax_calc + 1):
-        MS_lm_nmax[:, l, : l + 1] = drho * dr_lm[:, l, : l + 1] / \
-         (2 * l + 1)
+        MS_lm_nmax[:, l, : l + 1] = drho * dr_lm[:, l, : l + 1] / (2 * l + 1)
     MS_lm_nmax *= 4.0 * np.pi / mass
 
     if nmax != 1:
@@ -70,8 +69,7 @@ def corr_nmax_drho(
         # density contrast, to correct for finite-amplitude.
         # Here we also correct for density variations, so the
         # correction is already scaled by the density contrast.
-        return R * (FA_lm_drho - MS_lm_drho + FA_lm_nmax - MS_lm_nmax) \
-         / drho
+        return R * (FA_lm_drho - MS_lm_drho + FA_lm_nmax - MS_lm_nmax) / drho
     else:
 
         return R * (FA_lm_nmax - MS_lm_nmax)
@@ -114,7 +112,7 @@ def Thin_shell_matrix(
 ):
 
     #############################################################
-    
+
     # This file contains several functions that solve the Banerdt
     # (1986) thin shell model under different assumptions.
 
@@ -144,17 +142,15 @@ def Thin_shell_matrix(
     # a given thickness value (H_lm - w_lm - Thick_lm) = 0.
     # add_equation = 'H_lm - w_lm - Thick_lm' and
     # add_array = 'Thick_lm'
-    
+
     #############################################################
 
     # Declare all possible input arrays.
     input_arrays = np.array(
-        [w_lm, Gc_lm, q_lm, omega_lm, dc_lm, drhom_lm, G_lm, H_lm],
-        dtype=object
+        [w_lm, Gc_lm, q_lm, omega_lm, dc_lm, drhom_lm, G_lm, H_lm], dtype=object
     )
     input_constraints = np.array(
-        ["w_lm", "Gc_lm", "q_lm", "omega_lm", "dc_lm", "drhom_lm", "G_lm",
-        "H_lm"]
+        ["w_lm", "Gc_lm", "q_lm", "omega_lm", "dc_lm", "drhom_lm", "G_lm", "H_lm"]
     )
 
     equation_order = np.array(["G_lm", "Gc_lm", "q_lm", "w_lm", "omega_lm"])
@@ -164,8 +160,9 @@ def Thin_shell_matrix(
     # has been input.
 
     # Number of input arrays
-    num_array_test = np.array([type(arr) for arr in input_arrays]) != \
-      type(None)
+    num_array_test = np.not_equal(
+        np.array([type(arr) for arr in input_arrays]), type(None)
+    )
     # Size of input arrays
     size_array_test = np.array([np.size(arr) for arr in input_arrays])
     # Input arrays
@@ -181,11 +178,9 @@ def Thin_shell_matrix(
 
     if lmax_calc > np.sqrt(np.max(size_array_test) / 2) - 1:
         raise ValueError(
-            "lmax_calc must be less or equal to {:s}. Input "
-            + "value was {:s}.".format(
-                repr(np.sqrt(np.max(size_array_test) / 2) - 1), \
-                  repr(lmax_calc + 1)
-            )
+            "lmax_calc must be less or equal to %s. Input "
+            % (np.sqrt(np.max(size_array_test) / 2) - 1)
+            + "value was %s." % (lmax_calc + 1)
         )
 
     # The system is a total of 5 equations relating 8 unknowns.
@@ -248,14 +243,13 @@ def Thin_shell_matrix(
         print("Solving for %s." % (not_constraint))
         if filter is not None:
             print(
-                "Minimum %s filter" % ("curvature" if filter == "Mc" else \
-                  "amplitude")
+                "Minimum %s filter" % ("curvature" if filter == "Mc" else "amplitude")
             )
         if first_inv is True:
             print("First inversion, storing lambdify results")
         else:
             print("Using stored solutions with new inputs")
-            
+
     # Allocate arrays to be used for outputs.
     shape = (2, lmax_calc + 1, lmax_calc + 1)
     if first_inv:
@@ -290,7 +284,6 @@ def Thin_shell_matrix(
     # Precompute some constants.
     M = base_drho - top_drho  # Thickness of the density anomaly
     Re = R - 0.5 * Te  # Midpoint of the elastic shell.
-    ETERE2 = E * Te * Re ** 2
     Re4 = Re ** 4
     drho = rhom - rhoc
     drhol = rhoc - rhol
@@ -299,12 +292,11 @@ def Thin_shell_matrix(
     else:
         psi = 12.0 * Re ** 2 / Te ** 2
     D = E * Te ** 3 / (12.0 * (1.0 - v ** 2))  # Shell's
-                                               # rigidity.
+    # rigidity.
     v1v = v / (1.0 - v)
     RCR = (R - c) / R
 
-    gmoho = g0 * (1.0 + (((R - c) / R) ** 3 - 1) * rhoc / rhobar) / \
-      ((R - c) / R) ** 2
+    gmoho = g0 * (1.0 + (((R - c) / R) ** 3 - 1) * rhoc / rhobar) / ((R - c) / R) ** 2
     if top_drho <= c:
         gdrho = (
             g0
@@ -337,12 +329,10 @@ def Thin_shell_matrix(
     if add_equation is not None:
         if quiet is False:
             if add_array is None:
-                print("Adding an additional equation where %s." % \
-                  (add_equation))
+                print("Adding an additional equation where %s." % (add_equation))
             else:
                 print(
-                    "Adding an additional equation and array where %s." % \
-                     (add_equation)
+                    "Adding an additional equation and array where %s." % (add_equation)
                 )
         # Reformat added equation for sympy
         for string in input_constraints:
@@ -359,7 +349,7 @@ def Thin_shell_matrix(
 
     # Solve matrix over all degrees.
     for l in range(1, lmax_calc + 1):  # Ignore degree 0 from
-                                       # calculations
+        # calculations
         Lapla = float(-l * (l + 1))  # Laplacian identity.
 
         # Degree-dependent from Banerdt correction after Beuthe
@@ -381,9 +371,9 @@ def Thin_shell_matrix(
                 )
             )
 
-            gamma = (Lapla * Re4 * ((1.0 / (1.0 + psi)) * (Lapla + 2.0) \
-               - 1 - v)) / ((D / (1.0 + 1.0 / psi)) * (Lapla ** 3 + 4.0 * \
-                  Lapla ** 2 + 4.0 * Lapla) + Re ** 2 * (E * Te) * (Lapla + 2.0)
+            gamma = (Lapla * Re4 * ((1.0 / (1.0 + psi)) * (Lapla + 2.0) - 1 - v)) / (
+                (D / (1.0 + 1.0 / psi)) * (Lapla ** 3 + 4.0 * Lapla ** 2 + 4.0 * Lapla)
+                + Re ** 2 * (E * Te) * (Lapla + 2.0)
             )
 
             zeta = (
@@ -396,8 +386,7 @@ def Thin_shell_matrix(
             eta = (
                 zeta * gamma
                 + gamma
-                - Re ** 2 / (E * Te * (1.0 + psi)) * (Lapla - psi * \
-                (1.0 + v))
+                - Re ** 2 / (E * Te * (1.0 + psi)) * (Lapla - psi * (1.0 + v))
             )
 
         if first_inv is True:
@@ -411,12 +400,10 @@ def Thin_shell_matrix(
 
             if filter is None:
                 DCfilter_mohoD = 1.0
-                DCfilter_mohoU = 1.0
+                # DCfilter_mohoU = 1.0
             else:
-                DCfilter_mohoD = DownContFilter(l, filter_half, R, R - c, \
-                  type=filter)
-                DCfilter_mohoU = DownContFilter(l, filter_half, R - c, R, \
-                  type=filter)
+                DCfilter_mohoD = DownContFilter(l, filter_half, R, R - c, type=filter)
+                # DCfilter_mohoU = DownContFilter(l, filter_half, R - c, R, type=filter)
 
             if (R - top_drho) <= (R - c):
                 RtRCl = ((R - top_drho) / (R - c)) ** l
@@ -434,8 +421,7 @@ def Thin_shell_matrix(
             RbRl3 = ((R - base_drho) / R) ** (l + 3)
 
             # Symbolic definition.
-            w_lm1, Gc_lm1, q_lm1, omega_lm1, dc_lm1, drhom_lm1, G_lm1, \
-               H_lm1 = symbols(
+            w_lm1, Gc_lm1, q_lm1, omega_lm1, dc_lm1, drhom_lm1, G_lm1, H_lm1 = symbols(
                 " w_lm1 Gc_lm1 q_lm1" + " omega_lm1 dc_lm1 drhom_lm1 G_lm1 H_lm1 "
             )
 
@@ -593,8 +579,7 @@ def Thin_shell_matrix(
         H_lm[:, l, : l + 1] = outs[idx_H_lm]
 
         # Tangential displacement
-        A_lm[:, l, : l + 1] = beta * q_lm[:, l, : l + 1] + eta * \
-         omega_lm[:, l, : l + 1]
+        A_lm[:, l, : l + 1] = beta * q_lm[:, l, : l + 1] + eta * omega_lm[:, l, : l + 1]
 
     return (
         w_lm,
@@ -611,14 +596,13 @@ def Thin_shell_matrix(
     )
 
 
-def constraint_test_symb(str_symb, arr, constraint_test, not_constraint,
-   arr_symb):
+def constraint_test_symb(str_symb, arr, constraint_test, not_constraint, arr_symb):
 
     #############################################################
-    
+
     # This function finds the indice of the input symbol in the
     # solution arrays.
-    
+
     #############################################################
 
     if str_symb in constraint_test:
@@ -632,12 +616,12 @@ def constraint_test_symb(str_symb, arr, constraint_test, not_constraint,
 def DownContFilter(l, half, R_ref, D_relief, type="Mc"):
 
     #############################################################
-    
+
     # This function will compute the minimum amplitude ('Ma') or
     # curvature ('Mc') downward continuation filter of Wieczorek
     # and Phillips (1998) for degree l, where the filter is
     # assumed to be equal to 0.5 at degree half.
-    
+
     #############################################################
 
     if half == 0:
@@ -655,11 +639,9 @@ def DownContFilter(l, half, R_ref, D_relief, type="Mc"):
                 * (float(2 * l + 1) * (R_ref / D_relief) ** l) ** 2
             )
         elif type == "Ma":
-            tmp = 1.0 / (float(2.0 * half + 1.0) * (R_ref / \
-               D_relief) ** half) ** 2
+            tmp = 1.0 / (float(2.0 * half + 1.0) * (R_ref / D_relief) ** half) ** 2
             DownContFilter = (
-                1.0 + tmp * (float(2 * l + 1) * (R_ref / \
-                  D_relief) ** l) ** 2
+                1.0 + tmp * (float(2 * l + 1) * (R_ref / D_relief) ** l) ** 2
             )
         else:
             raise ValueError(
@@ -704,11 +686,11 @@ def Thin_shell_matrix_nmax(
     top_drho=50e3,
     delta_max=5,
     iter_max=250,
-    delta_out = 500e3,
+    delta_out=500e3,
 ):
 
     #############################################################
-    
+
     # This function will solve the Banerdt system of equations
     # as a function of the given inputs and using the
     # finite-amplitude correction of Wieczorek & Phillips (1998)
@@ -717,7 +699,7 @@ def Thin_shell_matrix_nmax(
     # Density variations in the surface or moho reliefs are also
     # accounted for for any nmax, and when top_drho == 0 or
     # base_drho == c.
-    
+
     #############################################################
 
     args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax_calc, E, v)
@@ -1033,10 +1015,7 @@ def Thin_shell_matrix_nmax(
                     else:
                         delta = abs(grid_prev - rho_grid).max()
                         if quiet is False:
-                            print(
-                                "Iteration %i, Delta (kg m-3) = %.3f"
-                                % (iter, delta)
-                            )
+                            print("Iteration %i, Delta (kg m-3) = %.3f" % (iter, delta))
                             print("Maximum density (kg m-3) = %.2f" % (rho_grid.max()))
                             print("Minimum density (kg m-3) = %.2f" % (rho_grid.min()))
                 else:
@@ -1073,7 +1052,8 @@ def Thin_shell_matrix_nmax(
 
             if iter > iter_max:
                 raise ValueError(
-                    "%s not converging, maximum iteration reached at %i, " % (var_relief, iter)
+                    "%s not converging, maximum iteration reached at %i, "
+                    % (var_relief, iter)
                     + "delta was %s (%s) and delta_max is %s (%s)."
                     % (
                         "%.4f" % (delta / 1e3 if var_unit == "km" else delta),

@@ -4,12 +4,13 @@ from pathlib import Path
 
 pi = np.pi
 
+
 def SH_deriv(theta, phi, lmax):
 
     #############################################################
-    
+
     # Compute spherical harmonic derivatives on the fly.
-    
+
     #############################################################
 
     Y_lm_d1_theta_a = np.zeros((2, lmax + 1, lmax + 1))
@@ -79,9 +80,9 @@ def SH_deriv(theta, phi, lmax):
 def SH_deriv_store(lmax, path):
 
     #############################################################
-    
+
     # Compute spherical harmonic derivatives and store them.
-    
+
     #############################################################
 
     n = 2 * lmax + 2
@@ -206,16 +207,16 @@ def Displacement_strains(
     Y_lm_d2_p=None,
     Y_lm_d2_tp=None,
     path=None,
-    quiet=True
+    quiet=True,
 ):
 
     #############################################################
-    
+
     # Computes the Banerdt (1986) equations to determine strains
     # from displacements with a correction to the theta_phi term.
-    
+
     #############################################################
-    
+
     if lmax_calc != np.shape(A_lm)[2] - 1:
         if quiet is False:
             print(
@@ -224,7 +225,7 @@ def Displacement_strains(
             )
         A_lm = pysh.SHCoeffs.from_array(A_lm).pad(lmax=lmax_calc).coeffs
         w_lm = pysh.SHCoeffs.from_array(w_lm).pad(lmax=lmax_calc).coeffs
-    
+
     n = 2 * lmax_calc + 2
 
     if precomp:
@@ -251,7 +252,6 @@ def Displacement_strains(
     Re = R - float(0.5 * Te)
     psi = 12.0 * Re ** 2 / Te ** 2
     D = (E * (Te * Te * Te)) / (float(float(12) * (float(1) - v ** 2)))
-    v1v = v / (1.0 - v)
     DpsiTeR = (D * psi) / (Te * R ** 2)
     R_m1 = 1.0 / R
 
@@ -382,9 +382,9 @@ def Principal_strain_angle(
 ):
 
     #############################################################
-    
+
     # A function that computes principal strains and angles
-    
+
     #############################################################
 
     strain_theta = -eps_theta - k_theta
