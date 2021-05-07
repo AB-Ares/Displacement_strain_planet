@@ -42,7 +42,7 @@ Strain calculations reproduce results published in the literature (e.g., [Banerd
 
 `Mars_crust_displacement` A script that demonstrates how to calculate the moho-relief and strains on Mars, as a function of the mean planetary crustal thickness and elastic thickness. The contributions from crustal thickness variations and displacement are shown assuming an elastic thickness of the lithosphere. We make use of the inferred displacement to predict the principal horizontal strains and principal angle, which are compared to extensional tectonic features mapped by [Knampeyer et al. (2006)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2006JE002708). 
 
-## How to install and run ctplanet
+## How to install and run Displacement_strain_planet
 If you would like to modify the source code, download the Displacement_strain_planet repository and install using pip (or pip3 depending on your installation).
 ```bash
     git clone https://github.com/AB-Ares/Displacement_strain_planet.git
