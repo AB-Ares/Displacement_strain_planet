@@ -4,11 +4,6 @@
 from setuptools import setup, find_packages
 import versioneer
 
-versioneer.versionfile_source = "Displacement_strain_planet/_version.py"
-versioneer.versionfile_build = "Displacement_strain_planet/_version.py"
-versioneer.tag_prefix = ""
-versioneer.parentdir_prefix = "Displacement_strain_planet-"
-
 # Convert markdown README.md to restructured text (.rst) for PyPi
 try:
     import pypandoc
@@ -37,6 +32,7 @@ setup(
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Console",
+        "License :: OSI Approved :: GNU GPLv3",
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
         "Natural Language :: English",
