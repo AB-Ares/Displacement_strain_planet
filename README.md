@@ -49,10 +49,10 @@ If you would like to modify the source code, download the Displacement_strain_pl
     cd Displacement_strain_planet/
     pip install .
 ```
-[comment]: <> (Alternatively, you can install Displacement-strain-planet via pip)
-[comment]: <> (```bash)
-[comment]: <> (   pip install Displacement-strain-planet)
-[comment]: <> (```)
+Alternatively, you can install Displacement-strain-planet via pip
+```bash
+   pip install Displacement-strain-planet
+```
 
 ## To run the example scripts
 ```bash
