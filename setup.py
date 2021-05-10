@@ -2,37 +2,30 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
-import versioneer
 
-# Convert markdown README.md to restructured text (.rst) for PyPi
-try:
-    import pypandoc
+# read the contents of your README file
+from os import path
 
-    rst = pypandoc.convert_file("README.md", "rst")
-    long_description = rst.split("\n", 5)[5]
-except (IOError, ImportError):
-    print(
-        "*** pypandoc is not installed. PYPI description will not be "
-        "formatted correctly. ***"
-    )
-    long_description = open("README.md").read()
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
+    long_description = f.read()
 
 install_requires = ["pyshtools>=4.7.1", "sympy<=1.7"]
 
 setup(
     name="Displacement_strain_planet",
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
+    version="0.1",
     description="Planetary crustal thickness, displacement, "
     + "stress and strain calculations in spherical harmonics.",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     url="https://github.com/AB-Ares/Displacement_strain_planet",
     author="Adrien Broquet",
     author_email="adrien.broquet@oca.eu",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Console",
-        "License :: OSI Approved :: GNU GPLv3",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
         "Natural Language :: English",
