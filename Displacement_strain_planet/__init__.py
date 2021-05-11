@@ -14,7 +14,6 @@ arbitrary depth and within the surface or moho relief (Wieczorek et al.,
 2013), and density difference between the surface topography and crust
 (Broquet & Wieczorek, 2019).
 
-
 We note that some of these functions relies heavily on the pyshtools package.
 
    Thin_shell_matrix
