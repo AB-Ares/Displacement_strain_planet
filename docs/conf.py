@@ -6,7 +6,6 @@ year = datetime.date.today().year
 project = "Displacement-strain-planet"
 author = "Adrien Broquet"
 version = 0.1b
-]  # use version of last tag
 
 
 # General configuration
