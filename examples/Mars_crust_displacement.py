@@ -11,7 +11,6 @@ from Displacement_strain_planet import (
     Plt_tecto_Mars,
 )
 
-
 #################################################################
 # In this example, we solve for the displacement of the surface of
 # Mars by calling the function `Thin_shell_matrix_nmax`, assuming
