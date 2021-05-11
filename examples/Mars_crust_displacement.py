@@ -157,10 +157,10 @@ print("Computing strains")  # This may take some time if it is the first time
 lmax_calc = 30  # Lower lmax_calc for faster computations
 Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp = SH_deriv_store(lmax_calc, path)
 
-colat_min = 0  # Minimum colatitude at which strain calculations are performed
-colat_max = 190  # Maximum colatitude
-lon_min = 0  # Minimum longitude
-lon_max = 360  # Maximum longitude
+colat_min = 0    # Minimum colatitude at which strain calculations are performed
+colat_max = 180  # Maximum colatitude
+lon_min = 0      # Minimum longitude
+lon_max = 360    # Maximum longitude
 
 args_param_s = (E, v, R, Te, lmax_calc)
 kwargs_param_s = dict(
