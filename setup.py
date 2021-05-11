@@ -14,7 +14,7 @@ install_requires = ["pyshtools>=4.7.1", "sympy<=1.7"]
 
 setup(
     name="Displacement_strain_planet",
-    version="0.1",
+    version="0.1b",
     description="Planetary crustal thickness, displacement, "
     + "stress and strain calculations in spherical harmonics.",
     long_description=long_description,

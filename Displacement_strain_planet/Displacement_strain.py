@@ -1,3 +1,8 @@
+"""
+Functions for calculating Legendre polynomial derivatives, stresses
+and strains.
+"""
+
 import numpy as np
 import pyshtools as pysh
 import matplotlib.pyplot as plt
@@ -5,15 +10,41 @@ from pathlib import Path
 
 pi = np.pi
 
+# ==== SH_deriv ====
+
 
 def SH_deriv(theta, phi, lmax):
-
-    #############################################################
-
-    # Compute spherical harmonic derivatives on the fly.
-
-    #############################################################
-
+    """
+    Compute on the fly spherical harmonic derivatives
+    (first and second order)
+    Returns
+    -------
+    Y_lm_d1_theta_a : array, size(2,lmax+1,lmax+1)
+        Array with the first derivative
+        of Legendre polynomials with respect to colatitude.
+    Y_lm_d1_phi_a : array, size(2,lmax+1,lmax+1)
+        Array with the first derivative
+        of Legendre polynomials with respect to longitude.
+    Y_lm_d2_theta_a : array, size(2,lmax+1,lmax+1)
+        Array with the second derivative
+        of Legendre polynomials with respect to colatitude.
+    Y_lm_d2_phi_a : array, size(2,lmax+1,lmax+1)
+        Array with the second derivative
+        of Legendre polynomials with respect to longitude.
+    Y_lm_d2_thetaphi_a : array, size(2,lmax+1,lmax+1)
+        Array with the first derivative
+        of Legendre polynomials with respect to colatitude and longitude.
+    y_lm : array, size(2,lmax+1,lmax+1)
+        Array of spherical harmonic functions
+    Parameters
+    ----------
+    theta : float
+        Colatitude in radian.
+    phi : float
+        Longitude in radian.
+    lmax : int
+        Maximum spherical harmonic degree to compute for the derivatives.
+    """
     Y_lm_d1_theta_a = np.zeros((2, lmax + 1, lmax + 1))
     Y_lm_d1_phi_a = np.zeros((2, lmax + 1, lmax + 1))
     Y_lm_d2_phi_a = np.zeros((2, lmax + 1, lmax + 1))
@@ -78,14 +109,39 @@ def SH_deriv(theta, phi, lmax):
     )
 
 
+# ==== SH_deriv_store ====
+
+
 def SH_deriv_store(lmax, path):
+    """
+    Compute and store or load spherical harmonic derivatives
+    (first and second order).
 
-    #############################################################
+    Returns
+    -------
+    Y_lm_d1_theta_a : array, size(2,lmax+1,lmax+1)
+        Array with the first derivative
+        of Legendre polynomials with respect to colatitude.
+    Y_lm_d1_phi_a : array, size(2,lmax+1,lmax+1)
+        Array with the first derivative
+        of Legendre polynomials with respect to longitude.
+    Y_lm_d2_theta_a : array, size(2,lmax+1,lmax+1)
+        Array with the second derivative
+        of Legendre polynomials with respect to colatitude.
+    Y_lm_d2_phi_a : array, size(2,lmax+1,lmax+1)
+        Array with the second derivative
+        of Legendre polynomials with respect to longitude.
+    Y_lm_d2_thetaphi_a : array, size(2,lmax+1,lmax+1)
+        Array with the first derivative
+        of Legendre polynomials with respect to colatitude and longitude.
 
-    # Compute spherical harmonic derivatives and store them.
-
-    #############################################################
-
+    Parameters
+    ----------
+    path : string
+        Path to store or load spherical harmonic derivatives.
+    lmax : int
+        Maximum spherical harmonic degree to compute for the derivatives.
+    """
     n = 2 * lmax + 2
     poly_file = "%s/Y_lmsd1d2_lmax%s.npy" % (path, lmax)
 
@@ -191,6 +247,9 @@ def SH_deriv_store(lmax, path):
     )
 
 
+# ==== Displacement_strains ====
+
+
 def Displacement_strains(
     A_lm,
     w_lm,
@@ -213,14 +272,90 @@ def Displacement_strains(
     path=None,
     quiet=True,
 ):
+    """
+    Computes the Banerdt (1986) equations to determine strains
+    from displacements with a correction to the theta_phi term.
 
-    #############################################################
+    Returns
+    -------
+    stress_theta : array, size(2*lmax_calc+2,2*(2*lmax_calc+2))
+        Array with the stress field with respect to colatitude.
+        This is equation A12 from Banerdt (1986)
+    stress_phi : array, size(2,lmax+1,lmax+1)
+        Array with the stress field with respect to longitude.
+        This is equation A13 from Banerdt (1986)
+    stress_theta_phi : array, size(2,lmax+1,lmax+1)
+        Array with the stress field with respect to colatitude and longitude.
+        This is equation A14 from Banerdt (1986)
+    eps_theta : array, size(2,lmax+1,lmax+1)
+        Array with the elongation with respect to colatitude.
+        This is equation A16 from Banerdt (1986)
+    eps_phi : array, size(2,lmax+1,lmax+1)
+        Array with the elongation with respect to longitude.
+        This is equation A17 from Banerdt (1986).
+    omega : array, size(2,lmax+1,lmax+1)
+        Array with the shearing deformation.
+        This is equation A18 from Banerdt (1986). Corrected for the prefactor 2
+    kappa_theta : array, size(2,lmax+1,lmax+1)
+        Array with the bending deformation with respect to colatitude.
+        This is equation A19 from Banerdt (1986).
+    kappa_phi : array, size(2,lmax+1,lmax+1)
+        Array with the bending deformation with respect to longitude.
+        This is equation A20 from Banerdt (1986).
+    tau : array, size(2,lmax+1,lmax+1)
+        Array with the twisting deformation.
+        This is equation A21 from Banerdt (1986). Corrected for the prefactor 2
 
-    # Computes the Banerdt (1986) equations to determine strains
-    # from displacements with a correction to the theta_phi term.
-
-    #############################################################
-
+    Parameters
+    ----------
+    A_lm : array, float, size(2,lmax_calc+1,lmax_calc+1)
+        Array with the spherical harmonic coefficients of the
+        poloidal term of the tangential displacement.
+    w_lm : array, float, size(2,lmax_calc+1,lmax_calc+1)
+        Array with the spherical harmonic coefficients of the
+        upward displacement.
+    E : float
+        Young's modulus.
+    v : float
+        Poisson's ratio.
+    R : float
+        Mean radius of the planet.
+    Te : float
+        Elastic thickness of the lithosphere.
+    lmax_calc : int
+        Maximum spherical harmonic degree for computations.
+    colat_min : float, optional, default = -1e20
+        Minimum colatitude for grid computation of strains and stresses.
+    colat_max : float, optional, default = 1e20
+        Maximum colatitude for grid computation of strains and stresses.
+    lon_min : float, optional, default = -1e20
+        Minimum longitude for grid computation of strains and stresses.
+    lon_max : float, optional, default = 1e20
+        Maximum longitude for grid computation of strains and stresses.
+    only_deflec : int, optional, default = False
+        Output only the displacement grid for all latitude and longitudes.
+    precomp : int, optional, default = True
+        Use precomputed the Legendre polynomials found at the 'path'.
+    Y_lm_d1_t : array, float, size(2,lmax_calc+1,lmax_calc+1), optional, default = None
+        Array with the first derivative
+        of Legendre polynomials with respect to colatitude.
+    Y_lm_d1_p : array, float, size(2,lmax_calc+1,lmax_calc+1), optional, default = None
+        Array with the first derivative
+        of Legendre polynomials with respect to longitude.
+    Y_lm_d2_t : array, float, size(2,lmax_calc+1,lmax_calc+1), optional, default = None
+        Array with the second derivative
+        of Legendre polynomials with respect to colatitude.
+    Y_lm_d2_p : array, float, size(2,lmax_calc+1,lmax_calc+1), optional, default = None
+        Array with the second derivative
+        of Legendre polynomials with respect to longitude.
+    Y_lm_d2_tp : array, float, size(2,lmax_calc+1,lmax_calc+1), optional, default = None
+        Array with the first derivative
+        of Legendre polynomials with respect to colatitude and longitude.
+    path : string, optional, default = None
+        path where to find the store Legendre polynomials.
+    quiet : int, optional, default = True
+        If True, suppress printing output.
+    """
     if lmax_calc != np.shape(A_lm)[2] - 1:
         if quiet is False:
             print(
@@ -381,20 +516,36 @@ def Displacement_strains(
     )
 
 
-def Principal_strainstress_angle(
-    s_theta1, s_phi1, s_theta_phi1, s_theta2, s_phi2, s_theta_phi2
-):
+# ==== Principal_strainstress_angle ====
 
-    #############################################################
 
-    # A function that computes principal strains, stress and their
-    # principal angles.
+def Principal_strainstress_angle(s_theta, s_phi, s_theta_phi):
+    """
+    Calculate principal strains, stresses, and
+    their principal angles.
 
-    #############################################################
+    Returns
+    -------
+    min_strain : array, size same as input arrays
+        Array with the minimum principal horizontal strain or stress.
+    max_strain : array, size same as input arrays
+        Array with the maximum principal horizontal strain or stress.
+    sum_strain : array, size same as input arrays
+        Array with the sum of the principal horizontal strain or stress.
+    principal_angle : array, size same as input arrays
+        Array with the principal strain or stress direction.
+    principal_angle2 : array, size same as input arrays
+        Array with the principal strain or stress direction from the other quadrant.
 
-    s_theta = -s_theta1 - s_theta2
-    s_phi = -s_phi1 - s_phi2
-    s_theta_phi = -s_theta_phi1 - s_theta_phi2
+    Parameters
+    ----------
+    s_theta : array, float, size(n, 2 * n)
+        Array of the colatitude component of the stress or strain field.
+    s_phi : array, float, size(n, 2 * n)
+        Array of the longitude component of the stress or strain field.
+    s_theta_phi : array, float, size(n, 2 * n)
+        Array of the colatitude and longitude component of the stress or strain field.
+    """
     min_strain = 0.5 * (
         s_theta + s_phi - np.sqrt((s_theta - s_phi) ** 2 + 4 * s_theta_phi ** 2)
     )
@@ -411,6 +562,9 @@ def Principal_strainstress_angle(
     return min_strain, max_strain, sum_strain, principal_angle, principal_angle2
 
 
+# ==== Plt_tecto_Mars ====
+
+
 def Plt_tecto_Mars(
     path,
     compression=False,
@@ -422,13 +576,32 @@ def Plt_tecto_Mars(
     legend_show=True,
     legend_loc="upper left",
 ):
+    """
+    Plot the Knampeyer et al. (2006) dataset of
+    extensional and compressional tectonic features
+    on Mars.
 
-    #############################################################
-
-    # Plot the Knapmeyer et al. (2006) tectonic dataset.
-
-    #############################################################
-
+    Parameters
+    ----------
+    path : string
+        path for the location of the Knameyer et al (2006) dataset.
+    compression : boolean, optional, default = False
+        If True, plot compressive tectonic features.
+    extension : boolean, optional, default = True
+        If True, plot extensive tectonic features.
+    ax : object
+        Matplotlib axis.
+    compression_col : string, default = "k"
+        Color of compressive tectonic features.
+    extension_col : string, default = "purple"
+        Color of extensive tectonic features.
+    lw : int, default = 1
+        Linewidth for the tectonic features
+    legend_show : boolean, default = True
+        If True, add a legend to the plot.
+    legend_loc : string, default = "upper left"
+        Determine the legend position.
+    """
     comp_fault_dat = np.loadtxt("%s/Knapmeyer_2006_compdata.txt" % (path))
     ext_fault_dat = np.loadtxt("%s/Knapmeyer_2006_extedata.txt" % (path))
     ind_comp_fault = np.isin(comp_fault_dat, np.arange(1, 5143, dtype=float))

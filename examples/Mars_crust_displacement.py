@@ -194,7 +194,7 @@ kwargs_param_s = dict(
     sum_strain,
     principal_angle1,
     principal_angle2,
-) = Principal_strainstress_angle(eps_theta, eps_phi, omega, kappa_theta, kappa_phi, tau)
+) = Principal_strainstress_angle(-eps_theta-kappa_theta, -eps_phi-kappa_phi, -omega-tau)
 
 args_plot = dict(tick_interval=[45, 30], colorbar="bottom", cmap=cm.vik)
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, **args_fig)
