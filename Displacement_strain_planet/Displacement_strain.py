@@ -12,7 +12,6 @@ pi = np.pi
 
 # ==== SH_deriv ====
 
-
 def SH_deriv(theta, phi, lmax):
     """
     Compute on the fly spherical harmonic derivatives
