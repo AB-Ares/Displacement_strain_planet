@@ -228,7 +228,7 @@ pysh.SHGrid.from_array(principal_angle1).plot(
     ticks="wSnE",
     ylabel=None,
     cmap_limits=[-90, 90],
-    **args_plot
+    tick_interval=[45, 30], colorbar="bottom", cmap=cm.vikO,
 )
 
 # Plot strain direction
