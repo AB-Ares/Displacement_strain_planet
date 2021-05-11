@@ -2,3 +2,4 @@ Displacement_strain_planet.egg-info/
 Displacement_strain_planet/__pycache__/
 dist/
 build/
+.DS_Store
