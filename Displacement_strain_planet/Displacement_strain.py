@@ -17,7 +17,7 @@ def SH_deriv(theta, phi, lmax):
     """
     Compute on the fly spherical harmonic derivatives
     (first and second order)
-    
+
     Returns
     -------
     Y_lm_d1_theta_a : array, size(2,lmax+1,lmax+1)

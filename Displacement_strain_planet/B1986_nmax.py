@@ -536,13 +536,17 @@ def Thin_shell_matrix(
             RCRl1 = RCR ** (l + 1)
             RCRl2 = RCR ** (l + 2)
 
-            DCfilter_drhomD = 1.0
             DCfilter_mohoD = 1.0
+            DCfilter_drhomt = 1.0
+            DCfilter_drhomb = 1.0
             if filter is not None:
                 DCfilter_mohoD = DownContFilter(l, filter_half, R, R - c, type=filter)
                 if sum_dc == 0:
-                    DCfilter_drhomD = DownContFilter(
-                        l, filter_half, R - top_drho, R - base_drho, type=filter
+                    DCfilter_drhomt = DownContFilter(
+                        l, filter_half, R, R - top_drho, type=filter
+                    )
+                    DCfilter_drhomb = DownContFilter(
+                        l, filter_half, R, R - base_drho, type=filter
                     )
 
             if (R - top_drho) <= (R - c):
@@ -580,7 +584,9 @@ def Thin_shell_matrix(
                     rhol * H_lm1
                     + drhol * w_lm1
                     + drho * (w_lm1 - dc_lm1) * RCRl2 / DCfilter_mohoD
-                    + drhom_lm1 * Rl3 * (RtRl3 - RbRl3) / DCfilter_drhomD
+                    + drhom_lm1
+                    * Rl3
+                    * (RtRl3 / DCfilter_drhomt - RbRl3 / DCfilter_drhomb)
                 )
                 + rhol * H_corr1
                 + drhol * w_corr1
