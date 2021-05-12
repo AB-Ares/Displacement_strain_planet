@@ -61,8 +61,6 @@ jobs:
       shell: bash -l {0}
       run: |
         git add .
-        > .nojekyll
-        git add .nojekyll
         git commit -m "Update gh-pages documentation" -a
 
     - name: Push changes
