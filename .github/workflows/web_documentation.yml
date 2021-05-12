@@ -44,7 +44,7 @@ jobs:
       shell: bash -l {0}
       run: |
         git switch gh-pages
-        git clean -fd
+        git clean -fx
 
     - name: Download artifact
       uses: actions/download-artifact@v2
