@@ -43,6 +43,8 @@ jobs:
     - name: Clean gh-pages branch
       shell: bash -l {0}
       run: |
+        git config --local user.email "adrien.broquet@oca.eu"
+        git config --local user.name "GitHub Action"
         git add .
         git commit -m "update webdoc"
         git push origin main
