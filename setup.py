@@ -46,7 +46,7 @@ setup(
         "planetary sciences",
     ],
     packages=find_packages(),
-    include_package_data=True,
+    include_package_data=False,
     install_requires=install_requires,
     python_requires=">=3.7",
 )
