@@ -15,5 +15,5 @@ Mars
 
 .. |ImageLink| image:: ../misc/link1.svg
                :width: 20
-.. _ImageLink: notebooks/Run_demo.html
+.. _ImageLink: _static/Run_demo.html
 

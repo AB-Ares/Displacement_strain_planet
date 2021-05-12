@@ -28,7 +28,7 @@ source_suffix = ".rst"
 # Options for HTML output
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {"display_version": True}
-# html_static_path = ["_static"]
+html_static_path = ["_static"]
 html_show_sourcelink = False
 html_show_sphinx = False
 html_show_copyright = True
