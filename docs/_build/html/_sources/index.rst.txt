@@ -25,7 +25,7 @@ Various improvements have been made to the model including the possibility to ac
 
 This routine has many applications and is highly versatile, and you can for example:
 
-* Compute the relief along the crust-mantle interface based on the input constraints (3 constraints are required, e.g., 1. and 2. the model should match the observed gravity and topography of the planet 3. there are no latteral variation in density).
+* Compute the relief along the crust-mantle interface based on the input constraints (3 constraints are required, e.g., 1. and 2. the model should match the observed gravity and topography of the planet 3. there are no latteral variations in density).
 
 * Compute the geoid or displacement associated with a load and for a given elastic thickness.
 
@@ -35,4 +35,4 @@ This routine has many applications and is highly versatile, and you can for exam
 
 * Compute Legendre polynomial first and second order derivatives.
 
-In addition to these functions, an example script is provided that will solve for the moho-relief on Mars and estimate the principal strains on the planet as a function of the input elastic thickness. A jupyter notebook is also added with more information on estimating the crustal thickness of Mars, assuming Airy or Pratt isostasy, the displacement due to a mantle plume underneath Tharsis or due to internal loading in phase with the surface topography. 
+In addition to these functions, an example script is provided that will solve for the moho-relief on Mars and estimate the principal strains on the planet as a function of the input elastic thickness. A jupyter notebook is also added with more information on estimating the moho relief on Mars, assuming Airy or Pratt isostasy, the displacement due to a mantle plume underneath Tharsis or due to internal loading in phase with the surface topography. 

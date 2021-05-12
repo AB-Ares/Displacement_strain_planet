@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                unknown
+                0.1c
               </div>
             
           
@@ -196,7 +196,7 @@
 <h3>Displacement_strain_planet<a class="headerlink" href="#displacement-strain-planet" title="Permalink to this headline">¶</a></h3>
 <p>Displacement_strain_planet provides several functions and example scripts
 for generating crustal thickness, displacement, gravity, lateral density
-variation, stress, and strain maps on a planet given a set of input
+variations, stress, and strain maps on a planet given a set of input
 constraints such as from observed gravity and topography data.</p>
 <p>These functions solve the Banerdt (1986) thin shell model under
 different assumptions. Various improvements have been made to the model
@@ -392,12 +392,13 @@ their principal angles.</p>
 <dt class="sig sig-object py" id="Displacement_strain_planet.SH_deriv">
 <span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.</span></span><span class="sig-name descname"><span class="pre">SH_deriv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.SH_deriv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute on the fly spherical harmonic derivatives
-(first and second order).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><ul class="simple">
-<li><p><strong>Y_lm_d1_theta_a</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the first derivative
-of Legendre polynomials with respect to colatitude.</p></li>
+(first and second order)
+:returns: * <strong>Y_lm_d1_theta_a</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the first derivative</p>
+<blockquote>
+<div><blockquote>
+<div><p>of Legendre polynomials with respect to colatitude.</p>
+</div></blockquote>
+<ul class="simple">
 <li><p><strong>Y_lm_d1_phi_a</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the first derivative
 of Legendre polynomials with respect to longitude.</p></li>
 <li><p><strong>Y_lm_d2_theta_a</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the second derivative
@@ -408,10 +409,10 @@ of Legendre polynomials with respect to longitude.</p></li>
 of Legendre polynomials with respect to colatitude and longitude.</p></li>
 <li><p><strong>y_lm</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array of spherical harmonic functions</p></li>
 </ul>
-</p>
-</dd>
-<dt class="field-even">Parameters</dt>
-<dd class="field-even"><ul class="simple">
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
 <li><p><strong>theta</strong> (<em>float</em>) – Colatitude in radian.</p></li>
 <li><p><strong>phi</strong> (<em>float</em>) – Longitude in radian.</p></li>
 <li><p><strong>lmax</strong> (<em>int</em>) – Maximum spherical harmonic degree to compute for the derivatives.</p></li>
@@ -467,7 +468,7 @@ poloidal term of the tangential displacement.</p></li>
 <li><p><strong>moho_lm</strong> (<em>array, size(2,lmax_calc+1,lmax_calc+1)</em>) – Array with the spherical harmonic coefficients of the
 moho-relief.</p></li>
 <li><p><strong>dc_lm</strong> (<em>array, size(2,lmax_calc+1,lmax_calc+1)</em>) – Array with the spherical harmonic coefficients of the
-isostatic crustal thickness variations.</p></li>
+isostatic crustal root variations.</p></li>
 <li><p><strong>drhom_lm</strong> (<em>array, size(2,lmax_calc+1,lmax_calc+1)</em>) – Array with the spherical harmonic coefficients of the
 lateral density variations.</p></li>
 <li><p><strong>omega_lm</strong> (<em>array, size(2,lmax_calc+1,lmax_calc+1)</em>) – Array with the spherical harmonic coefficients of the
@@ -507,7 +508,7 @@ surface topography.</p></li>
 <li><p><strong>drhom_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax_calc+1</em><em>,</em><em>lmax_calc+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 lateral density variations.</p></li>
 <li><p><strong>dc_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax_calc+1</em><em>,</em><em>lmax_calc+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
-isostatic crustal thickness variations.</p></li>
+isostatic crustal root variations.</p></li>
 <li><p><strong>w_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax_calc+1</em><em>,</em><em>lmax_calc+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 upward displacement.</p></li>
 <li><p><strong>omega_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax_calc+1</em><em>,</em><em>lmax_calc+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
@@ -559,7 +560,7 @@ poloidal term of the tangential displacement.</p></li>
 <li><p><strong>moho_lm</strong> (<em>array, size(2,lmax_calc+1,lmax_calc+1)</em>) – Array with the spherical harmonic coefficients of the
 moho-relief.</p></li>
 <li><p><strong>dc_lm</strong> (<em>array, size(2,lmax_calc+1,lmax_calc+1)</em>) – Array with the spherical harmonic coefficients of the
-isostatic crustal thickness variations.</p></li>
+isostatic crustal root variations.</p></li>
 <li><p><strong>drhom_lm</strong> (<em>array, size(2,lmax_calc+1,lmax_calc+1)</em>) – Array with the spherical harmonic coefficients of the
 lateral density variations.</p></li>
 <li><p><strong>omega_lm</strong> (<em>array, size(2,lmax_calc+1,lmax_calc+1)</em>) – Array with the spherical harmonic coefficients of the
@@ -599,7 +600,7 @@ surface topography.</p></li>
 <li><p><strong>drhom_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax_calc+1</em><em>,</em><em>lmax_calc+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 lateral density variations.</p></li>
 <li><p><strong>dc_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax_calc+1</em><em>,</em><em>lmax_calc+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
-isostatic crustal thickness variations.</p></li>
+isostatic crustal root variations.</p></li>
 <li><p><strong>w_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax_calc+1</em><em>,</em><em>lmax_calc+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 upward displacement.</p></li>
 <li><p><strong>omega_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax_calc+1</em><em>,</em><em>lmax_calc+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
