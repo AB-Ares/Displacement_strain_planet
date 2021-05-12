@@ -14,7 +14,7 @@
 
    source/Displacement_strain_planet.rst
 
-Displacement-strain-planet
+Displacement_strain_planet
 ================================
 
 Displacement_strain_planet provides several functions and example scripts for generating crustal thickness, displacement, gravity, lateral density variations, stress, and strain maps on a planet given a set of input constraints such as from observed gravity and topography data.
