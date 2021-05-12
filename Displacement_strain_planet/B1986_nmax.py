@@ -171,7 +171,7 @@ def Thin_shell_matrix(
         moho-relief.
     dc_lm : array, size(2,lmax_calc+1,lmax_calc+1)
         Array with the spherical harmonic coefficients of the
-        isostatic crustal thickness variations.
+        isostatic crustal root variations.
     drhom_lm : array, size(2,lmax_calc+1,lmax_calc+1)
         Array with the spherical harmonic coefficients of the
         lateral density variations.
@@ -234,7 +234,7 @@ def Thin_shell_matrix(
         lateral density variations.
     dc_lm : array, size(2,lmax_calc+1,lmax_calc+1), default = None
         Array with the spherical harmonic coefficients of the
-        isostatic crustal thickness variations.
+        isostatic crustal root variations.
     w_lm : array, size(2,lmax_calc+1,lmax_calc+1), default = None
         Array with the spherical harmonic coefficients of the
         upward displacement.
@@ -412,6 +412,9 @@ def Thin_shell_matrix(
         drho_corr = np.zeros(shape)
     A_lm = np.zeros(shape)
 
+    # For filtering drhom when sum_dc==0
+    sum_dc = np.sum(dc_lm)
+
     if Te == 0:  # Avoid numerical problems with infinite values
         Te = 1
         print("Elastic thickness set to 1 to avoid numerical problems")
@@ -533,12 +536,14 @@ def Thin_shell_matrix(
             RCRl1 = RCR ** (l + 1)
             RCRl2 = RCR ** (l + 2)
 
-            if filter is None:
-                DCfilter_mohoD = 1.0
-                # DCfilter_mohoU = 1.0
-            else:
+            DCfilter_drhomD = 1.0
+            DCfilter_mohoD = 1.0
+            if filter is not None:
                 DCfilter_mohoD = DownContFilter(l, filter_half, R, R - c, type=filter)
-                # DCfilter_mohoU = DownContFilter(l, filter_half, R - c, R, type=filter)
+                if sum_dc == 0:
+                    DCfilter_drhomD = DownContFilter(
+                        l, filter_half, R - top_drho, R - base_drho, type=filter
+                    )
 
             if (R - top_drho) <= (R - c):
                 RtRCl = ((R - top_drho) / (R - c)) ** l
@@ -575,11 +580,11 @@ def Thin_shell_matrix(
                     rhol * H_lm1
                     + drhol * w_lm1
                     + drho * (w_lm1 - dc_lm1) * RCRl2 / DCfilter_mohoD
-                    + drhom_lm1 * Rl3 * (RtRl3 - RbRl3)
+                    + drhom_lm1 * Rl3 * (RtRl3 - RbRl3) / DCfilter_drhomD
                 )
                 + rhol * H_corr1
                 + drhol * w_corr1
-                + drho * wdc_corr1 * RCRl,  # Corrections
+                + drho * wdc_corr1 * RCRl,
                 -Gc_lm1
                 + rhobconst
                 * (
@@ -588,7 +593,7 @@ def Thin_shell_matrix(
                     + drhom_lm1 * Rl3 * (RtRCl - RbRCl)
                 )
                 + (rhol * H_corr1 + drhol * w_corr1) * RCRl1
-                + drho * wdc_corr1 * RCR ** 3,  # Corrections
+                + drho * wdc_corr1 * RCR ** 3,
                 -q_lm1
                 + g0 * (rhol * (H_lm1 - G_lm1) + drhol * w_lm1)
                 + gmoho * drho * (w_lm1 - dc_lm1 - Gc_lm1)
@@ -611,7 +616,7 @@ def Thin_shell_matrix(
                 * (Te - top_drho)
                 * np.min([M, Te - c])
                 / R
-                + drho_corr1,  # Correction for density variation
+                + drho_corr1,
             ]
 
             if add_equation is not None:
@@ -878,7 +883,7 @@ def Thin_shell_matrix_nmax(
         moho-relief.
     dc_lm : array, size(2,lmax_calc+1,lmax_calc+1)
         Array with the spherical harmonic coefficients of the
-        isostatic crustal thickness variations.
+        isostatic crustal root variations.
     drhom_lm : array, size(2,lmax_calc+1,lmax_calc+1)
         Array with the spherical harmonic coefficients of the
         lateral density variations.
@@ -941,7 +946,7 @@ def Thin_shell_matrix_nmax(
         lateral density variations.
     dc_lm : array, size(2,lmax_calc+1,lmax_calc+1), default = None
         Array with the spherical harmonic coefficients of the
-        isostatic crustal thickness variations.
+        isostatic crustal root variations.
     w_lm : array, size(2,lmax_calc+1,lmax_calc+1), default = None
         Array with the spherical harmonic coefficients of the
         upward displacement.
@@ -1096,7 +1101,7 @@ def Thin_shell_matrix_nmax(
                     % (rhoc)
                 )
 
-        # Geoid correction due to density variation
+        # Geoid correction due to density variations
         # and or finite-amplitude corrections.
         # Moho relief
         delta_wdc_geoid = pysh.SHCoeffs.from_zeros(lmax_calc).coeffs

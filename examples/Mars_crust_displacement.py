@@ -15,7 +15,7 @@ from Displacement_strain_planet import (
 # In this example, we solve for the displacement of the surface of
 # Mars by calling the function `Thin_shell_matrix_nmax`, assuming
 # that the gravity and topography of the planet are compensated by
-# a combination of crustal thickness variation and flexure.
+# a combination of isostatic crustal root variations and flexure.
 # 3 assumptions are required to solve the system, and we here assume
 # that the observed topography and geoid are known, and that there
 # are no density variations in the interior.
@@ -36,7 +36,7 @@ from Displacement_strain_planet import (
 # w_lm flexure, \
 # A_lm poloidal term of the tangential displacement,  \
 # moho_relief_lm` moho relief,  \
-# dc_lm crustal thickness variation,  \
+# dc_lm isostatic crustal root variations,  \
 # drhom_lm internal density variations,  \
 # omega_lm tangential load potential,  \
 # q_lm net load on the lithosphere,  \
@@ -96,7 +96,7 @@ args_fig = dict(figsize=(12, 10), dpi=100)
 path = "%s/data" % (os.getcwd())
 zeros = pysh.SHCoeffs.from_zeros(lmax=lmax_calc).coeffs
 
-print("Computing displacements and crustal thickness")
+print("Computing displacements and isostatic crustal root variations")
 (
     w_lm,
     A_lm,
@@ -132,14 +132,14 @@ ax1.contour(
 )
 pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
     ax=ax2,
-    cb_label="Crustal thickness" + " variation (km)",
+    cb_label="Isostatic crustal root variations (km)",
     ticks="wSnE",
     ylabel=None,
     **args_plot
 )
 
 pysh.SHCoeffs.from_array(drhom_lm).expand(**args_expand).plot(
-    ax=ax3, cb_label="Lateral density" + " variations (kg m$^{-3}$)", **args_plot
+    ax=ax3, cb_label="Lateral density variations (kg m$^{-3}$)", **args_plot
 )
 
 (pysh.SHCoeffs.from_array((H_lm - moho_relief_lm) / 1e3).expand(**args_expand)).plot(
@@ -156,10 +156,10 @@ print("Computing strains")  # This may take some time if it is the first time
 lmax_calc = 30  # Lower lmax_calc for faster computations
 Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp = SH_deriv_store(lmax_calc, path)
 
-colat_min = 0    # Minimum colatitude at which strain calculations are performed
+colat_min = 0  # Minimum colatitude at which strain calculations are performed
 colat_max = 180  # Maximum colatitude
-lon_min = 0      # Minimum longitude
-lon_max = 360    # Maximum longitude
+lon_min = 0  # Minimum longitude
+lon_max = 360  # Maximum longitude
 
 args_param_s = (E, v, R, Te, lmax_calc)
 kwargs_param_s = dict(
@@ -194,7 +194,9 @@ kwargs_param_s = dict(
     sum_strain,
     principal_angle1,
     principal_angle2,
-) = Principal_strainstress_angle(-eps_theta-kappa_theta, -eps_phi-kappa_phi, -omega-tau)
+) = Principal_strainstress_angle(
+    -eps_theta - kappa_theta, -eps_phi - kappa_phi, -omega - tau
+)
 
 args_plot = dict(tick_interval=[45, 30], colorbar="bottom", cmap=cm.vik)
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, **args_fig)
@@ -228,7 +230,9 @@ pysh.SHGrid.from_array(principal_angle1).plot(
     ticks="wSnE",
     ylabel=None,
     cmap_limits=[-90, 90],
-    **args_plot
+    tick_interval=[45, 30],
+    colorbar="bottom",
+    cmap=cm.vikO,
 )
 
 # Plot strain direction

@@ -3,7 +3,7 @@ Displacement_strain_planet
 ============================
 Displacement_strain_planet provides several functions and example scripts
 for generating crustal thickness, displacement, gravity, lateral density
-variation, stress, and strain maps on a planet given a set of input
+variations, stress, and strain maps on a planet given a set of input
 constraints such as from observed gravity and topography data.
 
 These functions solve the Banerdt (1986) thin shell model under

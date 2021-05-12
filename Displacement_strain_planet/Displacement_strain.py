@@ -618,19 +618,17 @@ def Plt_tecto_Mars(
     labels = ["Compressional tectonic features", "Extensional tectonic features"]
 
     if compression and not extension:
-        faults_inds = faults_inds[0]
-        faults_dats = faults_dats[0]
-        faults_cols = faults_cols[0]
-        labels = labels[0]
+        faults_inds = [faults_inds[0]]
+        faults_dats = [faults_dats[0]]
+        faults_cols = [faults_cols[0]]
+        labels = [labels[0]]
     else:
-        faults_inds = faults_inds[1]
-        faults_dats = faults_dats[1]
-        faults_cols = faults_cols[1]
-        labels = labels[1]
+        faults_inds = [faults_inds[1]]
+        faults_dats = [faults_dats[1]]
+        faults_cols = [faults_cols[1]]
+        labels = [labels[1]]
 
-    for faults, dat, col, label in zip(
-        [faults_inds], [faults_dats], [faults_cols], [labels]
-    ):
+    for faults, dat, col, label in zip(faults_inds, faults_dats, faults_cols, labels):
         ax.plot(np.nan, np.nan, color=col, lw=lw, label=label)
         for indx in range(1, int((len(faults) - 1) / 2)):
             ind_fault_check = range(faults[indx - 1] + 1, faults[indx])
