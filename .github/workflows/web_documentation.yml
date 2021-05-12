@@ -54,7 +54,8 @@ jobs:
     - name: Commit changes
       shell: bash -l {0}
       run: |
-        git add docs
+        git add docs/_build/html/
+        git add .nojekyll
         git commit -m "Update gh-pages documenation" -a || true
 
     - name: Push changes
