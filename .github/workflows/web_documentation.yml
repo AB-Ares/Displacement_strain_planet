@@ -1,9 +1,6 @@
 name: Create html web documentation
 
-on:
-  release:
-    types:
-      - created
+on: push
   
 jobs:
   docs:
@@ -48,8 +45,6 @@ jobs:
       run: |
         git switch gh-pages
         git clean -fd
-        git config --local user.email "adrien.broquet@oca.eu"
-        git config --local user.name "GitHub Action"
 
     - name: Download artifact
       uses: actions/download-artifact@v2
@@ -59,7 +54,7 @@ jobs:
     - name: Commit changes
       shell: bash -l {0}
       run: |
-        git add .
+        git add docs
         git commit -m "Update gh-pages documenation" -a || true
 
     - name: Push changes
