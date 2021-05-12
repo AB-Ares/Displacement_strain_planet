@@ -1,1 +1,2 @@
-include versioneer.py,include Displacement_strain_planet/_version.py
+include versioneer.py
+include Displacement_strain_planet/_version.py
