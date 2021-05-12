@@ -3,7 +3,7 @@ import Displacement_strain_planet
 
 # Project information
 year = datetime.date.today().year
-project = "Displacement-strain-planet"
+project = "Displacement_strain_planet"
 author = "Adrien Broquet"
 version = "0.1.0"
 
