@@ -13,7 +13,7 @@ Mars
 ``Run_demo.ipynb`` |ImageLink|_ 
     A jupyter notebook that shows many of the functionalities of Displacement-strain-planet: moho-relief calculations under various assumptions, including Airy or Pratt isostasy, displacement calculations due to a mantle plume underneath Tharsis or due to internal loading in phase with the surface topography, strain calculations. 
 
-.. |ImageLink| image:: ../misc/link1.svg
+.. |ImageLink| image:: **/link1.svg
                :width: 20
-.. _ImageLink: ../_notebooks/Run_demo.html
+.. _ImageLink: **/Run_demo.html
 
