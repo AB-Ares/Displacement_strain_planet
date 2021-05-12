@@ -44,7 +44,6 @@ jobs:
       shell: bash -l {0}
       run: |
         git switch gh-pages
-        git pull origin gh-pages
         git config --local user.email "adrien.broquet@oca.eu"
         git config --local user.name "GitHub Action"
 
@@ -57,8 +56,9 @@ jobs:
       shell: bash -l {0}
       run: |
         git add .
+        > .nojekyll
         git add .nojekyll
-        git commit -m "Update gh-pages documenation" -a
+        git commit -m "Update gh-pages documentation" -a
 
     - name: Push changes
       uses: ad-m/github-push-action@master
