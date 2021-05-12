@@ -39,12 +39,14 @@ jobs:
         name: gh-pages-documentation
         path: docs/_build/html/
         retention-days: 1
-
+    
     - name: Clean gh-pages branch
       shell: bash -l {0}
       run: |
         git switch gh-pages
-        git clean -fx
+        git rm
+        git config --local user.email "adrien.broquet@oca.eu"
+        git config --local user.name "GitHub Action"
 
     - name: Download artifact
       uses: actions/download-artifact@v2
@@ -54,9 +56,9 @@ jobs:
     - name: Commit changes
       shell: bash -l {0}
       run: |
-        git add docs/_build/html/
+        git add .
         git add .nojekyll
-        git commit -m "Update gh-pages documenation" -a || true
+        git commit -m "Update gh-pages documenation" -a
 
     - name: Push changes
       uses: ad-m/github-push-action@master
