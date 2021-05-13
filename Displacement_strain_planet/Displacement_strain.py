@@ -623,7 +623,7 @@ def Plt_tecto_Mars(
         faults_dats = [faults_dats[0]]
         faults_cols = [faults_cols[0]]
         labels = [labels[0]]
-    else:
+    elif extension and not compression:
         faults_inds = [faults_inds[1]]
         faults_dats = [faults_dats[1]]
         faults_cols = [faults_cols[1]]
