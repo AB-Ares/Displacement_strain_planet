@@ -1,6 +1,9 @@
 name: Create html web documentation
 
-on: push
+on:
+  release:
+    types:
+      - created
   
 jobs:
   docs:
