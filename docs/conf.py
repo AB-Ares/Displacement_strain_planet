@@ -35,6 +35,5 @@ html_show_copyright = True
 html_title = project
 html_short_title = project
 html_logo = "../misc/bender.jpeg"
-# html_last_updated_fmt = "%b %d, %Y"
 
 html_context = {}

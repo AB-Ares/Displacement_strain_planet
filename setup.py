@@ -43,6 +43,7 @@ setup(
         "crust",
         "gravity",
         "geophysics",
+        "Mars",
         "planetary sciences",
     ],
     packages=find_packages(),

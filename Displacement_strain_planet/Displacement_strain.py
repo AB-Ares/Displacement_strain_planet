@@ -1,6 +1,6 @@
 """
 Functions for calculating Legendre polynomial derivatives, stresses
-and strains.
+and strains and plotting the Knapmeyer et al. (2006) tectonic dataset.
 """
 
 import numpy as np
