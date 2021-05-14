@@ -10,8 +10,11 @@ doi:\ `10.1029/2019JE005959 <https://agupubs.onlinelibrary.wiley.com/doi/abs/10.
 Knapmeyer, M. et al. (2006). Working models for spatial distribution and level of Mars’ seismicity. *Journal of Geophysical Research*, 111.E11006, 
 doi:\ `10.1029/2006JE002708 <https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2006JE002708>`__.
 
-Wieczorek, M. A. and M. Meschede (2018). SHTools : Tools for working with spherical harmonics. *Geochemistry, Geophysics, Geosystems*. 
-doi:\ `10.1029/2018GC007529 <https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2018GC007529>`__.
-
 Wieczorek, M. A. and R. J. Phillips (1998). Potential anomalies on a sphere: Applications to the thickness of the lunar crust. *Journal of Geophysical Research: Planets*, 103.E1, pp. 1715–1724, 
 doi:\ `10.1029/97JE03136 <https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/97JE03136>`__.
+
+Wieczorek, M. A. et al. (2013). The crust of the Moon as Seen by GRAIL. *Science*, 339, pp. 671–675. 
+doi:\ `10.1126/science.1231530 <https://science.sciencemag.org/content/339/6120/671>`__.
+
+Wieczorek, M. A. and M. Meschede (2018). SHTools : Tools for working with spherical harmonics. *Geochemistry, Geophysics, Geosystems*. 
+doi:\ `10.1029/2018GC007529 <https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2018GC007529>`__.
