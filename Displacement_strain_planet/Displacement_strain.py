@@ -116,7 +116,7 @@ def SH_deriv(theta, phi, lmax):
 # ==== SH_deriv_store ====
 
 
-def SH_deriv_store(lmax, path):
+def SH_deriv_store(lmax, path, save=True):
     """
     Compute and store or load spherical harmonic derivatives
     (first and second order).
@@ -145,6 +145,8 @@ def SH_deriv_store(lmax, path):
         Path to store or load spherical harmonic derivatives.
     lmax : int
         Maximum spherical harmonic degree to compute for the derivatives.
+    save : boolean
+        Whether the data is saved at the given path location
     """
     n = 2 * lmax + 2
     poly_file = "%s/Y_lmsd1d2_lmax%s.npy" % (path, lmax)
@@ -203,11 +205,13 @@ def SH_deriv_store(lmax, path):
                         Y_lm_d1_theta_a[t_i, :, 1, l, m_abs] = dp_theta[index] * sinmphi
                         Y_lm_d1_phi_a[t_i, :, 1, l, m_abs] = p_theta[index] * mcosmphi
                         Y_lm_d2_phi_a[t_i, :, 1, l, m_abs] = p_theta[index] * m2sinphi
-                        Y_lm_d2_thetaphi_a[t_i, :, 1, l, m_abs] = dp_theta[index] * mcosmphi
+                        Y_lm_d2_thetaphi_a[t_i, :, 1, l, m_abs] = (
+                            dp_theta[index] * mcosmphi
+                        )
                         y_lm[:, 1, l, m_abs] = p_theta[index] * sinmphi
-                
+
                 y_lm[:, :, l, : l + 1] *= np.sin(theta)
-                
+
                 if theta == 0 or theta == pi:
                     Y_lm_d2_theta_a[t_i, :, :, l, : l + 1] = 0.0
                     # Not defined.
@@ -219,17 +223,17 @@ def SH_deriv_store(lmax, path):
                         - Y_lm_d1_theta_a[t_i, :, :, l, : l + 1] * costsint
                         - sintt * Y_lm_d2_phi_a[t_i, :, :, l, : l + 1]
                     )
-
-        np.save(
-            poly_file,
-            [
-                Y_lm_d1_theta_a,
-                Y_lm_d1_phi_a,
-                Y_lm_d2_theta_a,
-                Y_lm_d2_phi_a,
-                Y_lm_d2_thetaphi_a,
-            ],
-        )
+        if save:
+            np.save(
+                poly_file,
+                [
+                    Y_lm_d1_theta_a,
+                    Y_lm_d1_phi_a,
+                    Y_lm_d2_theta_a,
+                    Y_lm_d2_phi_a,
+                    Y_lm_d2_thetaphi_a,
+                ],
+            )
     else:
         print("Loading precomputed SH derivatives for strain calculations")
         (
@@ -261,10 +265,10 @@ def Displacement_strains(
     R,
     Te,
     lmax_calc,
-    colat_min=-1e20,
-    colat_max=1e20,
-    lon_min=-1e20,
-    lon_max=1e20,
+    colat_min=0,
+    colat_max=180,
+    lon_min=0,
+    lon_max=360,
     only_deflec=False,
     precomp=True,
     Y_lm_d1_t=None,
@@ -327,13 +331,13 @@ def Displacement_strains(
         Elastic thickness of the lithosphere.
     lmax_calc : int
         Maximum spherical harmonic degree for computations.
-    colat_min : float, optional, default = -1e20
+    colat_min : float, optional, default = 0
         Minimum colatitude for grid computation of strains and stresses.
-    colat_max : float, optional, default = 1e20
+    colat_max : float, optional, default = 180
         Maximum colatitude for grid computation of strains and stresses.
-    lon_min : float, optional, default = -1e20
+    lon_min : float, optional, default = 0
         Minimum longitude for grid computation of strains and stresses.
-    lon_max : float, optional, default = 1e20
+    lon_max : float, optional, default = 360
         Maximum longitude for grid computation of strains and stresses.
     only_deflec : int, optional, default = False
         Output only the displacement grid for all latitude and longitudes.
