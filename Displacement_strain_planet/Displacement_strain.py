@@ -7,6 +7,7 @@ import numpy as np
 import pyshtools as pysh
 import matplotlib.pyplot as plt
 from pathlib import Path
+import time
 
 pi = np.pi
 
@@ -51,6 +52,8 @@ def SH_deriv(theta, phi, lmax):
     Y_lm_d2_phi_a = np.zeros((2, lmax + 1, lmax + 1))
     Y_lm_d2_thetaphi_a = np.zeros((2, lmax + 1, lmax + 1))
     Y_lm_d2_theta_a = np.zeros((2, lmax + 1, lmax + 1))
+    y_lm = np.zeros((2, lmax + 1, lmax + 1))
+
     if theta == 0 or theta == pi:
         dp_theta = np.zeros((int((lmax + 1) * (lmax + 2) / 2)))
         p_theta = np.zeros((int((lmax + 1) * (lmax + 2) / 2)))
@@ -63,8 +66,6 @@ def SH_deriv(theta, phi, lmax):
         p_theta /= np.sin(theta)
         costsint = np.cos(theta) / np.sin(theta)
         sintt = 1.0 / np.sin(theta) ** 2
-
-    y_lm = pysh.expand.spharm(lmax, theta, phi, degrees=False)
     for l in range(lmax + 1):
         lapla = float(-l * (l + 1))
         for m in range(-l, l + 1):
@@ -81,6 +82,7 @@ def SH_deriv(theta, phi, lmax):
                 Y_lm_d1_phi_a[0, l, m] = p_theta[index] * msinmphi
                 Y_lm_d2_phi_a[0, l, m] = p_theta[index] * m2cosphi
                 Y_lm_d2_thetaphi_a[0, l, m] = dp_theta[index] * msinmphi
+                y_lm[0, l, m] = p_theta[index] * np.sin(theta) * cosmphi
             else:
                 mcosmphi = m_abs * cosmphi
                 m2sinphi = -(m_abs ** 2) * sinmphi
@@ -88,6 +90,7 @@ def SH_deriv(theta, phi, lmax):
                 Y_lm_d1_phi_a[1, l, m_abs] = p_theta[index] * mcosmphi
                 Y_lm_d2_phi_a[1, l, m_abs] = p_theta[index] * m2sinphi
                 Y_lm_d2_thetaphi_a[1, l, m_abs] = dp_theta[index] * mcosmphi
+                y_lm[1, l, m_abs] = p_theta[index] * np.sin(theta) * sinmphi
 
         if theta == 0 or theta == pi:
             Y_lm_d2_theta_a[:, l, : l + 1] = 0.0  # Not defined.
@@ -158,6 +161,7 @@ def SH_deriv_store(lmax, path):
         Y_lm_d2_thetaphi_a = np.zeros((n, 2 * n, 2, lmax + 1, lmax + 1))
         Y_lm_d2_theta_a = np.zeros((n, 2 * n, 2, lmax + 1, lmax + 1))
         phi_ar = np.linspace(0, 360, 2 * n, endpoint=False) * pi / 180.0
+        y_lm = np.zeros((len(phi_ar), 2, lmax + 1, lmax + 1))
 
         t_i = -1
         for theta in np.linspace(0, 180, n, endpoint=False) * pi / 180.0:
@@ -192,31 +196,29 @@ def SH_deriv_store(lmax, path):
                         Y_lm_d1_phi_a[t_i, :, 0, l, m] = p_theta[index] * msinmphi
                         Y_lm_d2_phi_a[t_i, :, 0, l, m] = p_theta[index] * m2cosphi
                         Y_lm_d2_thetaphi_a[t_i, :, 0, l, m] = dp_theta[index] * msinmphi
+                        y_lm[:, 0, l, m] = p_theta[index] * cosmphi
                     else:
                         mcosmphi = m_abs * cosmphi
                         m2sinphi = -(m_abs ** 2) * sinmphi
                         Y_lm_d1_theta_a[t_i, :, 1, l, m_abs] = dp_theta[index] * sinmphi
                         Y_lm_d1_phi_a[t_i, :, 1, l, m_abs] = p_theta[index] * mcosmphi
                         Y_lm_d2_phi_a[t_i, :, 1, l, m_abs] = p_theta[index] * m2sinphi
-                        Y_lm_d2_thetaphi_a[t_i, :, 1, l, m_abs] = (
-                            dp_theta[index] * mcosmphi
-                        )
-
-                p_i = -1
-                for phi in phi_ar:
-                    p_i += 1
-                    y_lm = pysh.expand.spharm(l, theta, phi, degrees=False)
-                    if theta == 0 or theta == pi:
-                        Y_lm_d2_theta_a[t_i, p_i, :, l, : l + 1] = 0.0
-                        # Not defined.
-                    else:
-                        # Make use of the Laplacian identity to
-                        # estimate last derivative.
-                        Y_lm_d2_theta_a[t_i, p_i, :, l, : l + 1] = (
-                            lapla * y_lm[:, l, : l + 1]
-                            - Y_lm_d1_theta_a[t_i, p_i, :, l, : l + 1] * costsint
-                            - sintt * Y_lm_d2_phi_a[t_i, p_i, :, l, : l + 1]
-                        )
+                        Y_lm_d2_thetaphi_a[t_i, :, 1, l, m_abs] = dp_theta[index] * mcosmphi
+                        y_lm[:, 1, l, m_abs] = p_theta[index] * sinmphi
+                
+                y_lm[:, :, l, : l + 1] *= np.sin(theta)
+                
+                if theta == 0 or theta == pi:
+                    Y_lm_d2_theta_a[t_i, :, :, l, : l + 1] = 0.0
+                    # Not defined.
+                else:
+                    # Make use of the Laplacian identity to
+                    # estimate last derivative.
+                    Y_lm_d2_theta_a[t_i, :, :, l, : l + 1] = (
+                        lapla * y_lm[:, :, l, : l + 1]
+                        - Y_lm_d1_theta_a[t_i, :, :, l, : l + 1] * costsint
+                        - sintt * Y_lm_d2_phi_a[t_i, :, :, l, : l + 1]
+                    )
 
         np.save(
             poly_file,
