@@ -146,7 +146,7 @@ def SH_deriv_store(lmax, path, save=True):
     lmax : int
         Maximum spherical harmonic degree to compute for the derivatives.
     save : boolean
-        Whether the data is saved at the given path location
+        Whether the data is saved at the given path location.
     """
     n = 2 * lmax + 2
     poly_file = "%s/Y_lmsd1d2_lmax%s.npy" % (path, lmax)
