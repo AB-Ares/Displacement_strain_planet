@@ -1024,8 +1024,6 @@ def Thin_shell_matrix_nmax(
     # Density contrast not at topography or moho and no
     # finite-amplitude correctio, return
     if nmax == 1 and top_drho != 0 and base_drho != c:
-        if quiet is False:
-            print("Returning without finite-amplitude corrections")
         (
             w_lm_o,
             A_lm_o,
@@ -1041,6 +1039,7 @@ def Thin_shell_matrix_nmax(
         ) = Thin_shell_matrix(*args_param_m, **args_param_lm)
 
         if quiet is False:
+            print("Returning without finite-amplitude corrections")
             print("Set the interfaces degree-0 coefficients")
         w_lm_o[0, 0, 0] = R
         dc_lm_o[0, 0, 0] = c
@@ -1213,13 +1212,8 @@ def Thin_shell_matrix_nmax(
                         E,
                         v,
                     )
-                gmoho = (
-                    g0
-                    * (1.0 + (((R - c) / R) ** 3 - 1) * rhoc / rhobar)
-                    / ((R - c) / R) ** 2
                 )
                 v1v = v / (1.0 - v)
-
                 if density_var_H:
                     drho_corr += v1v * drhom_lm_o * g0 * Te * H_lm_o / R
                     drho_H = rhol
@@ -1227,7 +1221,11 @@ def Thin_shell_matrix_nmax(
                         H_drho_grid = rho_grid
                     else:
                         H_drho_grid = rho_grid + rhol
-                if density_var_dc:
+                if density_var_dc:  
+                    gmoho = (
+                        g0
+                        * (1.0 + (((R - c) / R) ** 3 - 1) * rhoc / rhobar)
+                        / ((R - c) / R) ** 2
                     drho_corr += v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
                     drho_wdc = rhom - rhoc
                     if drhom_lm is not None and sum_drho != 0:
