@@ -60,6 +60,8 @@ args_expand = dict(lmax=5 * lmax_calc, lmax_calc=lmax_calc)
 args_fig = dict(figsize=(12, 10), dpi=100)
 args_plot = dict(tick_interval=[45, 30], colorbar="bottom", cmap=cm.roma_r)
 
+# grid_thickMOLA_lm is the spherical harmonic expansion of the grid_thickMOLA file found at
+# https://zenodo.org/record/4682983
 topo = pysh.SHCoeffs.from_file("data/grid_thickMOLA_lm.txt", lmax=lmax_calc).coeffs
 zeros = pysh.SHCoeffs.from_zeros(lmax=lmax_calc).coeffs
 
