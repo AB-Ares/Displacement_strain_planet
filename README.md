@@ -44,6 +44,8 @@ Strain calculations reproduce results published in the literature (e.g., [Banerd
 
 `Mars_crust_displacement` A script that demonstrates how to calculate the moho-relief and strains on Mars, as a function of the mean planetary crustal thickness and elastic thickness. The contributions from isostatic crustal root variations and displacement are shown assuming an elastic thickness of the lithosphere. We make use of the inferred displacement to predict the principal horizontal strains and principal angle, which are compared to extensional tectonic features mapped by [Knampeyer et al. (2006)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2006JE002708). 
 
+`Mars_SouthPolarCap_displacement` A script that demonstrates how to calculate iteratively the flexure underneath the south polar cap of Mars as a function of elastic thickness and ice density. This computation is similar to that done in e.g., Broquet et al. (2021), in review to JGR:Planets. 
+
 ## How to install and run Displacement_strain_planet
 If you would like to modify the source code, download the Displacement_strain_planet repository and install using pip (or pip3 depending on your installation).
 ```bash
@@ -61,6 +63,7 @@ Alternatively, you can install Displacement-strain-planet via pip
     cd examples
     jupyter notebook Run_demo.ipynb
     python Mars_crust_displacement.py 
+    python Mars_SouthPolarCap_displacement.py 
 ```
 
 ## Author

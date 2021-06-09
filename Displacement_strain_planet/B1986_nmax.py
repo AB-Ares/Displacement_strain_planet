@@ -1212,7 +1212,7 @@ def Thin_shell_matrix_nmax(
                         E,
                         v,
                     )
-                )
+
                 v1v = v / (1.0 - v)
                 if density_var_H:
                     drho_corr += v1v * drhom_lm_o * g0 * Te * H_lm_o / R
@@ -1221,11 +1221,12 @@ def Thin_shell_matrix_nmax(
                         H_drho_grid = rho_grid
                     else:
                         H_drho_grid = rho_grid + rhol
-                if density_var_dc:  
+                if density_var_dc:
                     gmoho = (
                         g0
                         * (1.0 + (((R - c) / R) ** 3 - 1) * rhoc / rhobar)
                         / ((R - c) / R) ** 2
+                    )
                     drho_corr += v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
                     drho_wdc = rhom - rhoc
                     if drhom_lm is not None and sum_drho != 0:
