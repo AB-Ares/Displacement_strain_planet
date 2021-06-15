@@ -500,7 +500,7 @@ def Displacement_strains(
                 + v * eps_theta[t_i, p_i]
                 + Te / 2.0 * (kappa_phi[t_i, p_i] + v * kappa_theta[t_i, p_i])
             )
-            stress_theta_phi[t_i, p_i] = omega[t_i, p_i] + Te / 2.0 * tau[t_i, p_i] 
+            stress_theta_phi[t_i, p_i] = omega[t_i, p_i] + Te / 2.0 * tau[t_i, p_i]
 
     stress_theta *= DpsiTeR / 1e6  # MPa
     stress_phi *= DpsiTeR / 1e6  # MPa
