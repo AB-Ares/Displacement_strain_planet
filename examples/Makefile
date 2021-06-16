@@ -1,4 +1,5 @@
 #   Convert notebooks to html.
+#   Cleanup output data
 
 JUPYTER ?= jupyter nbconvert
 PYTHON = python3
@@ -12,9 +13,12 @@ IPYNB = Run_demo.ipynb
 
 HTML = $(addprefix $(ODIR)/, Run_demo.html)
 
-.PHONY: clean all run-notebooks
+.PHONY: all run-notebooks clean
 
 all: $(HTML)
+
+clean:
+	@-rm -f data/*.npy
 
 $(ODIR)/%.html: %.ipynb
 	$(JUPYTER) $(JFLAGS) $<

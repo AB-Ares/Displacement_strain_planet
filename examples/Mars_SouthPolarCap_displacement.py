@@ -38,8 +38,6 @@ gm = pysh.constants.Mars.gm.value  # GM given in the gravity
 mass = gm / G  # Mass of the planet
 g0 = gm / R ** 2  # Mean gravitational
 # attraction of the planet
-rhobar = mass * 3.0 / 4.0 / np.pi / R ** 3  # Mean density of the
-# planet
 
 # Parameters
 c = 60e3  # Mean Crustal thickness
@@ -55,7 +53,7 @@ print("Mean crustal thickness is %.2f km" % (c / 1e3))
 print("Crustal density is %.2f kg m-3" % (rhoc))
 print("Polar cap density is %.2f kg m-3" % (rhol))
 
-args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax_calc, E, v, mass)
+args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, lmax_calc, E, v, mass)
 args_expand = dict(lmax=5 * lmax_calc, lmax_calc=lmax_calc)
 args_fig = dict(figsize=(12, 10), dpi=100)
 args_plot = dict(tick_interval=[45, 30], colorbar="bottom", cmap=cm.roma_r)

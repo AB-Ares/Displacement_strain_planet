@@ -68,8 +68,6 @@ gm = pot_clm.gm  # GM given in the gravity
 mass = gm / G  # Mass of the planet
 g0 = gm / R ** 2  # Mean gravitational
 # attraction of the planet
-rhobar = mass * 3.0 / 4.0 / np.pi / R ** 3  # Mean density of the
-# planet
 
 # Remove 100% of C20
 percent_C20 = 0.0
@@ -89,7 +87,7 @@ print("Elastic thickness is %.2f km" % (Te / 1e3))
 print("Mean crustal thickness is %.2f km" % (c / 1e3))
 print("Crustal density is %.2f kg m-3" % (rhoc))
 
-args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax_calc, E, v, mass)
+args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, lmax_calc, E, v, mass)
 args_expand = dict(lmax=5 * lmax_calc, lmax_calc=lmax_calc)
 args_fig = dict(figsize=(12, 10), dpi=100)
 
@@ -192,8 +190,7 @@ kwargs_param_s = dict(
     min_strain,
     max_strain,
     sum_strain,
-    principal_angle1,
-    principal_angle2,
+    principal_angle,
 ) = Principal_strainstress_angle(
     -eps_theta - kappa_theta, -eps_phi - kappa_phi, -omega - tau
 )
@@ -224,7 +221,7 @@ pysh.SHGrid.from_array(sum_strain).plot(
     cb_tick_interval=1e-3,
     **args_plot
 )
-pysh.SHGrid.from_array(principal_angle1).plot(
+pysh.SHGrid.from_array(principal_angle).plot(
     ax=ax4,
     cb_label="Principal angle (°)",
     ticks="wSnE",
@@ -239,17 +236,17 @@ pysh.SHGrid.from_array(principal_angle1).plot(
 skip_i = int(lmax_calc / 6)
 skip = (slice(None, None, skip_i), slice(None, None, skip_i))
 grid_long, grid_lat = np.meshgrid(
-    np.linspace(0, 360, np.shape(principal_angle1)[1]),
-    np.linspace(90, -90, np.shape(principal_angle1)[0]),
+    np.linspace(0, 360, np.shape(principal_angle)[1]),
+    np.linspace(90, -90, np.shape(principal_angle)[0]),
 )
-ones = np.ones(np.shape(principal_angle1))
+ones = np.ones(np.shape(principal_angle))
 ax4.quiver(
     grid_long[skip],
     grid_lat[skip],
     ones[skip],
     ones[skip],
     scale=5e1,
-    angles=principal_angle1[skip],
+    angles=principal_angle[skip],
     color="g",
 )
 
