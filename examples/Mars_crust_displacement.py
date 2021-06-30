@@ -49,10 +49,10 @@ from Displacement_strain_planet import (
 # the same problem with different inputs very fast.
 #################################################################
 
-lmax_calc = 90  # Maximum spherical harmonic degree to perform all
+lmax = 90  # Maximum spherical harmonic degree to perform all
 # calculations
-pot_clm = pysh.datasets.Mars.GMM3(lmax=lmax_calc)
-topo_clm = pysh.datasets.Mars.MarsTopo2600(lmax=lmax_calc)
+pot_clm = pysh.datasets.Mars.GMM3(lmax=lmax)
+topo_clm = pysh.datasets.Mars.MarsTopo2600(lmax=lmax)
 
 R = topo_clm.coeffs[0, 0, 0]  # Mean planetary radius
 pot_clm = pot_clm.change_ref(r0=R)  # Downward continue to Mean
@@ -87,12 +87,12 @@ print("Elastic thickness is %.2f km" % (Te / 1e3))
 print("Mean crustal thickness is %.2f km" % (c / 1e3))
 print("Crustal density is %.2f kg m-3" % (rhoc))
 
-args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, lmax_calc, E, v, mass)
-args_expand = dict(lmax=5 * lmax_calc, lmax_calc=lmax_calc)
+args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, lmax, E, v, mass)
+args_expand = dict(lmax=5 * lmax, lmax_calc=lmax)
 args_fig = dict(figsize=(12, 10), dpi=100)
 
 path = "%s/data" % (os.getcwd())
-zeros = pysh.SHCoeffs.from_zeros(lmax=lmax_calc).coeffs
+zeros = pysh.SHCoeffs.from_zeros(lmax=lmax).coeffs
 
 print("Computing displacements and isostatic crustal root variations")
 (
@@ -151,15 +151,15 @@ pysh.SHCoeffs.from_array(drhom_lm).expand(**args_expand).plot(
 
 print("Computing strains")  # This may take some time if it is the first time
 # Strains
-lmax_calc = 30  # Lower lmax_calc for faster computations
-Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp = SH_deriv_store(lmax_calc, path)
+lmax = 30  # Lower lmax for faster computations
+Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp = SH_deriv_store(lmax, path, save=False)
 
 colat_min = 0  # Minimum colatitude at which strain calculations are performed
 colat_max = 180  # Maximum colatitude
 lon_min = 0  # Minimum longitude
 lon_max = 360  # Maximum longitude
 
-args_param_s = (E, v, R, Te, lmax_calc)
+args_param_s = (E, v, R, Te, lmax)
 kwargs_param_s = dict(
     colat_min=colat_min,
     colat_max=colat_max,
@@ -233,7 +233,7 @@ pysh.SHGrid.from_array(principal_angle).plot(
 )
 
 # Plot strain direction
-skip_i = int(lmax_calc / 6)
+skip_i = int(lmax / 6)
 skip = (slice(None, None, skip_i), slice(None, None, skip_i))
 grid_long, grid_lat = np.meshgrid(
     np.linspace(0, 360, np.shape(principal_angle)[1]),

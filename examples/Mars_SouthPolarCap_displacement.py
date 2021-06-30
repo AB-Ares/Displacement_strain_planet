@@ -29,7 +29,7 @@ from Displacement_strain_planet import Thin_shell_matrix_nmax
 # the same problem with different inputs very fast.
 #################################################################
 
-lmax_calc = 90
+lmax = 90
 # Constants
 R = pysh.constants.Mars.r.value  # Mean planetary radius
 G = pysh.constants.G.value  # Gravitational constant
@@ -53,15 +53,15 @@ print("Mean crustal thickness is %.2f km" % (c / 1e3))
 print("Crustal density is %.2f kg m-3" % (rhoc))
 print("Polar cap density is %.2f kg m-3" % (rhol))
 
-args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, lmax_calc, E, v, mass)
-args_expand = dict(lmax=5 * lmax_calc, lmax_calc=lmax_calc)
+args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, lmax, E, v, mass)
+args_expand = dict(lmax=5 * lmax, lmax_calc=lmax)
 args_fig = dict(figsize=(12, 10), dpi=100)
 args_plot = dict(tick_interval=[45, 30], colorbar="bottom", cmap=cm.roma_r)
 
 # grid_thickMOLA_lm is the spherical harmonic expansion of the grid_thickMOLA file found at
 # https://zenodo.org/record/4682983
-topo = pysh.SHCoeffs.from_file("data/grid_thickMOLA_lm.txt", lmax=lmax_calc).coeffs
-zeros = pysh.SHCoeffs.from_zeros(lmax=lmax_calc).coeffs
+topo = pysh.SHCoeffs.from_file("data/grid_thickMOLA_lm.txt", lmax=lmax).coeffs
+zeros = pysh.SHCoeffs.from_zeros(lmax=lmax).coeffs
 
 iter = 0
 residuals = 1e10
@@ -76,7 +76,7 @@ while residuals > 5:
             nmax=1
         )[0]
         min1 = R - np.min(
-            pysh.SHCoeffs.from_array(w_deflec).expand(lmax_calc=lmax_calc).data
+            pysh.SHCoeffs.from_array(w_deflec).expand(lmax_calc=lmax).data
         )
     else:
         w_deflec = Thin_shell_matrix_nmax(
@@ -87,7 +87,7 @@ while residuals > 5:
             nmax=1
         )[0]
         min2 = R - np.min(
-            pysh.SHCoeffs.from_array(w_deflec).expand(lmax_calc=lmax_calc).data
+            pysh.SHCoeffs.from_array(w_deflec).expand(lmax_calc=lmax).data
         )
         residuals = np.abs(min1 - min2)
         print(

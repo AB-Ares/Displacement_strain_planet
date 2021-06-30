@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Displacement_strain_planet.Displacement_strain module &mdash; Displacement_strain_planet</title>
@@ -178,19 +177,19 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="module-Displacement_strain_planet.Displacement_strain">
+  <div class="section" id="module-Displacement_strain_planet.Displacement_strain">
 <span id="displacement-strain-planet-displacement-strain-module"></span><h1>Displacement_strain_planet.Displacement_strain module<a class="headerlink" href="#module-Displacement_strain_planet.Displacement_strain" title="Permalink to this headline">¶</a></h1>
 <p>Functions for calculating Legendre polynomial derivatives, stresses
 and strains and plotting the Knapmeyer et al. (2006) tectonic dataset.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="Displacement_strain_planet.Displacement_strain.Displacement_strains">
-<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.Displacement_strain.</span></span><span class="sig-name descname"><span class="pre">Displacement_strains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A_lm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_lm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Te</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax_calc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colat_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colat_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">180</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">360</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_deflec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precomp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d1_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d1_p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d2_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d2_p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d2_tp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strain.Displacement_strains" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.Displacement_strain.</span></span><span class="sig-name descname"><span class="pre">Displacement_strains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A_lm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_lm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Te</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colat_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colat_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">180</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">360</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_deflec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precomp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d1_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d1_p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d2_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d2_p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d2_tp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strain.Displacement_strains" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the Banerdt (1986) equations to determine strains
 from displacements with a correction to the theta_phi term.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><ul class="simple">
-<li><p><strong>stress_theta</strong> (<em>array, size(2*lmax_calc+2,2*(2*lmax_calc+2))</em>) – Array with the stress field with respect to colatitude.
+<li><p><strong>stress_theta</strong> (<em>array, size(2*lmax+2,2*(2*lmax+2))</em>) – Array with the stress field with respect to colatitude.
 This is equation A12 from Banerdt (1986)</p></li>
 <li><p><strong>stress_phi</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the stress field with respect to longitude.
 This is equation A13 from Banerdt (1986)</p></li>
@@ -213,30 +212,30 @@ This is equation A21 from Banerdt (1986). Corrected for the prefactor 2</p></li>
 </dd>
 <dt class="field-even">Parameters</dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>A_lm</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax_calc+1</em><em>,</em><em>lmax_calc+1</em><em>)</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>A_lm</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em>) – Array with the spherical harmonic coefficients of the
 poloidal term of the tangential displacement.</p></li>
-<li><p><strong>w_lm</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax_calc+1</em><em>,</em><em>lmax_calc+1</em><em>)</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>w_lm</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em>) – Array with the spherical harmonic coefficients of the
 upward displacement.</p></li>
 <li><p><strong>E</strong> (<em>float</em>) – Young’s modulus.</p></li>
 <li><p><strong>v</strong> (<em>float</em>) – Poisson’s ratio.</p></li>
 <li><p><strong>R</strong> (<em>float</em>) – Mean radius of the planet.</p></li>
 <li><p><strong>Te</strong> (<em>float</em>) – Elastic thickness of the lithosphere.</p></li>
-<li><p><strong>lmax_calc</strong> (<em>int</em>) – Maximum spherical harmonic degree for computations.</p></li>
+<li><p><strong>lmax</strong> (<em>int</em>) – Maximum spherical harmonic degree for computations.</p></li>
 <li><p><strong>colat_min</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>default = 0</em>) – Minimum colatitude for grid computation of strains and stresses.</p></li>
 <li><p><strong>colat_max</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>default = 180</em>) – Maximum colatitude for grid computation of strains and stresses.</p></li>
 <li><p><strong>lon_min</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>default = 0</em>) – Minimum longitude for grid computation of strains and stresses.</p></li>
 <li><p><strong>lon_max</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>default = 360</em>) – Maximum longitude for grid computation of strains and stresses.</p></li>
 <li><p><strong>only_deflec</strong> (<em>int</em><em>, </em><em>optional</em><em>, </em><em>default = False</em>) – Output only the displacement grid for all latitude and longitudes.</p></li>
 <li><p><strong>precomp</strong> (<em>int</em><em>, </em><em>optional</em><em>, </em><em>default = True</em>) – Use precomputed the Legendre polynomials found at the ‘path’.</p></li>
-<li><p><strong>Y_lm_d1_t</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax_calc+1</em><em>,</em><em>lmax_calc+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the first derivative
+<li><p><strong>Y_lm_d1_t</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the first derivative
 of Legendre polynomials with respect to colatitude.</p></li>
-<li><p><strong>Y_lm_d1_p</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax_calc+1</em><em>,</em><em>lmax_calc+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the first derivative
+<li><p><strong>Y_lm_d1_p</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the first derivative
 of Legendre polynomials with respect to longitude.</p></li>
-<li><p><strong>Y_lm_d2_t</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax_calc+1</em><em>,</em><em>lmax_calc+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the second derivative
+<li><p><strong>Y_lm_d2_t</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the second derivative
 of Legendre polynomials with respect to colatitude.</p></li>
-<li><p><strong>Y_lm_d2_p</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax_calc+1</em><em>,</em><em>lmax_calc+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the second derivative
+<li><p><strong>Y_lm_d2_p</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the second derivative
 of Legendre polynomials with respect to longitude.</p></li>
-<li><p><strong>Y_lm_d2_tp</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax_calc+1</em><em>,</em><em>lmax_calc+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the first derivative
+<li><p><strong>Y_lm_d2_tp</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the first derivative
 of Legendre polynomials with respect to colatitude and longitude.</p></li>
 <li><p><strong>path</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – path where to find the store Legendre polynomials.</p></li>
 <li><p><strong>quiet</strong> (<em>int</em><em>, </em><em>optional</em><em>, </em><em>default = True</em>) – If True, suppress printing output.</p></li>
@@ -280,7 +279,6 @@ their principal angles.</p>
 <li><p><strong>max_strain</strong> (<em>array, size same as input arrays</em>) – Array with the maximum principal horizontal strain or stress.</p></li>
 <li><p><strong>sum_strain</strong> (<em>array, size same as input arrays</em>) – Array with the sum of the principal horizontal strain or stress.</p></li>
 <li><p><strong>principal_angle</strong> (<em>array, size same as input arrays</em>) – Array with the principal strain or stress direction.</p></li>
-<li><p><strong>principal_angle2</strong> (<em>array, size same as input arrays</em>) – Array with the principal strain or stress direction from the other quadrant.</p></li>
 </ul>
 </p>
 </dd>
@@ -357,7 +355,7 @@ of Legendre polynomials with respect to colatitude and longitude.</p></li>
 </dl>
 </dd></dl>
 
-</section>
+</div>
 
 
            </div>

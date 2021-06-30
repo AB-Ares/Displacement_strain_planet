@@ -23,6 +23,7 @@ def corr_nmax_drho(
     R,
     c=0,
     density_var=False,
+    filter_in=None,
     filter=None,
     filter_half=None,
 ):
@@ -65,6 +66,8 @@ def corr_nmax_drho(
         Maximum depth at which the density variations occurs.
     density_var : boolean, default = False
         If True, correct for density variations.
+    filter_in : array, size(lmax+1), default = None.
+        Array with the input filter to use.
     filter : string, default = None
         If 'Ma' or 'Mc', apply minimum-amplitude or minimum-curvature filtering.
     filter_half : int, default = None
@@ -92,7 +95,11 @@ def corr_nmax_drho(
             shape_grid, 1, mass, rho_grid, lmax=lmax
         )
         MS_lm_drho = MS_lm_nmax
-        if filter is not None:
+        if filter_in is not None:
+            for l in range(1, lmax + 1):
+                MS_lm_drho[:, l, : l + 1] /= filter_in[l]
+                FA_lm_drho[:, l, : l + 1] /= filter_in[l]
+        elif filter is not None:
             for l in range(1, lmax + 1):
                 MS_lm_drho[:, l, : l + 1] /= DownContFilter(
                     l, filter_half, R, R - c, type=filter
@@ -131,6 +138,7 @@ def Thin_shell_matrix(
     v,
     base_drho=50e3,
     top_drho=0,
+    filter_in=None,
     filter=None,
     filter_half=None,
     H_lm=None,
@@ -222,6 +230,8 @@ def Thin_shell_matrix(
         Lower depth for the of the density contrast.
     top_drho : float, default = 0
         Upper depth for the of the density contrast.
+    filter_in : array, size(lmax+1), default = None.
+        Array with the input filter to use.
     filter : string, default = None
         If 'Ma' or 'Mc', apply minimum-amplitude or minimum-curvature filtering.
     filter_half : int, default = 50
@@ -318,6 +328,11 @@ def Thin_shell_matrix(
             + "value was %s." % (lmax + 1)
         )
 
+    if filter_in is not None and np.size(filter_in) != lmax + 1:
+        raise ValueError(
+            "Size of filter_in must be %s. Input " % (lmax + 1)
+            + "size was %s." % (np.size(filter_in))
+        )
     # The system is a total of 5 equations relating 8 unknowns.
     # If an additional equation is given, 2 arrays must be input
     # to find a solution.
@@ -376,7 +391,9 @@ def Thin_shell_matrix(
     if quiet is False:
         print("Input arrays are %s." % (constraint_test))
         print("Solving for %s." % (not_constraint))
-        if filter is not None:
+        if filter_in is not None:
+            print("Use input filter")
+        elif filter is not None:
             print(
                 "Minimum %s filter" % ("curvature" if filter == "Mc" else "amplitude")
             )
@@ -539,7 +556,12 @@ def Thin_shell_matrix(
             DCfilter_mohoD = 1.0
             DCfilter_drhomt = 1.0
             DCfilter_drhomb = 1.0
-            if filter is not None:
+            if filter_in is not None:
+                DCfilter_mohoD = filter_in[l]
+                if sum_dc == 0:
+                    DCfilter_drhomt = filter_in[l]
+                    DCfilter_drhomb = filter_in[l]
+            elif filter is not None:
                 DCfilter_mohoD = DownContFilter(l, filter_half, R, R - c, type=filter)
                 if sum_dc == 0:
                     DCfilter_drhomt = DownContFilter(
@@ -847,6 +869,7 @@ def Thin_shell_matrix_nmax(
     E,
     v,
     mass,
+    filter_in=None,
     filter=None,
     filter_half=50,
     nmax=5,
@@ -935,6 +958,8 @@ def Thin_shell_matrix_nmax(
         Poisson's ratio.
     mass : float
         Mass of the planet.
+    filter_in : array, size(lmax+1), default = None.
+        Array with the input filter to use.
     filter : string, default = None
         If 'Ma' or 'Mc', apply minimum-amplitude or minimum-curvature filtering.
     filter_half : int, default = 50
@@ -1003,6 +1028,7 @@ def Thin_shell_matrix_nmax(
         Gc_lm=Gc_lm,
         base_drho=base_drho,
         top_drho=top_drho,
+        filter_in=filter_in,
         filter=filter,
         filter_half=filter_half,
         add_array=add_array,
@@ -1360,7 +1386,9 @@ def Thin_shell_matrix_nmax(
                         var_unit,
                         "%.4f" % (delta_out / 1e3 if var_unit == "km" else delta_out),
                         var_unit,
-                        " or try filtering." if filter == 0 else ".",
+                        " or try filtering."
+                        if (filter == 0 and filter_in is None)
+                        else ".",
                     )
                 )
                 exit(1)
