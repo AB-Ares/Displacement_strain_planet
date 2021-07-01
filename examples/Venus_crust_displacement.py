@@ -8,12 +8,11 @@ from Displacement_strain_planet import (
     SH_deriv_store,
     Displacement_strains,
     Principal_strainstress_angle,
-    Plt_tecto_Mars,
 )
 
 #################################################################
 # In this example, we solve for the displacement of the surface of
-# Mars by calling the function `Thin_shell_matrix_nmax`, assuming
+# Venus by calling the function `Thin_shell_matrix_nmax`, assuming
 # that the gravity and topography of the planet are compensated by
 # a combination of isostatic crustal root variations and flexure.
 # 3 assumptions are required to solve the system, and we here assume
@@ -49,10 +48,10 @@ from Displacement_strain_planet import (
 # the same problem with different inputs very fast.
 #################################################################
 
-lmax = 90  # Maximum spherical harmonic degree to perform all
+lmax = 80  # Maximum spherical harmonic degree to perform all
 # calculations
-pot_clm = pysh.datasets.Mars.GMM3(lmax=lmax)
-topo_clm = pysh.datasets.Mars.MarsTopo2600(lmax=lmax)
+pot_clm = pysh.datasets.Venus.MGNP180U(lmax=lmax)
+topo_clm = pysh.datasets.Venus.VenusTopo719(lmax=lmax)
 
 R = topo_clm.coeffs[0, 0, 0]  # Mean planetary radius
 pot_clm = pot_clm.change_ref(r0=R)  # Downward continue to Mean
@@ -75,11 +74,11 @@ topo_clm.coeffs[0, 2, 0] = (percent_C20 / 100.0) * topo_clm.coeffs[0, 2, 0]
 geoid_clm.coeffs[0, 2, 0] = (percent_C20 / 100.0) * geoid_clm.coeffs[0, 2, 0]
 
 # Parameters
-c = 50e3  # Mean Crustal thickness
+c = 20e3  # Mean Crustal thickness
 Te = 100e3  # Elastic thickness
-rhom = 3500.0  # Mantle density
-rhoc = 2900.0  # Crustal density
-rhol = 2900.0  # Surface density
+rhom = 3300.0  # Mantle density
+rhoc = 2800.0  # Crustal density
+rhol = 2800.0  # Surface density
 E = 100e9  # Young's modulus
 v = 0.25  # Poisson's ratio
 
@@ -113,7 +112,7 @@ print("Computing displacements and isostatic crustal root variations")
     H_lm=topo_clm.coeffs,
     drhom_lm=zeros.copy(),
     filter="Ma",
-    filter_half=50,
+    filter_half=40,
     quiet=False
 )
 
@@ -137,10 +136,6 @@ pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
     **args_plot
 )
 
-# pysh.SHCoeffs.from_array(drhom_lm).expand(**args_expand).plot(
-#    ax=ax3, cb_label="Lateral density variations (kg m$^{-3}$)", **args_plot
-# )
-
 (pysh.SHCoeffs.from_array((H_lm - moho_relief_lm) / 1e3).expand(**args_expand)).plot(
     ax=ax4,
     cb_label="Moho depth (km)",
@@ -152,7 +147,7 @@ pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
 
 print("Computing strains")  # This may take some time if it is the first time
 # Strains
-lmax = 30  # Lower lmax for faster computations
+lmax = 80  # Lower lmax for faster computations
 Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp = SH_deriv_store(
     lmax, path, save=False
 )
@@ -198,28 +193,27 @@ args_plot = dict(
     colorbar="bottom",
     cmap=cm.vik,
     cb_ylabel="$\\times 10^{-3}$",
-    cb_tick_interval=1,
 )
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, **args_fig)
 
 pysh.SHGrid.from_array(min_strain * 1e3).plot(
     ax=ax1,
     cb_label="Minimum principal horizontal strain",
-    cmap_limits=[-4, 4],
+    cmap_limits=[-6, 20],
     **args_plot
 )
 pysh.SHGrid.from_array(max_strain * 1e3).plot(
     ax=ax2,
     cb_label="Maximum principal horizontal strain",
+    cmap_limits=[-6, 20],
     ticks="wSnE",
     ylabel=None,
-    cmap_limits=[-4, 4],
     **args_plot
 )
 pysh.SHGrid.from_array(sum_strain * 1e3).plot(
     ax=ax3,
     cb_label="Sum of principal horizontal strains",
-    cmap_limits=[-3, 3],
+    cmap_limits=[-6, 20],
     **args_plot
 )
 pysh.SHGrid.from_array(principal_angle).plot(
@@ -251,7 +245,4 @@ ax4.quiver(
     color="g",
 )
 
-# Add extensional tectonic features from Knapmeyer et al. (2006)
-Plt_tecto_Mars(path, ax=ax3, compression=False, extension=True)
-Plt_tecto_Mars(path, ax=ax4, compression=False, extension=True)
 plt.show()
