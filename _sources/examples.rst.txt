@@ -14,7 +14,10 @@ Mars
     A script that demonstrates how to calculate iteratively the flexure underneath the south polar cap of Mars as a function of elastic thickness and ice density. This computation is similar to that done in e.g., Broquet et al. (2021), in review to JGR:Planets.
 
 ``Run_demo.ipynb`` |ImageLink|_ 
-    A jupyter notebook that shows many of the functionalities of Displacement_strain_planet: moho-relief calculations under various assumptions, including Airy or Pratt isostasy, displacement calculations due to a mantle plume underneath Tharsis or due to internal loading in phase with the surface topography, strain calculations. 
+    A jupyter notebook that shows many of the functionalities of Displacement_strain_planet using Mars as an example: moho-relief calculations under various assumptions, including Airy or Pratt isostasy, displacement calculations due to a mantle plume underneath Tharsis or due to internal loading in phase with the surface topography, strain calculations. 
+
+``Venus_crust_displacement.py``
+    A script that demonstrates how to calculate the moho-relief on Venus using global gravity and topography data. The moho relief is splited in an isostatic part and a displacement part, which depends on the elastic thickness of the lithosphere. The script then computes the principal horizontal strains and their directions associated with the displacement.
 
 .. |ImageLink| image:: ../misc/link1.svg
                :width: 20
