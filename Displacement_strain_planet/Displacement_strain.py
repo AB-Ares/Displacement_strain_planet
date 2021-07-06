@@ -264,7 +264,7 @@ def Displacement_strains(
     v,
     R,
     Te,
-    lmax_calc,
+    lmax,
     colat_min=0,
     colat_max=180,
     lon_min=0,
@@ -285,7 +285,7 @@ def Displacement_strains(
 
     Returns
     -------
-    stress_theta : array, size(2*lmax_calc+2,2*(2*lmax_calc+2))
+    stress_theta : array, size(2*lmax+2,2*(2*lmax+2))
         Array with the stress field with respect to colatitude.
         This is equation A12 from Banerdt (1986)
     stress_phi : array, size(2,lmax+1,lmax+1)
@@ -315,10 +315,10 @@ def Displacement_strains(
 
     Parameters
     ----------
-    A_lm : array, float, size(2,lmax_calc+1,lmax_calc+1)
+    A_lm : array, float, size(2,lmax+1,lmax+1)
         Array with the spherical harmonic coefficients of the
         poloidal term of the tangential displacement.
-    w_lm : array, float, size(2,lmax_calc+1,lmax_calc+1)
+    w_lm : array, float, size(2,lmax+1,lmax+1)
         Array with the spherical harmonic coefficients of the
         upward displacement.
     E : float
@@ -329,7 +329,7 @@ def Displacement_strains(
         Mean radius of the planet.
     Te : float
         Elastic thickness of the lithosphere.
-    lmax_calc : int
+    lmax : int
         Maximum spherical harmonic degree for computations.
     colat_min : float, optional, default = 0
         Minimum colatitude for grid computation of strains and stresses.
@@ -343,19 +343,19 @@ def Displacement_strains(
         Output only the displacement grid for all latitude and longitudes.
     precomp : int, optional, default = True
         Use precomputed the Legendre polynomials found at the 'path'.
-    Y_lm_d1_t : array, float, size(2,lmax_calc+1,lmax_calc+1), optional, default = None
+    Y_lm_d1_t : array, float, size(2,lmax+1,lmax+1), optional, default = None
         Array with the first derivative
         of Legendre polynomials with respect to colatitude.
-    Y_lm_d1_p : array, float, size(2,lmax_calc+1,lmax_calc+1), optional, default = None
+    Y_lm_d1_p : array, float, size(2,lmax+1,lmax+1), optional, default = None
         Array with the first derivative
         of Legendre polynomials with respect to longitude.
-    Y_lm_d2_t : array, float, size(2,lmax_calc+1,lmax_calc+1), optional, default = None
+    Y_lm_d2_t : array, float, size(2,lmax+1,lmax+1), optional, default = None
         Array with the second derivative
         of Legendre polynomials with respect to colatitude.
-    Y_lm_d2_p : array, float, size(2,lmax_calc+1,lmax_calc+1), optional, default = None
+    Y_lm_d2_p : array, float, size(2,lmax+1,lmax+1), optional, default = None
         Array with the second derivative
         of Legendre polynomials with respect to longitude.
-    Y_lm_d2_tp : array, float, size(2,lmax_calc+1,lmax_calc+1), optional, default = None
+    Y_lm_d2_tp : array, float, size(2,lmax+1,lmax+1), optional, default = None
         Array with the first derivative
         of Legendre polynomials with respect to colatitude and longitude.
     path : string, optional, default = None
@@ -363,16 +363,16 @@ def Displacement_strains(
     quiet : int, optional, default = True
         If True, suppress printing output.
     """
-    if lmax_calc != np.shape(A_lm)[2] - 1:
+    if lmax != np.shape(A_lm)[2] - 1:
         if quiet is False:
             print(
                 "Padding A_lm and w_lm from lmax = %s to %s"
-                % (np.shape(A_lm)[2] - 1, lmax_calc)
+                % (np.shape(A_lm)[2] - 1, lmax)
             )
-        A_lm = pysh.SHCoeffs.from_array(A_lm).pad(lmax=lmax_calc).coeffs
-        w_lm = pysh.SHCoeffs.from_array(w_lm).pad(lmax=lmax_calc).coeffs
+        A_lm = pysh.SHCoeffs.from_array(A_lm).pad(lmax=lmax).coeffs
+        w_lm = pysh.SHCoeffs.from_array(w_lm).pad(lmax=lmax).coeffs
 
-    n = 2 * lmax_calc + 2
+    n = 2 * lmax + 2
 
     if precomp:
         if Y_lm_d1_p is not None:
@@ -385,7 +385,7 @@ def Displacement_strains(
                     )
                 )
             Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp = SH_deriv_store(
-                lmax_calc, path
+                lmax, path
             )
     else:
         if quiet is False:
@@ -442,7 +442,7 @@ def Displacement_strains(
                 continue
 
             if precomp:
-                y_lm = pysh.expand.spharm(lmax_calc, theta, phi, degrees=False)
+                y_lm = pysh.expand.spharm(lmax, theta, phi, degrees=False)
                 w_lm_ylm = np.sum(w_lm * y_lm)
                 d2Atheta = np.sum(Y_lm_d2_t[t_i, p_i] * A_lm)
                 d2Aphi = np.sum(Y_lm_d2_p[t_i, p_i] * A_lm)
@@ -462,7 +462,7 @@ def Displacement_strains(
                     Y_lm_d2_pb,
                     Y_lm_d2_tpb,
                     y_lm,
-                ) = SH_deriv(theta, phi, lmax_calc)
+                ) = SH_deriv(theta, phi, lmax)
                 w_lm_ylm = np.sum(w_lm * y_lm)
                 d2Atheta = np.sum(Y_lm_d2_tb * A_lm)
                 d2Aphi = np.sum(Y_lm_d2_pb * A_lm)
@@ -479,16 +479,12 @@ def Displacement_strains(
             eps_theta[t_i, p_i] = R_m1 * (d2Atheta + w_lm_ylm)
             eps_phi[t_i, p_i] = R_m1 * (d2Aphi * csc2 + d1Atheta * cot + w_lm_ylm)
             omega[t_i, p_i] = R_m1 * csc * (d2Athetaphi - cot * d1Aphi)
-            # omega[t_i,p_i] = 2. * R_m1 * csc * (d2Athetaphi -
-            # cot * d1Aphi) Error in Banerdt
 
             kappa_theta[t_i, p_i] = -(R_m1 ** 2) * (d2wtheta + w_lm_ylm)
             kappa_phi[t_i, p_i] = -(R_m1 ** 2) * (
                 d2wphi * csc2 + d1wtheta * cot + w_lm_ylm
             )
             tau[t_i, p_i] = -(R_m1 ** 2) * csc * (d2wthetaphi - cot * d1wphi)
-            # tau[t_i,p_i] = - 2. * R_m1**2 * csc * (d2wthetaphi -
-            # cot * d1wphi) Error in Banerdt
 
             stress_theta[t_i, p_i] = (
                 eps_theta[t_i, p_i]
@@ -541,8 +537,6 @@ def Principal_strainstress_angle(s_theta, s_phi, s_theta_phi):
         Array with the sum of the principal horizontal strain or stress.
     principal_angle : array, size same as input arrays
         Array with the principal strain or stress direction.
-    principal_angle2 : array, size same as input arrays
-        Array with the principal strain or stress direction from the other quadrant.
 
     Parameters
     ----------
@@ -562,11 +556,8 @@ def Principal_strainstress_angle(s_theta, s_phi, s_theta_phi):
     sum_strain = min_strain + max_strain
 
     principal_angle = 0.5 * np.arctan2(2 * s_theta_phi, s_theta - s_phi) * 180.0 / np.pi
-    principal_angle2 = (
-        0.5 * np.arctan2(2 * s_theta_phi, s_phi - s_theta) * 180.0 / np.pi
-    )
 
-    return min_strain, max_strain, sum_strain, principal_angle, principal_angle2
+    return min_strain, max_strain, sum_strain, principal_angle
 
 
 # ==== Plt_tecto_Mars ====

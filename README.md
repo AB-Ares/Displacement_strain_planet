@@ -46,6 +46,8 @@ Strain calculations reproduce results published in the literature (e.g., [Banerd
 
 `Mars_SouthPolarCap_displacement` A script that demonstrates how to calculate iteratively the flexure underneath the south polar cap of Mars as a function of elastic thickness and ice density. This computation is similar to that done in e.g., Broquet et al. (2021), in review to JGR:Planets. 
 
+`Venus_crust_displacement` A script that demonstrates how to calculate the moho-relief and strains on Venus, as a function of the mean planetary crustal thickness and elastic thickness. 
+
 ## How to install and run Displacement_strain_planet
 If you would like to modify the source code, download the Displacement_strain_planet repository and install using pip (or pip3 depending on your installation).
 ```bash
@@ -71,4 +73,4 @@ Alternatively, you can install Displacement-strain-planet via pip
 
 ## Cite
 You can cite the latest release of the package as:
-Adrien Broquet. (2021, June 15). AB-Ares/Displacement_strain_planet: 0.2.1 (Version 0.2.1). Zenodo. http://doi.org/10.5281/zenodo.4955926
+Adrien Broquet. (2021, June 15). AB-Ares/Displacement_strain_planet: 0.2.2 (Version 0.2.2). Zenodo. http://doi.org/10.5281/zenodo.4955926
