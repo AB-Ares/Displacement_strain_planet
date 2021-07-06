@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pyshtools as pysh
 from cmcrameri import cm
-from Displacement_strain_planet import Thin_shell_matrix_nmax
+from Displacement_strain_planet import Thin_shell_matrix_nmax, Thin_shell_matrix
 
 #################################################################
 # In this example, we solve for the displacement of the surface at
@@ -38,6 +38,7 @@ gm = pysh.constants.Mars.gm.value  # GM given in the gravity
 mass = gm / G  # Mass of the planet
 g0 = gm / R ** 2  # Mean gravitational
 # attraction of the planet
+rhobar = mass * 3.0 / 4.0 / np.pi / R ** 3
 
 # Parameters
 c = 60e3  # Mean Crustal thickness
@@ -54,6 +55,7 @@ print("Crustal density is %.2f kg m-3" % (rhoc))
 print("Polar cap density is %.2f kg m-3" % (rhol))
 
 args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, lmax, E, v, mass)
+args_param_m2 = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax, E, v)
 args_expand = dict(lmax=5 * lmax, lmax_calc=lmax)
 args_fig = dict(figsize=(12, 10), dpi=100)
 args_plot = dict(tick_interval=[45, 30], colorbar="bottom", cmap=cm.roma_r)
@@ -68,27 +70,28 @@ residuals = 1e10
 while residuals > 5:
     iter += 1
     if iter == 1:
-        w_deflec = Thin_shell_matrix_nmax(
+        (w_deflec, sols,) = Thin_shell_matrix_nmax(
             *args_param_m,
             dc_lm=zeros.copy(),
             drhom_lm=zeros.copy(),
             H_lm=topo.copy(),
             nmax=1
-        )[0]
+        )[
+            ::10
+        ]  # get first and last arrays
         min1 = R - np.min(
             pysh.SHCoeffs.from_array(w_deflec).expand(lmax_calc=lmax).data
         )
     else:
-        w_deflec = Thin_shell_matrix_nmax(
-            *args_param_m,
+        w_deflec = Thin_shell_matrix(
+            *args_param_m2,
+            first_inv=False,
+            lambdify_func=sols,
             dc_lm=zeros.copy(),
             drhom_lm=zeros.copy(),
-            H_lm=(topo - w_deflec).copy(),
-            nmax=1
+            H_lm=(topo - w_deflec).copy()
         )[0]
-        min2 = R - np.min(
-            pysh.SHCoeffs.from_array(w_deflec).expand(lmax_calc=lmax).data
-        )
+        min2 = -np.min(pysh.SHCoeffs.from_array(w_deflec).expand(lmax_calc=lmax).data)
         residuals = np.abs(min1 - min2)
         print(
             "Iteration %s, maximum flexure %.3f km, residuals %.3f km"
