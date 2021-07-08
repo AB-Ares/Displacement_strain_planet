@@ -66,8 +66,7 @@ Alternatively, you can install Displacement-strain-planet via pip
 ```bash
     cd examples
     jupyter notebook Run_demo.ipynb
-    python Mars_crust_displacement.py 
-    python Mars_SouthPolarCap_displacement.py 
+    python Mars_crust_displacement.py
 ```
 
 ## Author
