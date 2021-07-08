@@ -13,7 +13,9 @@ These functions solve the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.c
 ### Comments
 We note that some of these functions rely heavily on the [pyshtools](https://shtools.github.io/SHTOOLS/) package of [Wieczorek & Meschede (2018)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2018GC007529) that is used to perform the spherical harmonic transforms, Legendre polynomial expansions, and finite-amplitude calculations.
 
-This code is still under development and benchmarking. If you find any bugs or errors in the code, please report them in GitHub or to adrien.broquet at oca.eu.
+This code is still under development and benchmarking. If you find any bugs or errors in the code, please report them in GitHub or to adrien.broquet at oca.eu. 
+
+For this code, we work on the develop branch and merge it to the main branch (with a new version number) everytime significant addtions/improvements are made. 
 
 ### Benchmarks
 Moho-relief calculations have been benchmarked to the [ctplanet](https://github.com/MarkWieczorek/ctplanet) package of Mark Wieczorek.  
