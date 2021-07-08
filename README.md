@@ -1,4 +1,5 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4916799.svg)](http://doi.org/10.5281/zenodo.4916799)
 
 # Displacement_strain_planet
 
