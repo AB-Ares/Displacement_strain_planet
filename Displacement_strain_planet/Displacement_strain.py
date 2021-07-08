@@ -7,7 +7,6 @@ import numpy as np
 import pyshtools as pysh
 import matplotlib.pyplot as plt
 from pathlib import Path
-import time
 
 pi = np.pi
 
@@ -37,7 +36,7 @@ def SH_deriv(theta, phi, lmax):
         Array with the first derivative
         of Legendre polynomials with respect to colatitude and longitude.
     y_lm : array, size(2,lmax+1,lmax+1)
-        Array of spherical harmonic functions
+        Array of spherical harmonic functions.
     Parameters
     ----------
     theta : float
@@ -138,6 +137,8 @@ def SH_deriv_store(lmax, path, save=True):
     Y_lm_d2_thetaphi_a : array, size(2,lmax+1,lmax+1)
         Array with the first derivative
         of Legendre polynomials with respect to colatitude and longitude.
+    y_lm_save : array, size(2,lmax+1,lmax+1)
+        Array of spherical harmonic functions.
 
     Parameters
     ----------
@@ -157,11 +158,13 @@ def SH_deriv_store(lmax, path, save=True):
             + " time depending on lmax, input lmax is %s" % (lmax)
         )
         index_size = int((lmax + 1) * (lmax + 2) / 2)
-        Y_lm_d1_theta_a = np.zeros((n, 2 * n, 2, lmax + 1, lmax + 1))
-        Y_lm_d1_phi_a = np.zeros((n, 2 * n, 2, lmax + 1, lmax + 1))
-        Y_lm_d2_phi_a = np.zeros((n, 2 * n, 2, lmax + 1, lmax + 1))
-        Y_lm_d2_thetaphi_a = np.zeros((n, 2 * n, 2, lmax + 1, lmax + 1))
-        Y_lm_d2_theta_a = np.zeros((n, 2 * n, 2, lmax + 1, lmax + 1))
+        shape_save = (n, 2 * n, 2, lmax + 1, lmax + 1)
+        Y_lm_d1_theta_a = np.zeros(shape_save)
+        Y_lm_d1_phi_a = np.zeros(shape_save)
+        Y_lm_d2_phi_a = np.zeros(shape_save)
+        Y_lm_d2_thetaphi_a = np.zeros(shape_save)
+        Y_lm_d2_theta_a = np.zeros(shape_save)
+        y_lm_save = np.zeros(shape_save)
         phi_ar = np.linspace(0, 360, 2 * n, endpoint=False) * pi / 180.0
         y_lm = np.zeros((len(phi_ar), 2, lmax + 1, lmax + 1))
 
@@ -211,6 +214,7 @@ def SH_deriv_store(lmax, path, save=True):
                         y_lm[:, 1, l, m_abs] = p_theta[index] * sinmphi
 
                 y_lm[:, :, l, : l + 1] *= np.sin(theta)
+                y_lm_save[t_i, :, :, l, : l + 1] = y_lm[:, :, l, : l + 1]
 
                 if theta == 0 or theta == pi:
                     Y_lm_d2_theta_a[t_i, :, :, l, : l + 1] = 0.0
@@ -232,6 +236,7 @@ def SH_deriv_store(lmax, path, save=True):
                     Y_lm_d2_theta_a,
                     Y_lm_d2_phi_a,
                     Y_lm_d2_thetaphi_a,
+                    y_lm_save,
                 ],
             )
     else:
@@ -242,6 +247,7 @@ def SH_deriv_store(lmax, path, save=True):
             Y_lm_d2_theta_a,
             Y_lm_d2_phi_a,
             Y_lm_d2_thetaphi_a,
+            y_lm_save,
         ) = np.load(poly_file, allow_pickle=True)
         print("Loading done")
 
@@ -251,6 +257,7 @@ def SH_deriv_store(lmax, path, save=True):
         Y_lm_d2_theta_a,
         Y_lm_d2_phi_a,
         Y_lm_d2_thetaphi_a,
+        y_lm_save,
     )
 
 
@@ -276,6 +283,7 @@ def Displacement_strains(
     Y_lm_d2_t=None,
     Y_lm_d2_p=None,
     Y_lm_d2_tp=None,
+    y_lm=None,
     path=None,
     quiet=True,
 ):
@@ -358,6 +366,8 @@ def Displacement_strains(
     Y_lm_d2_tp : array, float, size(2,lmax+1,lmax+1), optional, default = None
         Array with the first derivative
         of Legendre polynomials with respect to colatitude and longitude.
+    y_lm : array, size(2,lmax+1,lmax+1)
+        Array of spherical harmonic functions.
     path : string, optional, default = None
         path where to find the store Legendre polynomials.
     quiet : int, optional, default = True
@@ -384,9 +394,14 @@ def Displacement_strains(
                         repr(path)
                     )
                 )
-            Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp = SH_deriv_store(
-                lmax, path
-            )
+            (
+                Y_lm_d1_t,
+                Y_lm_d1_p,
+                Y_lm_d2_t,
+                Y_lm_d2_p,
+                Y_lm_d2_tp,
+                y_lm,
+            ) = SH_deriv_store(lmax, path)
     else:
         if quiet is False:
             print(
@@ -442,8 +457,7 @@ def Displacement_strains(
                 continue
 
             if precomp:
-                y_lm = pysh.expand.spharm(lmax, theta, phi, degrees=False)
-                w_lm_ylm = np.sum(w_lm * y_lm)
+                w_lm_ylm = np.sum(y_lm[t_i, p_i] * w_lm)
                 d2Atheta = np.sum(Y_lm_d2_t[t_i, p_i] * A_lm)
                 d2Aphi = np.sum(Y_lm_d2_p[t_i, p_i] * A_lm)
                 d1Atheta = np.sum(Y_lm_d1_t[t_i, p_i] * A_lm)
@@ -455,6 +469,7 @@ def Displacement_strains(
                 d1wphi = np.sum(Y_lm_d1_p[t_i, p_i] * w_lm)
                 d2wthetaphi = np.sum(Y_lm_d2_tp[t_i, p_i] * w_lm)
             else:
+                print(" colatitude %s of 180" % (int(theta * 180 / pi)), end="\r")
                 (
                     Y_lm_d1_tb,
                     Y_lm_d1_pb,
@@ -463,7 +478,7 @@ def Displacement_strains(
                     Y_lm_d2_tpb,
                     y_lm,
                 ) = SH_deriv(theta, phi, lmax)
-                w_lm_ylm = np.sum(w_lm * y_lm)
+                w_lm_ylm = np.sum(y_lm * w_lm)
                 d2Atheta = np.sum(Y_lm_d2_tb * A_lm)
                 d2Aphi = np.sum(Y_lm_d2_pb * A_lm)
                 d1Atheta = np.sum(Y_lm_d1_tb * A_lm)
