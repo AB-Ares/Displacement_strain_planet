@@ -387,7 +387,7 @@ def Displacement_strains(
 
     if precomp:
         if Y_lm_d1_p is not None:
-            print("Using loaded precomputed SH derivatives")
+            print("Using input precomputed SH derivatives")
         else:
             if path is None:
                 raise ValueError(
@@ -489,16 +489,21 @@ def Displacement_strains(
                 d2wthetaphi = np.sum(Y_lm_d2_tpb * w_lm)
 
             # Sum over theta.
-            eps_theta[t_i, p_i] = R_m1 * (d2Atheta + w_lm_ylm)
-            eps_phi[t_i, p_i] = R_m1 * (d2Aphi * csc2 + d1Atheta * cot + w_lm_ylm)
-            omega[t_i, p_i] = R_m1 * csc * (d2Athetaphi - cot * d1Aphi)
+            eps_theta[t_i, p_i] = d2Atheta + w_lm_ylm
+            eps_phi[t_i, p_i] = d2Aphi * csc2 + d1Atheta * cot + w_lm_ylm
+            omega[t_i, p_i] = csc * (d2Athetaphi - cot * d1Aphi)
 
-            kappa_theta[t_i, p_i] = -(R_m1 ** 2) * (d2wtheta + w_lm_ylm)
-            kappa_phi[t_i, p_i] = -(R_m1 ** 2) * (
-                d2wphi * csc2 + d1wtheta * cot + w_lm_ylm
-            )
-            tau[t_i, p_i] = -(R_m1 ** 2) * csc * (d2wthetaphi - cot * d1wphi)
+            kappa_theta[t_i, p_i] = d2wtheta + w_lm_ylm
+            kappa_phi[t_i, p_i] = d2wphi * csc2 + d1wtheta * cot + w_lm_ylm
+            tau[t_i, p_i] = csc * (d2wthetaphi - cot * d1wphi)
 
+    eps_theta *= R_m1
+    eps_phi *= R_m1
+    omega *= R_m1
+    kappa_theta *= -R_m1**2
+    kappa_phi *= -R_m1**2
+    tau *= -R_m1**2
+    
     stress_theta = (
         (eps_theta + v * eps_phi + Te / 2.0 * (kappa_theta + v * kappa_phi))
         * DpsiTeR
