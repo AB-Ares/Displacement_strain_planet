@@ -39,21 +39,23 @@ def corr_nmax_drho(
     -------
     array, size of input dr_lm
         Array with the spherical harmonic coefficients of the
-        difference between the mass-sheet and finite-ampltiude, with
-        or without lateral density variations.
+        difference between the mass-sheet and finite-ampltiude,
+        with or without lateral density variations.
 
     Parameters
     ----------
     dr_lm : array, size (2,lmax+1,lmax+1)
         Array with spherical harmonic coefficients of the relief.
     drho_lm : array, size (2,lmax+1,lmax+1)
-        Array with spherical harmonic coefficients of the lateral density contrast.
+        Array with spherical harmonic coefficients of the lateral
+        density contrast.
     shape_grid : array, size (2,2*(lmax+1),2*2(lmax+1))
         Array with a grid of the relief.
     rho_grid : array, size (2,2*(lmax+1),2*2(lmax+1))
         Array with a grid of the lateral density contrast.
     lmax : int
-        Maximum spherical harmonic degree to compute for the derivatives.
+        Maximum spherical harmonic degree to compute for the
+        derivatives.
     mass : float
         Mass of the planet.
     nmax : int
@@ -62,15 +64,16 @@ def corr_nmax_drho(
         Mean density contrast.
     R : float
         Mean radius of the planet.
-    c : float, default = 0
+    c : float, optional, default = 0
         Maximum depth at which the density variations occurs.
-    density_var : boolean, default = False
+    density_var : bool, optional, default = False
         If True, correct for density variations.
-    filter_in : array, size(lmax+1), default = None.
+    filter_in : array, size(lmax+1), optional, default = None
         Array with the input filter to use.
-    filter : string, default = None
-        If 'Ma' or 'Mc', apply minimum-amplitude or minimum-curvature filtering.
-    filter_half : int, default = None
+    filter : string, optional, default = None
+        If 'Ma' or 'Mc', apply minimum-amplitude or minimum-curvature
+        filtering.
+    filter_half : int, optional, default = None
         Spherical harmonic degree at which the filter equals 0.5.
     """
     # Finite-amplitude correction.
@@ -92,7 +95,7 @@ def corr_nmax_drho(
     # Density contrast in the relief correction.
     if density_var:
         FA_lm_drho, D = pysh.gravmag.CilmPlusRhoHDH(
-            shape_grid, 1, mass, rho_grid, lmax=lmax
+            shape_grid, 1.0, mass, rho_grid, lmax=lmax
         )
         MS_lm_drho = MS_lm_nmax
         if filter_in is not None:
@@ -199,8 +202,10 @@ def Thin_shell_matrix(
         Array with the spherical harmonic coefficients of the
         surface topography.
     lambdify_func : array, size(2,lmax+1,lmax+1)
-        Array with the lambda functions (size lmax+1) of all components.
-        Lambda functions can be used to re-calculate the same problem with different inputs very fast.
+        Array with the lambda functions (size lmax+1) of all
+        components. Lambda functions can be used to
+        re-calculate the same problem with different inputs
+        very fast.
 
     Parameters
     ----------
@@ -226,69 +231,70 @@ def Thin_shell_matrix(
         Young's modulus.
     v : float
         Poisson's ratio.
-    base_drho : float, default = 50e3
+    base_drho : float, optional, default = 50e3
         Lower depth for the of the density contrast.
-    top_drho : float, default = 0
+    top_drho : float, optional, default = 0
         Upper depth for the of the density contrast.
-    filter_in : array, size(lmax+1), default = None.
+    filter_in : array, size(lmax+1), optional, default = None.
         Array with the input filter to use.
-    filter : string, default = None
-        If 'Ma' or 'Mc', apply minimum-amplitude or minimum-curvature filtering.
+    filter : string, optional, default = None
+        If 'Ma' or 'Mc', apply minimum-amplitude or
+        minimum-curvature filtering.
     filter_half : int, default = 50
         Spherical harmonic degree at which the filter equals 0.5.
-    H_lm : array, size(2,lmax+1,lmax+1), default = None
+    H_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         surface topography.
-    drhom_lm : array, size(2,lmax+1,lmax+1), default = None
+    drhom_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         lateral density variations.
-    dc_lm : array, size(2,lmax+1,lmax+1), default = None
+    dc_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         isostatic crustal root variations.
-    w_lm : array, size(2,lmax+1,lmax+1), default = None
+    w_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         upward displacement.
-    omega_lm : array, size(2,lmax+1,lmax+1), default = None
+    omega_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         tangential load potential.
-    q_lm : array, size(2,lmax+1,lmax+1), default = None
+    q_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         net load on the lithosphere.
-    G_lm : array, size(2,lmax+1,lmax+1), default = None
+    G_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         geoid at the surface.
-    Gc_lm : array, size(2,lmax+1,lmax+1), default = None
+    Gc_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         geoid at the moho depth.
-    add_equation : string, default = None
+    add_equation : string, optional, default = None
         Equation to be added to the system. This must include at least
         one of the 8 parameters aboves.
-    add_array : array size(2,lmax+1,lmax+1), default = None
+    add_array : array size(2,lmax+1,lmax+1), optional, default = None
         Array of spherical harmonics to be added in 'add_equation', which
         is written 'add_array'.
-    quiet : boolean, default = False
+    quiet : bool, optional, default = False
         if True, print various outputs.
-    remove_equation : string, default = None
+    remove_equation : string, optional, default = None
         String of the equation to be removed. This must be either
         'G_lm', 'Gc_lm', 'w_lm', 'omega_lm', or 'q_lm'.
-    w_corr : array size(2,lmax+1,lmax+1), default = None
+    w_corr : array size(2,lmax+1,lmax+1), optional, default = None
         Array with spherical harmonic coefficients for finite-amplitude
         and or lateral density variations corrections of the w_lm relief.
-    wdc_corr : array size(2,lmax+1,lmax+1), default = None
+    wdc_corr : array size(2,lmax+1,lmax+1), optional, default = None
         Array with spherical harmonic coefficients for finite-amplitude
         and or lateral density variations corrections of the moho_lm relief.
-    H_corr : array size(2,lmax+1,lmax+1), default = None
+    H_corr : array size(2,lmax+1,lmax+1), optional, default = None
         Array with spherical harmonic coefficients for finite-amplitude
         and or lateral density variations corrections of the H_lm relief.
-    lambdify_func : array size(lmax+1), default = None
+    lambdify_func : array size(lmax+1), optional, default = None
         Reuse the lambidfy functions of the first run.
-    first_inv : boolean, default = True
+    first_inv : bool, optional, default = True
         If True, the code assumes that this is the first time doing
         the inversion in this setup, and will store the lambdify results
         in 'lambdify_func'
-    drho_corr : array size(2,lmax+1,lmax+1), default = None
-          Array with spherical harmonic coefficients for lateral
-          lateral density variations corrections for omega_lm.
+    drho_corr : array size(2,lmax+1,lmax+1), optional, default = None
+        Array with spherical harmonic coefficients for lateral
+        lateral density variations corrections for omega_lm.
     """
     # Declare all possible input arrays.
     input_arrays = np.array(
@@ -442,10 +448,9 @@ def Thin_shell_matrix(
     Re4 = Re ** 4
     drho = rhom - rhoc
     drhol = rhoc - rhol
-    if Te == 0:  # Avoids error printing when dividing by zero.
-        psi = np.inf
-    else:
-        psi = 12.0 * Re ** 2 / Te ** 2
+    psi = (
+        np.inf if Te == 0 else 12.0 * Re ** 2 / Te ** 2
+    )  # Avoids error printing when dividing by zero.
     D = E * Te ** 3 / (12.0 * (1.0 - v ** 2))  # Shell's
     # rigidity.
     v1v = v / (1.0 - v)
@@ -590,9 +595,6 @@ def Thin_shell_matrix(
             w_lm1, Gc_lm1, q_lm1, omega_lm1, dc_lm1, drhom_lm1, G_lm1, H_lm1 = symbols(
                 " w_lm1 Gc_lm1 q_lm1" + " omega_lm1 dc_lm1 drhom_lm1 G_lm1 H_lm1 "
             )
-
-            if add_array is not None:
-                add_array1 = symbols(" add_array1 ")
 
             wdc_corr1, w_corr1, H_corr1, drho_corr1 = symbols(
                 " wdc_corr1 w_corr1 H_corr1 drho_corr1"
@@ -774,7 +776,7 @@ def constraint_test_symb(str_symb, arr, constraint_test, not_constraint, arr_sym
 
     Returns
     -------
-      array, size of input arr or None
+    array, size of input arr or None
         Input array or None
 
     Parameters
@@ -790,10 +792,11 @@ def constraint_test_symb(str_symb, arr, constraint_test, not_constraint, arr_sym
     arr_symb : list of sympy symbols
        List of all sympy symbols.
     """
-    if str_symb in constraint_test:
-        out = arr
-    else:
-        out = arr_symb[int(np.where(not_constraint == str_symb)[0])]
+    out = (
+        arr
+        if str_symb in constraint_test
+        else arr_symb[int(np.where(not_constraint == str_symb)[0])]
+    )
 
     return out
 
@@ -822,7 +825,7 @@ def DownContFilter(l, half, R_ref, D_relief, type="Mc"):
         The reference radius of the gravitational field.
     D_relief : float
         The radius of the surface to downward continue to.
-    type : string, default = "Mc"
+    type : string, optional, default = "Mc"
         Filter type, minimum amplitude ("Ma") of curvature ("Mc")
     """
     if half == 0:
@@ -931,8 +934,9 @@ def Thin_shell_matrix_nmax(
         Array with the spherical harmonic coefficients of the
         surface topography.
     lambdify_func : array, size(2,lmax+1,lmax+1)
-        Array with the lambda functions (size lmax+1) of all components.
-        Lambda functions can be used to re-calculate the same problem with different inputs very fast.
+        Array with the lambda functions (size lmax+1) of all
+        components. Lambda functions can be used to re-calculate
+        the same problem with different inputs very fast.
 
     Parameters
     ----------
@@ -958,60 +962,61 @@ def Thin_shell_matrix_nmax(
         Poisson's ratio.
     mass : float
         Mass of the planet.
-    filter_in : array, size(lmax+1), default = None.
+    filter_in : array, size(lmax+1), optional, default = None.
         Array with the input filter to use.
-    filter : string, default = None
-        If 'Ma' or 'Mc', apply minimum-amplitude or minimum-curvature filtering.
-    filter_half : int, default = 50
+    filter : string, optional, default = None
+        If 'Ma' or 'Mc', apply minimum-amplitude or minimum-curvature
+        filtering.
+    filter_half : int, optional, default = 50
         Spherical harmonic degree at which the filter equals 0.5.
-    nmax : int, default = 5
+    nmax : int, optional, default = 5
         Maximum order of the finite-amplitude correction.
-    H_lm : array, size(2,lmax+1,lmax+1), default = None
+    H_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         surface topography.
-    drhom_lm : array, size(2,lmax+1,lmax+1), default = None
+    drhom_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         lateral density variations.
-    dc_lm : array, size(2,lmax+1,lmax+1), default = None
+    dc_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         isostatic crustal root variations.
-    w_lm : array, size(2,lmax+1,lmax+1), default = None
+    w_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         upward displacement.
-    omega_lm : array, size(2,lmax+1,lmax+1), default = None
+    omega_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         tangential load potential.
-    q_lm : array, size(2,lmax+1,lmax+1), default = None
+    q_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         net load on the lithosphere.
-    G_lm : array, size(2,lmax+1,lmax+1), default = None
+    G_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         geoid at the surface.
-    Gc_lm : array, size(2,lmax+1,lmax+1), default = None
+    Gc_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         geoid at the moho depth.
-    add_equation : string, default = None
+    add_equation : string, optional, default = None
         Equation to be added to the system. This must include at least
         one of the 8 parameters aboves.
-    add_array : array size(2,lmax+1,lmax+1), default = None
+    add_array : array size(2,lmax+1,lmax+1), optional, default = None
         Array of spherical harmonics to be added in 'add_equation', which
         is written 'add_array'.
-    quiet : boolean, default = False
+    quiet : bool, optional, default = False
         if True, print various outputs.
-    remove_equation : string, default = None
+    remove_equation : string, optional, default = None
         String of the equation to be removed. This must be either
         'G_lm', 'Gc_lm', 'w_lm', 'omega_lm', or 'q_lm'.
-    base_drho : float, default = 150e3
+    base_drho : float, optional, default = 150e3
         Lower depth for the of the density contrast.
-    top_drho : float, default = 50e3
+    top_drho : float, optional, default = 50e3
         Upper depth for the of the density contrast.
-    delta_max : float, default = 5
-        The algorithm will continue to iterate until the maximum difference in
-        relief (or density contrast) between solutions is less than this
-        value (in meters or kg m-3).
-    iter_max : int, default = 250
+    delta_max : float, optional, default = 5
+        The algorithm will continue to iterate until the maximum
+        difference in relief (or density contrast) between solutions
+        is less than this value (in meters or kg m-3).
+    iter_max : int, optional, default = 250
         Maximum number of iterations before the algorithm stops.
-    delta_out : float, default = 500e3
+    delta_out : float, optional, default = 500e3
         If the delta is larger than this value, the algorithm stops
         and prints that it is not converging.
     """
@@ -1357,10 +1362,7 @@ def Thin_shell_matrix_nmax(
                 delta_w_geoid_1 = delta_w_geoid
 
             if sum_dc == 0:
-                if sum_w != 0:
-                    grid_prev = w_grid
-                else:
-                    grid_prev = rho_grid
+                grid_prev = w_grid if sum_w != 0 else rho_grid
             else:
                 grid_prev = R - wdc_grid - c
 

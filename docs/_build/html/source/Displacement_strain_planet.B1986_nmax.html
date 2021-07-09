@@ -200,7 +200,7 @@
 <li><p><strong>half</strong> (<em>int</em>) – The spherical harmonic degree where the filter is equal to 0.5.</p></li>
 <li><p><strong>R_ref</strong> (<em>float</em>) – The reference radius of the gravitational field.</p></li>
 <li><p><strong>D_relief</strong> (<em>float</em>) – The radius of the surface to downward continue to.</p></li>
-<li><p><strong>type</strong> (<em>string</em><em>, </em><em>default = &quot;Mc&quot;</em>) – Filter type, minimum amplitude (“Ma”) of curvature (“Mc”)</p></li>
+<li><p><strong>type</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default = &quot;Mc&quot;</em>) – Filter type, minimum amplitude (“Ma”) of curvature (“Mc”)</p></li>
 </ul>
 </dd>
 </dl>
@@ -236,8 +236,10 @@ geoid at the moho depth.</p></li>
 geoid at the surface.</p></li>
 <li><p><strong>H_lm</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the spherical harmonic coefficients of the
 surface topography.</p></li>
-<li><p><strong>lambdify_func</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the lambda functions (size lmax+1) of all components.
-Lambda functions can be used to re-calculate the same problem with different inputs very fast.</p></li>
+<li><p><strong>lambdify_func</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the lambda functions (size lmax+1) of all
+components. Lambda functions can be used to
+re-calculate the same problem with different inputs
+very fast.</p></li>
 </ul>
 </p>
 </dd>
@@ -254,45 +256,46 @@ Lambda functions can be used to re-calculate the same problem with different inp
 <li><p><strong>lmax</strong> (<em>int</em>) – Maximum spherical harmonic degree of calculations.</p></li>
 <li><p><strong>E</strong> (<em>float</em>) – Young’s modulus.</p></li>
 <li><p><strong>v</strong> (<em>float</em>) – Poisson’s ratio.</p></li>
-<li><p><strong>base_drho</strong> (<em>float</em><em>, </em><em>default = 50e3</em>) – Lower depth for the of the density contrast.</p></li>
-<li><p><strong>top_drho</strong> (<em>float</em><em>, </em><em>default = 0</em>) – Upper depth for the of the density contrast.</p></li>
-<li><p><strong>filter_in</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None.</em>) – Array with the input filter to use.</p></li>
-<li><p><strong>filter</strong> (<em>string</em><em>, </em><em>default = None</em>) – If ‘Ma’ or ‘Mc’, apply minimum-amplitude or minimum-curvature filtering.</p></li>
+<li><p><strong>base_drho</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>default = 50e3</em>) – Lower depth for the of the density contrast.</p></li>
+<li><p><strong>top_drho</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>default = 0</em>) – Upper depth for the of the density contrast.</p></li>
+<li><p><strong>filter_in</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None.</em>) – Array with the input filter to use.</p></li>
+<li><p><strong>filter</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – If ‘Ma’ or ‘Mc’, apply minimum-amplitude or
+minimum-curvature filtering.</p></li>
 <li><p><strong>filter_half</strong> (<em>int</em><em>, </em><em>default = 50</em>) – Spherical harmonic degree at which the filter equals 0.5.</p></li>
-<li><p><strong>H_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>H_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 surface topography.</p></li>
-<li><p><strong>drhom_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>drhom_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 lateral density variations.</p></li>
-<li><p><strong>dc_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>dc_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 isostatic crustal root variations.</p></li>
-<li><p><strong>w_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>w_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 upward displacement.</p></li>
-<li><p><strong>omega_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>omega_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 tangential load potential.</p></li>
-<li><p><strong>q_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>q_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 net load on the lithosphere.</p></li>
-<li><p><strong>G_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>G_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 geoid at the surface.</p></li>
-<li><p><strong>Gc_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>Gc_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 geoid at the moho depth.</p></li>
-<li><p><strong>add_equation</strong> (<em>string</em><em>, </em><em>default = None</em>) – Equation to be added to the system. This must include at least
+<li><p><strong>add_equation</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Equation to be added to the system. This must include at least
 one of the 8 parameters aboves.</p></li>
-<li><p><strong>add_array</strong> (<em>array size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array of spherical harmonics to be added in ‘add_equation’, which
+<li><p><strong>add_array</strong> (<em>array size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array of spherical harmonics to be added in ‘add_equation’, which
 is written ‘add_array’.</p></li>
-<li><p><strong>quiet</strong> (<em>boolean</em><em>, </em><em>default = False</em>) – if True, print various outputs.</p></li>
-<li><p><strong>remove_equation</strong> (<em>string</em><em>, </em><em>default = None</em>) – String of the equation to be removed. This must be either
+<li><p><strong>quiet</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>default = False</em>) – if True, print various outputs.</p></li>
+<li><p><strong>remove_equation</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – String of the equation to be removed. This must be either
 ‘G_lm’, ‘Gc_lm’, ‘w_lm’, ‘omega_lm’, or ‘q_lm’.</p></li>
-<li><p><strong>w_corr</strong> (<em>array size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with spherical harmonic coefficients for finite-amplitude
+<li><p><strong>w_corr</strong> (<em>array size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with spherical harmonic coefficients for finite-amplitude
 and or lateral density variations corrections of the w_lm relief.</p></li>
-<li><p><strong>wdc_corr</strong> (<em>array size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with spherical harmonic coefficients for finite-amplitude
+<li><p><strong>wdc_corr</strong> (<em>array size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with spherical harmonic coefficients for finite-amplitude
 and or lateral density variations corrections of the moho_lm relief.</p></li>
-<li><p><strong>H_corr</strong> (<em>array size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with spherical harmonic coefficients for finite-amplitude
+<li><p><strong>H_corr</strong> (<em>array size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with spherical harmonic coefficients for finite-amplitude
 and or lateral density variations corrections of the H_lm relief.</p></li>
-<li><p><strong>lambdify_func</strong> (<em>array size</em><em>(</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Reuse the lambidfy functions of the first run.</p></li>
-<li><p><strong>first_inv</strong> (<em>boolean</em><em>, </em><em>default = True</em>) – If True, the code assumes that this is the first time doing
+<li><p><strong>lambdify_func</strong> (<em>array size</em><em>(</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Reuse the lambidfy functions of the first run.</p></li>
+<li><p><strong>first_inv</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>default = True</em>) – If True, the code assumes that this is the first time doing
 the inversion in this setup, and will store the lambdify results
 in ‘lambdify_func’</p></li>
-<li><p><strong>drho_corr</strong> (<em>array size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with spherical harmonic coefficients for lateral
+<li><p><strong>drho_corr</strong> (<em>array size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with spherical harmonic coefficients for lateral
 lateral density variations corrections for omega_lm.</p></li>
 </ul>
 </dd>
@@ -329,8 +332,9 @@ geoid at the moho depth.</p></li>
 geoid at the surface.</p></li>
 <li><p><strong>H_lm</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the spherical harmonic coefficients of the
 surface topography.</p></li>
-<li><p><strong>lambdify_func</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the lambda functions (size lmax+1) of all components.
-Lambda functions can be used to re-calculate the same problem with different inputs very fast.</p></li>
+<li><p><strong>lambdify_func</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the lambda functions (size lmax+1) of all
+components. Lambda functions can be used to re-calculate
+the same problem with different inputs very fast.</p></li>
 </ul>
 </p>
 </dd>
@@ -347,40 +351,41 @@ Lambda functions can be used to re-calculate the same problem with different inp
 <li><p><strong>E</strong> (<em>float</em>) – Young’s modulus.</p></li>
 <li><p><strong>v</strong> (<em>float</em>) – Poisson’s ratio.</p></li>
 <li><p><strong>mass</strong> (<em>float</em>) – Mass of the planet.</p></li>
-<li><p><strong>filter_in</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None.</em>) – Array with the input filter to use.</p></li>
-<li><p><strong>filter</strong> (<em>string</em><em>, </em><em>default = None</em>) – If ‘Ma’ or ‘Mc’, apply minimum-amplitude or minimum-curvature filtering.</p></li>
-<li><p><strong>filter_half</strong> (<em>int</em><em>, </em><em>default = 50</em>) – Spherical harmonic degree at which the filter equals 0.5.</p></li>
-<li><p><strong>nmax</strong> (<em>int</em><em>, </em><em>default = 5</em>) – Maximum order of the finite-amplitude correction.</p></li>
-<li><p><strong>H_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>filter_in</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None.</em>) – Array with the input filter to use.</p></li>
+<li><p><strong>filter</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – If ‘Ma’ or ‘Mc’, apply minimum-amplitude or minimum-curvature
+filtering.</p></li>
+<li><p><strong>filter_half</strong> (<em>int</em><em>, </em><em>optional</em><em>, </em><em>default = 50</em>) – Spherical harmonic degree at which the filter equals 0.5.</p></li>
+<li><p><strong>nmax</strong> (<em>int</em><em>, </em><em>optional</em><em>, </em><em>default = 5</em>) – Maximum order of the finite-amplitude correction.</p></li>
+<li><p><strong>H_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 surface topography.</p></li>
-<li><p><strong>drhom_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>drhom_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 lateral density variations.</p></li>
-<li><p><strong>dc_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>dc_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 isostatic crustal root variations.</p></li>
-<li><p><strong>w_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>w_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 upward displacement.</p></li>
-<li><p><strong>omega_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>omega_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 tangential load potential.</p></li>
-<li><p><strong>q_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>q_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 net load on the lithosphere.</p></li>
-<li><p><strong>G_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>G_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 geoid at the surface.</p></li>
-<li><p><strong>Gc_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
+<li><p><strong>Gc_lm</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the spherical harmonic coefficients of the
 geoid at the moho depth.</p></li>
-<li><p><strong>add_equation</strong> (<em>string</em><em>, </em><em>default = None</em>) – Equation to be added to the system. This must include at least
+<li><p><strong>add_equation</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Equation to be added to the system. This must include at least
 one of the 8 parameters aboves.</p></li>
-<li><p><strong>add_array</strong> (<em>array size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None</em>) – Array of spherical harmonics to be added in ‘add_equation’, which
+<li><p><strong>add_array</strong> (<em>array size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array of spherical harmonics to be added in ‘add_equation’, which
 is written ‘add_array’.</p></li>
-<li><p><strong>quiet</strong> (<em>boolean</em><em>, </em><em>default = False</em>) – if True, print various outputs.</p></li>
-<li><p><strong>remove_equation</strong> (<em>string</em><em>, </em><em>default = None</em>) – String of the equation to be removed. This must be either
+<li><p><strong>quiet</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>default = False</em>) – if True, print various outputs.</p></li>
+<li><p><strong>remove_equation</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – String of the equation to be removed. This must be either
 ‘G_lm’, ‘Gc_lm’, ‘w_lm’, ‘omega_lm’, or ‘q_lm’.</p></li>
-<li><p><strong>base_drho</strong> (<em>float</em><em>, </em><em>default = 150e3</em>) – Lower depth for the of the density contrast.</p></li>
-<li><p><strong>top_drho</strong> (<em>float</em><em>, </em><em>default = 50e3</em>) – Upper depth for the of the density contrast.</p></li>
-<li><p><strong>delta_max</strong> (<em>float</em><em>, </em><em>default = 5</em>) – The algorithm will continue to iterate until the maximum difference in
-relief (or density contrast) between solutions is less than this
-value (in meters or kg m-3).</p></li>
-<li><p><strong>iter_max</strong> (<em>int</em><em>, </em><em>default = 250</em>) – Maximum number of iterations before the algorithm stops.</p></li>
-<li><p><strong>delta_out</strong> (<em>float</em><em>, </em><em>default = 500e3</em>) – If the delta is larger than this value, the algorithm stops
+<li><p><strong>base_drho</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>default = 150e3</em>) – Lower depth for the of the density contrast.</p></li>
+<li><p><strong>top_drho</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>default = 50e3</em>) – Upper depth for the of the density contrast.</p></li>
+<li><p><strong>delta_max</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>default = 5</em>) – The algorithm will continue to iterate until the maximum
+difference in relief (or density contrast) between solutions
+is less than this value (in meters or kg m-3).</p></li>
+<li><p><strong>iter_max</strong> (<em>int</em><em>, </em><em>optional</em><em>, </em><em>default = 250</em>) – Maximum number of iterations before the algorithm stops.</p></li>
+<li><p><strong>delta_out</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>default = 500e3</em>) – If the delta is larger than this value, the algorithm stops
 and prints that it is not converging.</p></li>
 </ul>
 </dd>
@@ -423,8 +428,8 @@ Phillips (1998).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>Array with the spherical harmonic coefficients of the
-difference between the mass-sheet and finite-ampltiude, with
-or without lateral density variations.</p>
+difference between the mass-sheet and finite-ampltiude,
+with or without lateral density variations.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>array, size of input dr_lm</p>
@@ -432,19 +437,22 @@ or without lateral density variations.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dr_lm</strong> (<em>array</em><em>, </em><em>size</em><em> (</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em>) – Array with spherical harmonic coefficients of the relief.</p></li>
-<li><p><strong>drho_lm</strong> (<em>array</em><em>, </em><em>size</em><em> (</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em>) – Array with spherical harmonic coefficients of the lateral density contrast.</p></li>
+<li><p><strong>drho_lm</strong> (<em>array</em><em>, </em><em>size</em><em> (</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em>) – Array with spherical harmonic coefficients of the lateral
+density contrast.</p></li>
 <li><p><strong>shape_grid</strong> (<em>array</em><em>, </em><em>size</em><em> (</em><em>2</em><em>,</em><em>2*</em><em>(</em><em>lmax+1</em><em>)</em><em>,</em><em>2*2</em><em>(</em><em>lmax+1</em><em>)</em><em>)</em>) – Array with a grid of the relief.</p></li>
 <li><p><strong>rho_grid</strong> (<em>array</em><em>, </em><em>size</em><em> (</em><em>2</em><em>,</em><em>2*</em><em>(</em><em>lmax+1</em><em>)</em><em>,</em><em>2*2</em><em>(</em><em>lmax+1</em><em>)</em><em>)</em>) – Array with a grid of the lateral density contrast.</p></li>
-<li><p><strong>lmax</strong> (<em>int</em>) – Maximum spherical harmonic degree to compute for the derivatives.</p></li>
+<li><p><strong>lmax</strong> (<em>int</em>) – Maximum spherical harmonic degree to compute for the
+derivatives.</p></li>
 <li><p><strong>mass</strong> (<em>float</em>) – Mass of the planet.</p></li>
 <li><p><strong>nmax</strong> (<em>int</em>) – Order of the finite-amplitude correction.</p></li>
 <li><p><strong>drho</strong> (<em>float</em>) – Mean density contrast.</p></li>
 <li><p><strong>R</strong> (<em>float</em>) – Mean radius of the planet.</p></li>
-<li><p><strong>c</strong> (<em>float</em><em>, </em><em>default = 0</em>) – Maximum depth at which the density variations occurs.</p></li>
-<li><p><strong>density_var</strong> (<em>boolean</em><em>, </em><em>default = False</em>) – If True, correct for density variations.</p></li>
-<li><p><strong>filter_in</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>lmax+1</em><em>)</em><em>, </em><em>default = None.</em>) – Array with the input filter to use.</p></li>
-<li><p><strong>filter</strong> (<em>string</em><em>, </em><em>default = None</em>) – If ‘Ma’ or ‘Mc’, apply minimum-amplitude or minimum-curvature filtering.</p></li>
-<li><p><strong>filter_half</strong> (<em>int</em><em>, </em><em>default = None</em>) – Spherical harmonic degree at which the filter equals 0.5.</p></li>
+<li><p><strong>c</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>default = 0</em>) – Maximum depth at which the density variations occurs.</p></li>
+<li><p><strong>density_var</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>default = False</em>) – If True, correct for density variations.</p></li>
+<li><p><strong>filter_in</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the input filter to use.</p></li>
+<li><p><strong>filter</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – If ‘Ma’ or ‘Mc’, apply minimum-amplitude or minimum-curvature
+filtering.</p></li>
+<li><p><strong>filter_half</strong> (<em>int</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Spherical harmonic degree at which the filter equals 0.5.</p></li>
 </ul>
 </dd>
 </dl>

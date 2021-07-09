@@ -16,7 +16,7 @@ pi = np.pi
 def SH_deriv(theta, phi, lmax):
     """
     Compute on the fly spherical harmonic derivatives
-    (first and second order)
+    (first and second order).
 
     Returns
     -------
@@ -37,6 +37,7 @@ def SH_deriv(theta, phi, lmax):
         of Legendre polynomials with respect to colatitude and longitude.
     y_lm : array, size(2,lmax+1,lmax+1)
         Array of spherical harmonic functions.
+
     Parameters
     ----------
     theta : float
@@ -146,8 +147,8 @@ def SH_deriv_store(lmax, path, save=True):
         Path to store or load spherical harmonic derivatives.
     lmax : int
         Maximum spherical harmonic degree to compute for the derivatives.
-    save : boolean
-        Whether the data is saved at the given path location.
+    save : boolean, optional, default = True
+        If True, save the data at the given path location.
     """
     n = 2 * lmax + 2
     poly_file = "%s/Y_lmsd1d2_lmax%s.npy" % (path, lmax)
@@ -295,22 +296,22 @@ def Displacement_strains(
     -------
     stress_theta : array, size(2*lmax+2,2*(2*lmax+2))
         Array with the stress field with respect to colatitude.
-        This is equation A12 from Banerdt (1986)
+        This is equation A12 from Banerdt (1986).
     stress_phi : array, size(2,lmax+1,lmax+1)
         Array with the stress field with respect to longitude.
-        This is equation A13 from Banerdt (1986)
+        This is equation A13 from Banerdt (1986).
     stress_theta_phi : array, size(2,lmax+1,lmax+1)
         Array with the stress field with respect to colatitude and longitude.
-        This is equation A14 from Banerdt (1986)
+        This is equation A14 from Banerdt (1986).
     eps_theta : array, size(2,lmax+1,lmax+1)
         Array with the elongation with respect to colatitude.
-        This is equation A16 from Banerdt (1986)
+        This is equation A16 from Banerdt (1986).
     eps_phi : array, size(2,lmax+1,lmax+1)
         Array with the elongation with respect to longitude.
         This is equation A17 from Banerdt (1986).
     omega : array, size(2,lmax+1,lmax+1)
         Array with the shearing deformation.
-        This is equation A18 from Banerdt (1986). Corrected for the prefactor 2
+        This is equation A18 from Banerdt (1986). Corrected for the prefactor 2.
     kappa_theta : array, size(2,lmax+1,lmax+1)
         Array with the bending deformation with respect to colatitude.
         This is equation A19 from Banerdt (1986).
@@ -319,7 +320,7 @@ def Displacement_strains(
         This is equation A20 from Banerdt (1986).
     tau : array, size(2,lmax+1,lmax+1)
         Array with the twisting deformation.
-        This is equation A21 from Banerdt (1986). Corrected for the prefactor 2
+        This is equation A21 from Banerdt (1986). Corrected for the prefactor 2.
 
     Parameters
     ----------
@@ -347,9 +348,9 @@ def Displacement_strains(
         Minimum longitude for grid computation of strains and stresses.
     lon_max : float, optional, default = 360
         Maximum longitude for grid computation of strains and stresses.
-    only_deflec : int, optional, default = False
+    only_deflec : bool, optional, default = False
         Output only the displacement grid for all latitude and longitudes.
-    precomp : int, optional, default = True
+    precomp : bool, optional, default = True
         Use precomputed the Legendre polynomials found at the 'path'.
     Y_lm_d1_t : array, float, size(2,lmax+1,lmax+1), optional, default = None
         Array with the first derivative
@@ -366,11 +367,11 @@ def Displacement_strains(
     Y_lm_d2_tp : array, float, size(2,lmax+1,lmax+1), optional, default = None
         Array with the first derivative
         of Legendre polynomials with respect to colatitude and longitude.
-    y_lm : array, size(2,lmax+1,lmax+1)
+    y_lm : array, float, size(2,lmax+1,lmax+1), optional, default = None
         Array of spherical harmonic functions.
     path : string, optional, default = None
-        path where to find the store Legendre polynomials.
-    quiet : int, optional, default = True
+        path where to find the stored Legendre polynomials.
+    quiet : bool, optional, default = True
         If True, suppress printing output.
     """
     if lmax != np.shape(A_lm)[2] - 1:
@@ -598,21 +599,21 @@ def Plt_tecto_Mars(
     ----------
     path : string
         path for the location of the Knameyer et al (2006) dataset.
-    compression : boolean, optional, default = False
+    compression : bool, optional, default = False
         If True, plot compressive tectonic features.
-    extension : boolean, optional, default = True
+    extension : bool, optional, default = True
         If True, plot extensive tectonic features.
-    ax : object
+    ax : object, optional, default = None
         Matplotlib axis.
-    compression_col : string, default = "k"
+    compression_col : string, optional, default = "k"
         Color of compressive tectonic features.
-    extension_col : string, default = "purple"
+    extension_col : string, optional, default = "purple"
         Color of extensive tectonic features.
-    lw : int, default = 1
+    lw : int, optional, default = 1
         Linewidth for the tectonic features
-    legend_show : boolean, default = True
+    legend_show : bool, optional, default = True
         If True, add a legend to the plot.
-    legend_loc : string, default = "upper left"
+    legend_loc : string, optional, default = "upper left"
         Determine the legend position.
     """
     comp_fault_dat = np.loadtxt("%s/Knapmeyer_2006_compdata.txt" % (path))
