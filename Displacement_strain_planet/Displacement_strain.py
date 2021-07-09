@@ -500,10 +500,10 @@ def Displacement_strains(
     eps_theta *= R_m1
     eps_phi *= R_m1
     omega *= R_m1
-    kappa_theta *= -R_m1**2
-    kappa_phi *= -R_m1**2
-    tau *= -R_m1**2
-    
+    kappa_theta *= -(R_m1 ** 2)
+    kappa_phi *= -(R_m1 ** 2)
+    tau *= -(R_m1 ** 2)
+
     stress_theta = (
         (eps_theta + v * eps_phi + Te / 2.0 * (kappa_theta + v * kappa_phi))
         * DpsiTeR
