@@ -422,9 +422,6 @@ def Displacement_strains(
     w_lm[0, 0, 0] = 0.0
 
     # Allocate arrays.
-    stress_theta = np.zeros((n, 2 * n))
-    stress_phi = np.zeros((n, 2 * n))
-    stress_theta_phi = np.zeros((n, 2 * n))
     omega = np.zeros((n, 2 * n))
     kappa_theta = np.zeros((n, 2 * n))
     kappa_phi = np.zeros((n, 2 * n))
@@ -502,25 +499,21 @@ def Displacement_strains(
             )
             tau[t_i, p_i] = -(R_m1 ** 2) * csc * (d2wthetaphi - cot * d1wphi)
 
-            stress_theta[t_i, p_i] = (
-                eps_theta[t_i, p_i]
-                + v * eps_phi[t_i, p_i]
-                + Te / 2.0 * (kappa_theta[t_i, p_i] + v * kappa_phi[t_i, p_i])
-            )
-            stress_phi[t_i, p_i] = (
-                eps_phi[t_i, p_i]
-                + v * eps_theta[t_i, p_i]
-                + Te / 2.0 * (kappa_phi[t_i, p_i] + v * kappa_theta[t_i, p_i])
-            )
-            stress_theta_phi[t_i, p_i] = omega[t_i, p_i] + Te / 2.0 * tau[t_i, p_i]
+    stress_theta = (
+        (eps_theta + v * eps_phi + Te / 2.0 * (kappa_theta + v * kappa_phi))
+        * DpsiTeR
+        / 1e6
+    )  # MPa
+    stress_phi = (
+        (eps_phi + v * eps_theta + Te / 2.0 * (kappa_phi + v * kappa_theta))
+        * DpsiTeR
+        / 1e6
+    )  # MPa
+    stress_theta_phi = (omega + Te / 2.0 * tau) * 0.5 * DpsiTeR * (1.0 - v) / 1e6  # MPa
 
-    stress_theta *= DpsiTeR / 1e6  # MPa
-    stress_phi *= DpsiTeR / 1e6  # MPa
-    stress_theta_phi *= 0.5 * DpsiTeR * (1.0 - v) / 1e6  # MPa
-
-    kappa_theta *= Te / 2.0
-    kappa_phi *= Te / 2.0
-    tau *= Te / 2.0
+    kappa_theta *= Te / 2.0  # Strain
+    kappa_phi *= Te / 2.0  # Strain
+    tau *= Te / 2.0  # Strain
 
     return (
         stress_theta,
