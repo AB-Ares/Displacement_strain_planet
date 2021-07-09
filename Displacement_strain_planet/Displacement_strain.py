@@ -54,18 +54,20 @@ def SH_deriv(theta, phi, lmax):
     Y_lm_d2_theta_a = np.zeros((2, lmax + 1, lmax + 1))
     y_lm = np.zeros((2, lmax + 1, lmax + 1))
 
+    cost = np.cos(theta)
+    sint = np.sin(theta)
     if theta == 0 or theta == pi:
         dp_theta = np.zeros((int((lmax + 1) * (lmax + 2) / 2)))
         p_theta = np.zeros((int((lmax + 1) * (lmax + 2) / 2)))
         costsint = 0.0
         sintt = 0.0
     else:
-        p_theta, dp_theta = pysh.legendre.PlmBar_d1(lmax, np.cos(theta))
-        dp_theta *= -np.sin(theta)  # Derivative with respect to
+        p_theta, dp_theta = pysh.legendre.PlmBar_d1(lmax, cost)
+        dp_theta *= -sint  # Derivative with respect to
         # theta.
-        p_theta /= np.sin(theta)
-        costsint = np.cos(theta) / np.sin(theta)
-        sintt = 1.0 / np.sin(theta) ** 2
+        p_theta /= sint
+        costsint = cost / sint
+        sintt = 1.0 / sint ** 2
     for l in range(lmax + 1):
         lapla = float(-l * (l + 1))
         for m in range(-l, l + 1):
@@ -82,7 +84,7 @@ def SH_deriv(theta, phi, lmax):
                 Y_lm_d1_phi_a[0, l, m] = p_theta[index] * msinmphi
                 Y_lm_d2_phi_a[0, l, m] = p_theta[index] * m2cosphi
                 Y_lm_d2_thetaphi_a[0, l, m] = dp_theta[index] * msinmphi
-                y_lm[0, l, m] = p_theta[index] * np.sin(theta) * cosmphi
+                y_lm[0, l, m] = p_theta[index] * cosmphi
             else:
                 mcosmphi = m_abs * cosmphi
                 m2sinphi = -(m_abs ** 2) * sinmphi
@@ -90,8 +92,9 @@ def SH_deriv(theta, phi, lmax):
                 Y_lm_d1_phi_a[1, l, m_abs] = p_theta[index] * mcosmphi
                 Y_lm_d2_phi_a[1, l, m_abs] = p_theta[index] * m2sinphi
                 Y_lm_d2_thetaphi_a[1, l, m_abs] = dp_theta[index] * mcosmphi
-                y_lm[1, l, m_abs] = p_theta[index] * np.sin(theta) * sinmphi
+                y_lm[1, l, m_abs] = p_theta[index] * sinmphi
 
+        y_lm[:, l, : l + 1] *= sint
         if theta == 0 or theta == pi:
             Y_lm_d2_theta_a[:, l, : l + 1] = 0.0  # Not defined.
         else:
@@ -173,16 +176,18 @@ def SH_deriv_store(lmax, path, save=True):
         for theta in np.linspace(0, 180, n, endpoint=False) * pi / 180.0:
             print(" colatitude %s of 180" % (int(theta * 180 / pi)), end="\r")
             t_i += 1
+            sint = np.sin(theta)
+            cost = np.cos(theta)
             if theta == 0 or theta == pi:
                 dp_theta = np.zeros((index_size))
                 p_theta = np.zeros((index_size))
             else:
-                p_theta, dp_theta = pysh.legendre.PlmBar_d1(lmax, np.cos(theta))
-                dp_theta *= -np.sin(theta)  # Derivative with
+                p_theta, dp_theta = pysh.legendre.PlmBar_d1(lmax, cost)
+                dp_theta *= -sint  # Derivative with
                 # respect to theta.
-                p_theta /= np.sin(theta)
-                costsint = np.cos(theta) / np.sin(theta)
-                sintt = 1.0 / np.sin(theta) ** 2
+                p_theta /= sint
+                costsint = cost / sint
+                sintt = 1.0 / sint ** 2
 
             for l in range(lmax + 1):
                 lapla = float(-l * (l + 1))
@@ -214,7 +219,7 @@ def SH_deriv_store(lmax, path, save=True):
                         )
                         y_lm[:, 1, l, m_abs] = p_theta[index] * sinmphi
 
-                y_lm[:, :, l, : l + 1] *= np.sin(theta)
+                y_lm[:, :, l, : l + 1] *= sint
                 y_lm_save[t_i, :, :, l, : l + 1] = y_lm[:, :, l, : l + 1]
 
                 if theta == 0 or theta == pi:
@@ -439,13 +444,14 @@ def Displacement_strains(
             # Not in the lat / lon range we investigate.
             continue
 
+        sint = np.sin(theta)
         if theta == 0 or theta == pi:
             csc = 0.0
             csc2 = 0.0
             cot = 0.0
         else:
-            csc = 1.0 / np.sin(theta)
-            csc2 = 1.0 / np.sin(theta) ** 2
+            csc = 1.0 / sint
+            csc2 = 1.0 / sint ** 2
             cot = 1.0 / np.tan(theta)
 
         for phi in np.linspace(0, 360, 2 * n, endpoint=False) * pi / 180.0:

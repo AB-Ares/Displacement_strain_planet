@@ -456,11 +456,11 @@ def Thin_shell_matrix(
     v1v = v / (1.0 - v)
     RCR = (R - c) / R
 
-    gmoho = g0 * (1.0 + (((R - c) / R) ** 3 - 1) * rhoc / rhobar) / ((R - c) / R) ** 2
+    gmoho = g0 * (1.0 + (((R - c) / R) ** 3 - 1.0) * rhoc / rhobar) / ((R - c) / R) ** 2
     if top_drho <= c:
         gdrho = (
             g0
-            * (1.0 + (((R - top_drho) / R) ** 3 - 1) * rhoc / rhobar)
+            * (1.0 + (((R - top_drho) / R) ** 3 - 1.0) * rhoc / rhobar)
             / ((R - top_drho) / R) ** 2
         )
     else:
@@ -1253,7 +1253,7 @@ def Thin_shell_matrix_nmax(
                 if density_var_dc:
                     gmoho = (
                         g0
-                        * (1.0 + (((R - c) / R) ** 3 - 1) * rhoc / rhobar)
+                        * (1.0 + (((R - c) / R) ** 3 - 1.0) * rhoc / rhobar)
                         / ((R - c) / R) ** 2
                     )
                     drho_corr += v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
