@@ -622,9 +622,9 @@ def Plt_tecto_Mars(
     """
     comp_fault_dat = np.loadtxt("%s/Knapmeyer_2006_compdata.txt" % (path))
     ext_fault_dat = np.loadtxt("%s/Knapmeyer_2006_extedata.txt" % (path))
-    ind_comp_fault = np.isin(comp_fault_dat, np.arange(1, 5143, dtype=float))
+    ind_comp_fault = np.isin(comp_fault_dat, np.arange(1, 5143 + 1, dtype=int))
     ind_comp_fault_2 = np.where(ind_comp_fault)[0]
-    ind_ext_fault = np.isin(ext_fault_dat, np.arange(1, 9676, dtype=float))
+    ind_ext_fault = np.isin(ext_fault_dat, np.arange(1, 9676 + 1, dtype=int))
     ind_ext_fault_2 = np.where(ind_ext_fault)[0]
 
     if ax is None:
@@ -648,11 +648,21 @@ def Plt_tecto_Mars(
 
     for faults, dat, col, label in zip(faults_inds, faults_dats, faults_cols, labels):
         ax.plot(np.nan, np.nan, color=col, lw=lw, label=label)
-        for indx in range(1, int((len(faults) - 1) / 2)):
+        for indx in range(1, len(faults)):
             ind_fault_check = range(faults[indx - 1] + 1, faults[indx])
             fault_dat_lon = dat[ind_fault_check][::2]
             fault_dat_lat = dat[ind_fault_check][1::2]
-            ax.plot((fault_dat_lon + 360) % 360, fault_dat_lat, color=col, lw=lw)
+            split = (
+                np.argwhere((fault_dat_lon[:-1] * fault_dat_lon[1:] < 0)).ravel() + 1
+            )
+            if len(split) > 0:  # Make boundaries periodic by splitting positive
+                # and negative lat lon
+                fault_lon_split = np.split(fault_dat_lon, split)
+                fault_dat_lat = np.split(fault_dat_lat, split)
+                for fault_lon, fault_lat in zip(fault_lon_split, fault_dat_lat):
+                    ax.plot((fault_lon + 360) % 360, fault_lat, color=col, lw=lw)
+            else:
+                ax.plot((fault_dat_lon + 360) % 360, fault_dat_lat, color=col, lw=lw)
 
     if legend_show:
         ax.legend(loc=legend_loc)
