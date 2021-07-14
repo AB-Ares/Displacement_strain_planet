@@ -119,7 +119,7 @@ def SH_deriv(theta, phi, lmax):
 # ==== SH_deriv_store ====
 
 
-def SH_deriv_store(lmax, path, save=True):
+def SH_deriv_store(lmax, path, save=True, compressed=False):
     """
     Compute and store or load spherical harmonic derivatives
     (first and second order).
@@ -152,9 +152,13 @@ def SH_deriv_store(lmax, path, save=True):
         Maximum spherical harmonic degree to compute for the derivatives.
     save : boolean, optional, default = True
         If True, save the data at the given path location.
+    compressed : boolean, optional, default = False
+        If True, the data is saved in compressed .npz format instead of
+        npy, which decreases the file size by about a factor 2. This is
+        recommended when lmax > 75.
     """
     n = 2 * lmax + 2
-    poly_file = "%s/Y_lmsd1d2_lmax%s.npy" % (path, lmax)
+    poly_file = "%s/Y_lmsd1d2_lmax%s.%s" % (path, lmax, "npz" if compressed else "npy")
 
     if Path(poly_file).exists() == 0:
         print(
@@ -234,28 +238,52 @@ def SH_deriv_store(lmax, path, save=True):
                         - sintt * Y_lm_d2_phi_a[t_i, :, :, l, : l + 1]
                     )
         if save:
-            np.save(
-                poly_file,
-                [
-                    Y_lm_d1_theta_a,
-                    Y_lm_d1_phi_a,
-                    Y_lm_d2_theta_a,
-                    Y_lm_d2_phi_a,
-                    Y_lm_d2_thetaphi_a,
-                    y_lm_save,
-                ],
-            )
+            if compressed:
+                np.savez_compressed(
+                    poly_file,
+                    Y_lm_d1_t=Y_lm_d1_theta_a,
+                    Y_lm_d1_p=Y_lm_d1_phi_a,
+                    Y_lm_d2_t=Y_lm_d2_theta_a,
+                    Y_lm_d2_p=Y_lm_d2_phi_a,
+                    Y_lm_d2_tp=Y_lm_d2_thetaphi_a,
+                    Y_lm=y_lm_save,
+                )
+            else:
+                np.save(
+                    poly_file,
+                    [
+                        Y_lm_d1_theta_a,
+                        Y_lm_d1_phi_a,
+                        Y_lm_d2_theta_a,
+                        Y_lm_d2_phi_a,
+                        Y_lm_d2_thetaphi_a,
+                        y_lm_save,
+                    ],
+                )
     else:
-        print("Loading precomputed SH derivatives for strain calculations")
-        (
-            Y_lm_d1_theta_a,
-            Y_lm_d1_phi_a,
-            Y_lm_d2_theta_a,
-            Y_lm_d2_phi_a,
-            Y_lm_d2_thetaphi_a,
-            y_lm_save,
-        ) = np.load(poly_file, allow_pickle=True)
-        print("Loading done")
+        if compressed:
+            print(
+                "Loading precomputed compressed SH derivatives for strain calculations"
+            )
+            data = np.load(poly_file)
+            Y_lm_d1_theta_a = data["Y_lm_d1_t"]
+            Y_lm_d1_phi_a = data["Y_lm_d1_p"]
+            Y_lm_d2_theta_a = data["Y_lm_d2_t"]
+            Y_lm_d2_phi_a = data["Y_lm_d2_p"]
+            Y_lm_d2_thetaphi_a = data["Y_lm_d2_tp"]
+            y_lm_save = data["Y_lm"]
+            print("Loading done")
+        else:
+            print("Loading precomputed SH derivatives for strain calculations")
+            (
+                Y_lm_d1_theta_a,
+                Y_lm_d1_phi_a,
+                Y_lm_d2_theta_a,
+                Y_lm_d2_phi_a,
+                Y_lm_d2_thetaphi_a,
+                y_lm_save,
+            ) = np.load(poly_file, allow_pickle=True)
+            print("Loading done")
 
     return (
         Y_lm_d1_theta_a,

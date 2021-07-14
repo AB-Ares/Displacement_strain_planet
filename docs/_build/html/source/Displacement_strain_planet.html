@@ -422,7 +422,7 @@ of Legendre polynomials with respect to colatitude and longitude.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="Displacement_strain_planet.SH_deriv_store">
-<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.</span></span><span class="sig-name descname"><span class="pre">SH_deriv_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.SH_deriv_store" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.</span></span><span class="sig-name descname"><span class="pre">SH_deriv_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compressed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.SH_deriv_store" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute and store or load spherical harmonic derivatives
 (first and second order).</p>
 <dl class="field-list simple">
@@ -447,6 +447,9 @@ of Legendre polynomials with respect to colatitude and longitude.</p></li>
 <li><p><strong>path</strong> (<em>string</em>) – Path to store or load spherical harmonic derivatives.</p></li>
 <li><p><strong>lmax</strong> (<em>int</em>) – Maximum spherical harmonic degree to compute for the derivatives.</p></li>
 <li><p><strong>save</strong> (<em>boolean</em><em>, </em><em>optional</em><em>, </em><em>default = True</em>) – If True, save the data at the given path location.</p></li>
+<li><p><strong>compressed</strong> (<em>boolean</em><em>, </em><em>optional</em><em>, </em><em>default = False</em>) – If True, the data is saved in compressed .npz format instead of
+npy, which decreases the file size by about a factor 2. This is
+recommended when lmax &gt; 75.</p></li>
 </ul>
 </dd>
 </dl>
