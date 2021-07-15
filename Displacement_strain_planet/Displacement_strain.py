@@ -5,7 +5,6 @@ and strains and plotting the Knapmeyer et al. (2006) tectonic dataset.
 
 import numpy as np
 import pyshtools as pysh
-import matplotlib.pyplot as plt
 from pathlib import Path
 
 pi = np.pi
@@ -15,8 +14,8 @@ pi = np.pi
 
 def SH_deriv(theta, phi, lmax):
     """
-    Compute on the fly spherical harmonic derivatives
-    (first and second order).
+    Compute spherical harmonic derivatives at a given
+    location (first and second order).
 
     Returns
     -------
@@ -47,12 +46,13 @@ def SH_deriv(theta, phi, lmax):
     lmax : int
         Maximum spherical harmonic degree to compute for the derivatives.
     """
-    Y_lm_d1_theta_a = np.zeros((2, lmax + 1, lmax + 1))
-    Y_lm_d1_phi_a = np.zeros((2, lmax + 1, lmax + 1))
-    Y_lm_d2_phi_a = np.zeros((2, lmax + 1, lmax + 1))
-    Y_lm_d2_thetaphi_a = np.zeros((2, lmax + 1, lmax + 1))
-    Y_lm_d2_theta_a = np.zeros((2, lmax + 1, lmax + 1))
-    y_lm = np.zeros((2, lmax + 1, lmax + 1))
+    shape = (2, lmax + 1, lmax + 1)
+    Y_lm_d1_theta_a = np.zeros(shape)
+    Y_lm_d1_phi_a = np.zeros(shape)
+    Y_lm_d2_phi_a = np.zeros(shape)
+    Y_lm_d2_thetaphi_a = np.zeros(shape)
+    Y_lm_d2_theta_a = np.zeros(shape)
+    y_lm = np.zeros(shape)
 
     cost = np.cos(theta)
     sint = np.sin(theta)
@@ -122,7 +122,7 @@ def SH_deriv(theta, phi, lmax):
 def SH_deriv_store(lmax, path, save=True, compressed=False):
     """
     Compute and store or load spherical harmonic derivatives
-    (first and second order).
+    over the entire sphere (first and second order).
 
     Returns
     -------
@@ -150,6 +150,8 @@ def SH_deriv_store(lmax, path, save=True, compressed=False):
         Path to store or load spherical harmonic derivatives.
     lmax : int
         Maximum spherical harmonic degree to compute for the derivatives.
+        This parameter determines the resolution of the grid as
+        latitude(2 * lmax + 2) and longitude(2 * (2 * lmax + 2))
     save : boolean, optional, default = True
         If True, save the data at the given path location.
     compressed : boolean, optional, default = False
@@ -311,7 +313,6 @@ def Displacement_strains(
     lon_min=0,
     lon_max=360,
     only_deflec=False,
-    precomp=True,
     Y_lm_d1_t=None,
     Y_lm_d1_p=None,
     Y_lm_d2_t=None,
@@ -383,8 +384,6 @@ def Displacement_strains(
         Maximum longitude for grid computation of strains and stresses.
     only_deflec : bool, optional, default = False
         Output only the displacement grid for all latitude and longitudes.
-    precomp : bool, optional, default = True
-        Use precomputed the Legendre polynomials found at the 'path'.
     Y_lm_d1_t : array, float, size(2,lmax+1,lmax+1), optional, default = None
         Array with the first derivative
         of Legendre polynomials with respect to colatitude.
@@ -418,35 +417,27 @@ def Displacement_strains(
 
     n = 2 * lmax + 2
 
-    if precomp:
-        if Y_lm_d1_p is not None:
-            print("Using input precomputed SH derivatives")
-        else:
-            if path is None:
-                raise ValueError(
-                    "Need to speficify the path, here the path is {:s}.".format(
-                        repr(path)
-                    )
-                )
-            (
-                Y_lm_d1_t,
-                Y_lm_d1_p,
-                Y_lm_d2_t,
-                Y_lm_d2_p,
-                Y_lm_d2_tp,
-                y_lm,
-            ) = SH_deriv_store(lmax, path)
-    else:
+    if Y_lm_d1_p is not None:
         if quiet is False:
-            print(
-                "Compute Spherical Harmonic derivatives on the"
-                + " fly, this may be long"
+            print("Using input precomputed SH derivatives")
+    else:
+        if path is None:
+            raise ValueError(
+                "Need to speficify the path, here the path is {:s}.".format(repr(path))
             )
+        (
+            Y_lm_d1_t,
+            Y_lm_d1_p,
+            Y_lm_d2_t,
+            Y_lm_d2_p,
+            Y_lm_d2_tp,
+            y_lm,
+        ) = SH_deriv_store(lmax, path)
 
     # Some constants for the elastic model.
-    Re = R - float(0.5 * Te)
+    Re = R - (0.5 * Te)
     psi = 12.0 * Re ** 2 / Te ** 2
-    D = (E * (Te * Te * Te)) / (float(12.0 * (1.0 - v ** 2)))
+    D = (E * (Te * Te * Te)) / ((12.0 * (1.0 - v ** 2)))
     DpsiTeR = (D * psi) / (Te * R ** 2)
     R_m1 = 1.0 / R
 
@@ -455,88 +446,70 @@ def Displacement_strains(
     w_lm[0, 0, 0] = 0.0
 
     # Allocate arrays.
-    omega = np.zeros((n, 2 * n))
-    kappa_theta = np.zeros((n, 2 * n))
-    kappa_phi = np.zeros((n, 2 * n))
-    tau = np.zeros((n, 2 * n))
-    eps_theta = np.zeros((n, 2 * n))
-    eps_phi = np.zeros((n, 2 * n))
+    shape = (n, 2 * n)
+    omega = np.zeros(shape)
+    kappa_theta = np.zeros(shape)
+    kappa_phi = np.zeros(shape)
+    tau = np.zeros(shape)
+    eps_theta = np.zeros(shape)
+    eps_phi = np.zeros(shape)
 
-    t_i = -1
-    for theta in np.linspace(0, 180, n, endpoint=False) * pi / 180.0:
-        t_i += 1
-        p_i = -1
-        if theta < ((colat_min - 1) * pi / 180.0) or theta > (
-            (colat_max + 1) * pi / 180.0
-        ):
-            # Not in the lat / lon range we investigate.
-            continue
+    deg2rad = pi / 180.0
+    phi = np.linspace(0, 360, 2 * n, endpoint=False) * deg2rad
+    theta = np.linspace(0, 180, n, endpoint=False) * deg2rad
+    grid_long, grid_lat = np.meshgrid(phi, theta)
+    mask = (
+        (grid_lat > (colat_min - 1) * deg2rad)
+        & (grid_lat < (colat_max + 1) * deg2rad)
+        & (grid_long > (lon_min - 1) * deg2rad)
+        & (grid_long < (lon_max + 1) * deg2rad)
+    )
+    sin_g_lat_m = np.sin(grid_lat[mask])
+    csc = np.divide(
+        1.0, sin_g_lat_m, out=np.zeros_like(sin_g_lat_m), where=sin_g_lat_m != 0
+    )
+    csc2 = np.divide(
+        1.0, sin_g_lat_m ** 2, out=np.zeros_like(sin_g_lat_m), where=sin_g_lat_m != 0
+    )
+    cot = np.divide(
+        1.0,
+        np.tan(grid_lat[mask]),
+        out=np.zeros_like(sin_g_lat_m),
+        where=sin_g_lat_m != 0,
+    )
+    cotcsc = csc * cot
 
-        sint = np.sin(theta)
-        if theta == 0 or theta == pi:
-            csc = 0.0
-            csc2 = 0.0
-            cot = 0.0
-        else:
-            csc = 1.0 / sint
-            csc2 = 1.0 / sint ** 2
-            cot = 1.0 / np.tan(theta)
+    y_lm = y_lm[mask]
+    Y_lm_d2_t = Y_lm_d2_t[mask]
+    Y_lm_d2_p = Y_lm_d2_p[mask]
+    Y_lm_d1_t = Y_lm_d1_t[mask]
+    Y_lm_d1_p = Y_lm_d1_p[mask]
+    Y_lm_d2_tp = Y_lm_d2_tp[mask]
 
-        for phi in np.linspace(0, 360, 2 * n, endpoint=False) * pi / 180.0:
-            p_i += 1
-            if phi < ((lon_min - 1) * pi / 180.0) or phi > ((lon_max + 1) * pi / 180.0):
-                # Not in the lat / lon range we investigate.
-                continue
+    ein_sum = "mijk,ijk->m"
+    ein_sum_mul = "mijk,ijk,m->m"
+    w_deflec_ylm = R_m1 * np.einsum(ein_sum, y_lm, w_lm)
+    eps_theta[mask] = R_m1 * np.einsum(ein_sum, Y_lm_d2_t, A_lm) + w_deflec_ylm
+    eps_phi[mask] = (
+        R_m1 * np.einsum(ein_sum_mul, Y_lm_d2_p, A_lm, csc2)
+        + R_m1 * np.einsum(ein_sum_mul, Y_lm_d1_t, A_lm, cot)
+        + w_deflec_ylm
+    )
 
-            if precomp:
-                w_lm_ylm = np.sum(y_lm[t_i, p_i] * w_lm)
-                d2Atheta = np.sum(Y_lm_d2_t[t_i, p_i] * A_lm)
-                d2Aphi = np.sum(Y_lm_d2_p[t_i, p_i] * A_lm)
-                d1Atheta = np.sum(Y_lm_d1_t[t_i, p_i] * A_lm)
-                d1Aphi = np.sum(Y_lm_d1_p[t_i, p_i] * A_lm)
-                d2Athetaphi = np.sum(Y_lm_d2_tp[t_i, p_i] * A_lm)
-                d2wtheta = np.sum(Y_lm_d2_t[t_i, p_i] * w_lm)
-                d2wphi = np.sum(Y_lm_d2_p[t_i, p_i] * w_lm)
-                d1wtheta = np.sum(Y_lm_d1_t[t_i, p_i] * w_lm)
-                d1wphi = np.sum(Y_lm_d1_p[t_i, p_i] * w_lm)
-                d2wthetaphi = np.sum(Y_lm_d2_tp[t_i, p_i] * w_lm)
-            else:
-                print(" colatitude %s of 180" % (int(theta * 180 / pi)), end="\r")
-                (
-                    Y_lm_d1_tb,
-                    Y_lm_d1_pb,
-                    Y_lm_d2_tb,
-                    Y_lm_d2_pb,
-                    Y_lm_d2_tpb,
-                    y_lm,
-                ) = SH_deriv(theta, phi, lmax)
-                w_lm_ylm = np.sum(y_lm * w_lm)
-                d2Atheta = np.sum(Y_lm_d2_tb * A_lm)
-                d2Aphi = np.sum(Y_lm_d2_pb * A_lm)
-                d1Atheta = np.sum(Y_lm_d1_tb * A_lm)
-                d1Aphi = np.sum(Y_lm_d1_pb * A_lm)
-                d2Athetaphi = np.sum(Y_lm_d2_tpb * A_lm)
-                d2wtheta = np.sum(Y_lm_d2_tb * w_lm)
-                d2wphi = np.sum(Y_lm_d2_pb * w_lm)
-                d1wtheta = np.sum(Y_lm_d1_tb * w_lm)
-                d1wphi = np.sum(Y_lm_d1_pb * w_lm)
-                d2wthetaphi = np.sum(Y_lm_d2_tpb * w_lm)
-
-            # Sum over theta.
-            eps_theta[t_i, p_i] = d2Atheta + w_lm_ylm
-            eps_phi[t_i, p_i] = d2Aphi * csc2 + d1Atheta * cot + w_lm_ylm
-            omega[t_i, p_i] = csc * (d2Athetaphi - cot * d1Aphi)
-
-            kappa_theta[t_i, p_i] = d2wtheta + w_lm_ylm
-            kappa_phi[t_i, p_i] = d2wphi * csc2 + d1wtheta * cot + w_lm_ylm
-            tau[t_i, p_i] = csc * (d2wthetaphi - cot * d1wphi)
-
-    eps_theta *= R_m1
-    eps_phi *= R_m1
-    omega *= R_m1
-    kappa_theta *= -(R_m1 ** 2)
-    kappa_phi *= -(R_m1 ** 2)
-    tau *= -(R_m1 ** 2)
+    omega[mask] = R_m1 * np.einsum(
+        ein_sum_mul, Y_lm_d2_tp, A_lm, csc
+    ) - R_m1 * np.einsum(ein_sum_mul, Y_lm_d1_p, A_lm, cotcsc)
+    kappa_theta[mask] = (
+        -(R_m1 ** 2) * np.einsum(ein_sum, Y_lm_d2_t, w_lm) + (-R_m1) * w_deflec_ylm
+    )
+    kappa_phi[mask] = (
+        -(R_m1 ** 2) * np.einsum(ein_sum_mul, Y_lm_d2_p, w_lm, csc2)
+        + -(R_m1 ** 2) * np.einsum(ein_sum_mul, Y_lm_d1_t, w_lm, cot)
+        + (-R_m1) * w_deflec_ylm
+    )
+    tau[mask] = -(R_m1 ** 2) * np.einsum(ein_sum_mul, Y_lm_d2_tp, w_lm, csc) - -(
+        R_m1 ** 2
+    ) * np.einsum(ein_sum_mul, Y_lm_d1_p, w_lm, cotcsc)
 
     stress_theta = (
         (eps_theta + v * eps_phi + Te / 2.0 * (kappa_theta + v * kappa_phi))
@@ -656,6 +629,8 @@ def Plt_tecto_Mars(
     ind_ext_fault_2 = np.where(ind_ext_fault)[0]
 
     if ax is None:
+        import matplotlib.pyplot as plt
+
         fig, ax = plt.subplots(1, 1)
 
     faults_inds = [ind_comp_fault_2, ind_ext_fault_2]

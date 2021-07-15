@@ -440,7 +440,7 @@ def Thin_shell_matrix(
 
     if Te == 0:  # Avoid numerical problems with infinite values
         Te = 1
-        print("Elastic thickness set to 1 to avoid numerical problems")
+        print("Elastic thickness set to 1 m to avoid numerical problems")
 
     # Precompute some constants.
     M = base_drho - top_drho  # Thickness of the density anomaly
@@ -449,7 +449,7 @@ def Thin_shell_matrix(
     drho = rhom - rhoc
     drhol = rhoc - rhol
     psi = (
-        np.inf if Te == 0 else 12.0 * Re ** 2 / Te ** 2
+        np.inf if Te == 1 else 12.0 * Re ** 2 / Te ** 2
     )  # Avoids error printing when dividing by zero.
     D = E * Te ** 3 / (12.0 * (1.0 - v ** 2))  # Shell's
     # rigidity.
@@ -510,6 +510,7 @@ def Thin_shell_matrix(
     # Solve matrix over all degrees.
     for l in range(1, lmax + 1):  # Ignore degree 0 from
         # calculations
+
         Lapla = float(-l * (l + 1))  # Laplacian identity.
 
         # Degree-dependent from Banerdt correction after Beuthe
@@ -550,6 +551,7 @@ def Thin_shell_matrix(
             )
 
         if first_inv is True:
+
             # Degree & radius -dependent constants for potential
             # upward continuation
             Rl3 = R / float(l + 3)
@@ -1042,6 +1044,7 @@ def Thin_shell_matrix_nmax(
         quiet=quiet,
     )
 
+    # Increase grid resolution to avoid aliasing in the CilmPlus routines
     lmaxgrid = 4 * lmax
     args_grid = dict(grid="DH2", lmax=lmaxgrid, extend=False, lmax_calc=lmax)
 

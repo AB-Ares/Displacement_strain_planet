@@ -48,7 +48,7 @@ from Displacement_strain_planet import (
 # the same problem with different inputs very fast.
 #################################################################
 
-lmax = 80  # Maximum spherical harmonic degree to perform all
+lmax = 40  # Maximum spherical harmonic degree to perform all
 # calculations
 pot_clm = pysh.datasets.Venus.MGNP180U(lmax=lmax)
 topo_clm = pysh.datasets.Venus.VenusTopo719(lmax=lmax)
