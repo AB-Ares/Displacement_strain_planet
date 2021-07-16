@@ -112,7 +112,7 @@ print("Computing displacements and isostatic crustal root variations")
     H_lm=topo_clm.coeffs,
     drhom_lm=zeros.copy(),
     filter="Ma",
-    filter_half=40,
+    filter_half=30,
     quiet=False
 )
 
@@ -147,7 +147,6 @@ pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
 
 print("Computing strains")  # This may take some time if it is the first time
 # Strains
-lmax = 30  # Lower lmax for faster computations
 Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp, y_lm = SH_deriv_store(
     lmax, path, save=False
 )
