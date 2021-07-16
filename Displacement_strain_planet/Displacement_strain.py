@@ -534,9 +534,9 @@ def Displacement_strains(
     )  # MPa
     stress_theta_phi = (omega + Te_half * tau) * 0.5 * DpsiTeR * (1.0 - v) / 1e6  # MPa
 
-    kappa_theta *= Te_half  # Strain
-    kappa_phi *= Te_half  # Strain
-    tau *= Te_half  # Strain
+    kappa_theta[mask] *= Te_half  # Strain
+    kappa_phi[mask] *= Te_half  # Strain
+    tau[mask] *= Te_half  # Strain
 
     return (
         stress_theta,
