@@ -440,6 +440,8 @@ def Displacement_strains(
     D = (E * (Te * Te * Te)) / ((12.0 * (1.0 - v ** 2)))
     DpsiTeR = (D * psi) / (Te * R ** 2)
     R_m1 = 1.0 / R
+    n_Rm2 = -(R_m1 ** 2)
+    Te_half = Te / 2.0
 
     # Remove reference radius
     A_lm[0, 0, 0] = 0.0
@@ -455,9 +457,10 @@ def Displacement_strains(
     eps_phi = np.zeros(shape)
 
     deg2rad = pi / 180.0
-    phi = np.linspace(0, 360, 2 * n, endpoint=False) * deg2rad
-    theta = np.linspace(0, 180, n, endpoint=False) * deg2rad
-    grid_long, grid_lat = np.meshgrid(phi, theta)
+    grid_long, grid_lat = np.meshgrid(
+        np.linspace(0, 360, 2 * n, endpoint=False) * deg2rad,
+        np.linspace(0, 180, n, endpoint=False) * deg2rad,
+    )
     mask = (
         (grid_lat > (colat_min - 1) * deg2rad)
         & (grid_lat < (colat_max + 1) * deg2rad)
@@ -491,41 +494,49 @@ def Displacement_strains(
     w_deflec_ylm = R_m1 * np.einsum(ein_sum, y_lm, w_lm)
     eps_theta[mask] = R_m1 * np.einsum(ein_sum, Y_lm_d2_t, A_lm) + w_deflec_ylm
     eps_phi[mask] = (
-        R_m1 * np.einsum(ein_sum_mul, Y_lm_d2_p, A_lm, csc2)
-        + R_m1 * np.einsum(ein_sum_mul, Y_lm_d1_t, A_lm, cot)
+        R_m1
+        * (
+            np.einsum(ein_sum_mul, Y_lm_d2_p, A_lm, csc2)
+            + np.einsum(ein_sum_mul, Y_lm_d1_t, A_lm, cot)
+        )
         + w_deflec_ylm
     )
+    omega[mask] = R_m1 * (
+        np.einsum(ein_sum_mul, Y_lm_d2_tp, A_lm, csc)
+        - np.einsum(ein_sum_mul, Y_lm_d1_p, A_lm, cotcsc)
+    )
 
-    omega[mask] = R_m1 * np.einsum(
-        ein_sum_mul, Y_lm_d2_tp, A_lm, csc
-    ) - R_m1 * np.einsum(ein_sum_mul, Y_lm_d1_p, A_lm, cotcsc)
     kappa_theta[mask] = (
-        -(R_m1 ** 2) * np.einsum(ein_sum, Y_lm_d2_t, w_lm) + (-R_m1) * w_deflec_ylm
+        n_Rm2 * np.einsum(ein_sum, Y_lm_d2_t, w_lm) + (-R_m1) * w_deflec_ylm
     )
     kappa_phi[mask] = (
-        -(R_m1 ** 2) * np.einsum(ein_sum_mul, Y_lm_d2_p, w_lm, csc2)
-        + -(R_m1 ** 2) * np.einsum(ein_sum_mul, Y_lm_d1_t, w_lm, cot)
+        n_Rm2
+        * (
+            np.einsum(ein_sum_mul, Y_lm_d2_p, w_lm, csc2)
+            + np.einsum(ein_sum_mul, Y_lm_d1_t, w_lm, cot)
+        )
         + (-R_m1) * w_deflec_ylm
     )
-    tau[mask] = -(R_m1 ** 2) * np.einsum(ein_sum_mul, Y_lm_d2_tp, w_lm, csc) - -(
-        R_m1 ** 2
-    ) * np.einsum(ein_sum_mul, Y_lm_d1_p, w_lm, cotcsc)
+    tau[mask] = n_Rm2 * (
+        np.einsum(ein_sum_mul, Y_lm_d2_tp, w_lm, csc)
+        - np.einsum(ein_sum_mul, Y_lm_d1_p, w_lm, cotcsc)
+    )
 
     stress_theta = (
-        (eps_theta + v * eps_phi + Te / 2.0 * (kappa_theta + v * kappa_phi))
+        (eps_theta + v * eps_phi + Te_half * (kappa_theta + v * kappa_phi))
         * DpsiTeR
         / 1e6
     )  # MPa
     stress_phi = (
-        (eps_phi + v * eps_theta + Te / 2.0 * (kappa_phi + v * kappa_theta))
+        (eps_phi + v * eps_theta + Te_half * (kappa_phi + v * kappa_theta))
         * DpsiTeR
         / 1e6
     )  # MPa
-    stress_theta_phi = (omega + Te / 2.0 * tau) * 0.5 * DpsiTeR * (1.0 - v) / 1e6  # MPa
+    stress_theta_phi = (omega + Te_half * tau) * 0.5 * DpsiTeR * (1.0 - v) / 1e6  # MPa
 
-    kappa_theta *= Te / 2.0  # Strain
-    kappa_phi *= Te / 2.0  # Strain
-    tau *= Te / 2.0  # Strain
+    kappa_theta *= Te_half  # Strain
+    kappa_phi *= Te_half  # Strain
+    tau *= Te_half  # Strain
 
     return (
         stress_theta,
