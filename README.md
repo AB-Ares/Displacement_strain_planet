@@ -1,4 +1,5 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4916799.svg)](http://doi.org/10.5281/zenodo.4916799)
 
 # Displacement_strain_planet
 
@@ -11,9 +12,13 @@ Planetary crustal thickness, displacement, stress, and strain calculations in sp
 These functions solve the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of equations under different assumptions. Various improvements have been made to the model including the possibility to account for finite-amplitude correction and filtering [(Wieczorek & Phillips, 1998)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/97JE03136), lateral density variations at any arbitrary depth and within the surface or moho-relief [(Wieczorek et al., 2013)](https://science.sciencemag.org/content/early/2012/12/04/science.1231530?versioned=true), and density difference between the surface topography and crust [(Broquet & Wieczorek, 2019)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019JE005959). 
 
 ### Comments
+#### Dependencies
 We note that some of these functions rely heavily on the [pyshtools](https://shtools.github.io/SHTOOLS/) package of [Wieczorek & Meschede (2018)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2018GC007529) that is used to perform the spherical harmonic transforms, Legendre polynomial expansions, and finite-amplitude calculations.
 
+#### Contribute
 This code is still under development and benchmarking. If you find any bugs or errors in the code, please report them in GitHub or to adrien.broquet at oca.eu.
+
+For this code, we work on the develop branch and merge it to the main branch (with a new version number) everytime significant addtions/improvements are made. If you plan on making contributions, please base everything on the develop branch.
 
 ### Benchmarks
 Moho-relief calculations have been benchmarked to the [ctplanet](https://github.com/MarkWieczorek/ctplanet) package of Mark Wieczorek.  
@@ -64,8 +69,7 @@ Alternatively, you can install Displacement-strain-planet via pip
 ```bash
     cd examples
     jupyter notebook Run_demo.ipynb
-    python Mars_crust_displacement.py 
-    python Mars_SouthPolarCap_displacement.py 
+    python Mars_crust_displacement.py
 ```
 
 ## Author
@@ -73,4 +77,4 @@ Alternatively, you can install Displacement-strain-planet via pip
 
 ## Cite
 You can cite the latest release of the package as:
-Adrien Broquet. (2021, June 15). AB-Ares/Displacement_strain_planet: 0.2.3 (Version 0.2.3). Zenodo. http://doi.org/10.5281/zenodo.4916799
+Adrien Broquet. (2021, June 15). AB-Ares/Displacement_strain_planet: 0.2.4 (Version 0.2.4). Zenodo. http://doi.org/10.5281/zenodo.4916799

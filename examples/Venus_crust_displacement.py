@@ -48,7 +48,7 @@ from Displacement_strain_planet import (
 # the same problem with different inputs very fast.
 #################################################################
 
-lmax = 80  # Maximum spherical harmonic degree to perform all
+lmax = 40  # Maximum spherical harmonic degree to perform all
 # calculations
 pot_clm = pysh.datasets.Venus.MGNP180U(lmax=lmax)
 topo_clm = pysh.datasets.Venus.VenusTopo719(lmax=lmax)
@@ -112,7 +112,7 @@ print("Computing displacements and isostatic crustal root variations")
     H_lm=topo_clm.coeffs,
     drhom_lm=zeros.copy(),
     filter="Ma",
-    filter_half=40,
+    filter_half=30,
     quiet=False
 )
 
@@ -147,8 +147,7 @@ pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
 
 print("Computing strains")  # This may take some time if it is the first time
 # Strains
-lmax = 80  # Lower lmax for faster computations
-Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp = SH_deriv_store(
+Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp, y_lm = SH_deriv_store(
     lmax, path, save=False
 )
 
@@ -168,6 +167,7 @@ kwargs_param_s = dict(
     Y_lm_d2_t=Y_lm_d2_t,
     Y_lm_d2_p=Y_lm_d2_p,
     Y_lm_d2_tp=Y_lm_d2_tp,
+    y_lm=y_lm,
 )
 
 # Strain
