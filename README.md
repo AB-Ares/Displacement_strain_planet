@@ -1,5 +1,5 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4916799.svg)](http://doi.org/10.5281/zenodo.4916799)
+[![DOI](https://zenodo.org/badge/364569020.svg)](https://zenodo.org/badge/latestdoi/364569020)
 
 # Displacement_strain_planet
 
@@ -77,4 +77,4 @@ Alternatively, you can install Displacement-strain-planet via pip
 
 ## Cite
 You can cite the latest release of the package as:
-Adrien Broquet. (2021, June 15). AB-Ares/Displacement_strain_planet: 0.2.4 (Version 0.2.4). Zenodo. http://doi.org/10.5281/zenodo.4916799
+Adrien Broquet. (2021, July 16). AB-Ares/Displacement_strain_planet: 0.2.4 (Version 0.2.4). Zenodo. http://doi.org/10.5281/zenodo.4916799
