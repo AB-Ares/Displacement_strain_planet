@@ -1,12 +1,12 @@
 import datetime
 import Displacement_strain_planet
+from importlib.metadata import version
 
 # Project information
 year = datetime.date.today().year
 project = "Displacement_strain_planet"
 author = "Adrien Broquet"
-version = "0.2.4"
-
+version = version('Displacement_strain_planet')
 
 # General configuration
 extensions = [

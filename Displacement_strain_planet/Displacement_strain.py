@@ -491,35 +491,40 @@ def Displacement_strains(
 
     ein_sum = "mijk,ijk->m"
     ein_sum_mul = "mijk,ijk,m->m"
-    w_deflec_ylm = R_m1 * np.einsum(ein_sum, y_lm, w_lm)
-    eps_theta[mask] = R_m1 * np.einsum(ein_sum, Y_lm_d2_t, A_lm) + w_deflec_ylm
+    path_sum = ["einsum_path", (0, 1)]  # Generated from np.einsum_path
+    path_mul = ["einsum_path", (0, 1), (0, 1)]  # Generated from np.einsum_path
+    w_deflec_ylm = R_m1 * np.einsum(ein_sum, y_lm, w_lm, optimize=path_sum)
+    eps_theta[mask] = (
+        R_m1 * np.einsum(ein_sum, Y_lm_d2_t, A_lm, optimize=path_sum) + w_deflec_ylm
+    )
     eps_phi[mask] = (
         R_m1
         * (
-            np.einsum(ein_sum_mul, Y_lm_d2_p, A_lm, csc2)
-            + np.einsum(ein_sum_mul, Y_lm_d1_t, A_lm, cot)
+            np.einsum(ein_sum_mul, Y_lm_d2_p, A_lm, csc2, optimize=path_mul)
+            + np.einsum(ein_sum_mul, Y_lm_d1_t, A_lm, cot, optimize=path_mul)
         )
         + w_deflec_ylm
     )
     omega[mask] = R_m1 * (
-        np.einsum(ein_sum_mul, Y_lm_d2_tp, A_lm, csc)
-        - np.einsum(ein_sum_mul, Y_lm_d1_p, A_lm, cotcsc)
+        np.einsum(ein_sum_mul, Y_lm_d2_tp, A_lm, csc, optimize=path_mul)
+        - np.einsum(ein_sum_mul, Y_lm_d1_p, A_lm, cotcsc, optimize=path_mul)
     )
 
     kappa_theta[mask] = (
-        n_Rm2 * np.einsum(ein_sum, Y_lm_d2_t, w_lm) + (-R_m1) * w_deflec_ylm
+        n_Rm2 * np.einsum(ein_sum, Y_lm_d2_t, w_lm, optimize=path_sum)
+        + (-R_m1) * w_deflec_ylm
     )
     kappa_phi[mask] = (
         n_Rm2
         * (
-            np.einsum(ein_sum_mul, Y_lm_d2_p, w_lm, csc2)
-            + np.einsum(ein_sum_mul, Y_lm_d1_t, w_lm, cot)
+            np.einsum(ein_sum_mul, Y_lm_d2_p, w_lm, csc2, optimize=path_mul)
+            + np.einsum(ein_sum_mul, Y_lm_d1_t, w_lm, cot, optimize=path_mul)
         )
         + (-R_m1) * w_deflec_ylm
     )
     tau[mask] = n_Rm2 * (
-        np.einsum(ein_sum_mul, Y_lm_d2_tp, w_lm, csc)
-        - np.einsum(ein_sum_mul, Y_lm_d1_p, w_lm, cotcsc)
+        np.einsum(ein_sum_mul, Y_lm_d2_tp, w_lm, csc, optimize=path_mul)
+        - np.einsum(ein_sum_mul, Y_lm_d1_p, w_lm, cotcsc, optimize=path_mul)
     )
 
     stress_theta = (
