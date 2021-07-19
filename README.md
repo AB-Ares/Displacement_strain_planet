@@ -26,7 +26,7 @@ Displacement calculations have been benchmarked to the analytical model of [Broq
 Strain calculations reproduce results published in the literature (e.g., [Banerdt & Golombek 2000](https://www.lpi.usra.edu/meetings/lpsc2000/pdf/2038.pdf)). 
 
 ## Methods
-`Thin_shell_matrix` Solve the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of 5 equations under the mass-sheet approximation and assuming that potential internal density variations are contained within a spherical shell. The system links 8 parameters expressed in spherical harmonics: the topography, geoid at the surface, geoid at the moho depth, net acting load on the lithosphere, tangential load potential, flexure of the lithosphere, isostatic crustal root variations, and internal density variations. Minor corrections have been made in the geoid equations.
+`Thin_shell_matrix` Solve the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of 5 equations under the mass-sheet approximation and assuming that potential internal density variations are contained within a spherical shell. The system links 8 parameters expressed in spherical harmonics: the topography, geoid at the surface, geoid at the moho depth, net acting load on the lithosphere, tangential load potential, flexure of the lithosphere, isostatic crustal root variations, and internal density variations. Minor corrections have been made in the geoid equations, and to the elastic shell transfer functions following [Beuthe (2008)](https://onlinelibrary.wiley.com/doi/full/10.1111/j.1365-246X.2007.03671.x).
 
 `Thin_shell_matrix_nmax` Solve the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of 5 equations with finite-amplitude correction and accounting for the potential presence of density variations within the surface or moho reliefs.
 
@@ -49,7 +49,7 @@ Strain calculations reproduce results published in the literature (e.g., [Banerd
 
 `Mars_crust_displacement` A script that demonstrates how to calculate the moho-relief and strains on Mars, as a function of the mean planetary crustal thickness and elastic thickness. The contributions from isostatic crustal root variations and displacement are shown assuming an elastic thickness of the lithosphere. We make use of the inferred displacement to predict the principal horizontal strains and principal angle, which are compared to extensional tectonic features mapped by [Knampeyer et al. (2006)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2006JE002708). 
 
-`Mars_SouthPolarCap_displacement` A script that demonstrates how to calculate iteratively the flexure underneath the south polar cap of Mars as a function of elastic thickness and ice density. This computation is similar to that done in e.g., Broquet et al. (2021), in review to JGR:Planets. 
+`Mars_SouthPolarCap_displacement` A script that demonstrates how to calculate iteratively the flexure underneath the south polar cap of Mars as a function of elastic thickness and ice density. This computation is similar to that done in e.g., Broquet et al. (2021), accepted in JGR:Planets. 
 
 `Venus_crust_displacement` A script that demonstrates how to calculate the moho-relief and strains on Venus, as a function of the mean planetary crustal thickness and elastic thickness. 
 
