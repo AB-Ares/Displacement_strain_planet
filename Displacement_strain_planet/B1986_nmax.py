@@ -94,30 +94,30 @@ def corr_nmax_drho(
 
     # Density contrast in the relief correction.
     if density_var:
-        FA_lm_drho, D = pysh.gravmag.CilmPlusRhoHDH(
-            shape_grid, 1.0, mass, rho_grid, lmax=lmax
+        MS_lm_drho, D = pysh.gravmag.CilmPlusRhoHDH(
+            shape_grid, 1, mass, rho_grid, lmax=lmax
         )
-        MS_lm_drho = MS_lm_nmax
+        MS_lm_drho_cst = MS_lm_nmax
         if filter_in is not None:
             for l in range(1, lmax + 1):
+                MS_lm_drho_cst[:, l, : l + 1] /= filter_in[l]
                 MS_lm_drho[:, l, : l + 1] /= filter_in[l]
-                FA_lm_drho[:, l, : l + 1] /= filter_in[l]
         elif filter is not None:
             for l in range(1, lmax + 1):
+                MS_lm_drho_cst[:, l, : l + 1] /= DownContFilter(
+                    l, filter_half, R, R - c, type=filter
+                )
                 MS_lm_drho[:, l, : l + 1] /= DownContFilter(
                     l, filter_half, R, R - c, type=filter
                 )
-                FA_lm_drho[:, l, : l + 1] /= DownContFilter(
-                    l, filter_half, R, R - c, type=filter
-                )
         if nmax == 1:
-            MS_lm_drho *= D ** 2
+            MS_lm_drho_cst *= D ** 2
 
         # Divide because the thin-shell code multiplies by
         # density contrast, to correct for finite-amplitude.
         # Here we also correct for density variations, so the
         # correction is already scaled by the density contrast.
-        delta_MS_FA = R * (FA_lm_drho - MS_lm_drho + FA_lm_nmax - MS_lm_nmax) / drho
+        delta_MS_FA = R * (MS_lm_drho - MS_lm_drho_cst + FA_lm_nmax - MS_lm_nmax) / drho
     else:
         delta_MS_FA = R * (FA_lm_nmax - MS_lm_nmax)
 
@@ -891,8 +891,8 @@ def Thin_shell_matrix_nmax(
     add_array=None,
     quiet=True,
     remove_equation=None,
-    base_drho=150e3,
-    top_drho=50e3,
+    base_drho=50e3,
+    top_drho=0,
     delta_max=5,
     iter_max=250,
     delta_out=500e3,
@@ -1008,9 +1008,9 @@ def Thin_shell_matrix_nmax(
     remove_equation : string, optional, default = None
         String of the equation to be removed. This must be either
         'G_lm', 'Gc_lm', 'w_lm', 'omega_lm', or 'q_lm'.
-    base_drho : float, optional, default = 150e3
+    base_drho : float, optional, default = 50e3
         Lower depth for the of the density contrast.
-    top_drho : float, optional, default = 50e3
+    top_drho : float, optional, default = 0
         Upper depth for the of the density contrast.
     delta_max : float, optional, default = 5
         The algorithm will continue to iterate until the maximum
@@ -1247,7 +1247,7 @@ def Thin_shell_matrix_nmax(
 
                 v1v = v / (1.0 - v)
                 if density_var_H:
-                    drho_corr += v1v * drhom_lm_o * g0 * Te * H_lm_o / R
+                    drho_corr = v1v * drhom_lm_o * g0 * Te * H_lm_o / R
                     drho_H = rhol
                     if drhom_lm is not None and sum_drho != 0:
                         H_drho_grid = rho_grid
@@ -1259,7 +1259,10 @@ def Thin_shell_matrix_nmax(
                         * (1.0 + (((R - c) / R) ** 3 - 1.0) * rhoc / rhobar)
                         / ((R - c) / R) ** 2
                     )
-                    drho_corr += v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
+                    if density_var_H:
+                        drho_corr += v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
+                    else:
+                        drho_corr = v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
                     drho_wdc = rhom - rhoc
                     if drhom_lm is not None and sum_drho != 0:
                         wdc_drho_grid = rhom - rho_grid
