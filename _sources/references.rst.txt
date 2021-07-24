@@ -7,6 +7,8 @@ doi:\ `10.1029/JB091iB01p00403 <https://agupubs.onlinelibrary.wiley.com/doi/10.1
 Broquet, A. and M. A. Wieczorek (2019). The Gravitational signature of Martian volcanoes. *Journal of Geophysical Research: Planets*, 124.8, pp. 2054–2086, 
 doi:\ `10.1029/2019JE005959 <https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019JE005959>`__.
 
+Beuthe, M. (2008). Thin elastic shells with variable thickness for lithospheric flexure of one-plate planets. *Geophysical Journal International*, 172.2, pp. 817–841, doi:\ `10.1111/j.1365-246X.2007.03671.x <https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1365-246X.2007.03671.x>`__.
+
 Knapmeyer, M. et al. (2006). Working models for spatial distribution and level of Mars’ seismicity. *Journal of Geophysical Research*, 111.E11006, 
 doi:\ `10.1029/2006JE002708 <https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2006JE002708>`__.
 
