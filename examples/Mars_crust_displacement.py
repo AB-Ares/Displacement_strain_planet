@@ -143,7 +143,7 @@ pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
 
 (pysh.SHCoeffs.from_array((H_lm - moho_relief_lm) / 1e3).expand(**args_expand)).plot(
     ax=ax4,
-    cb_label="Moho depth (km)",
+    cb_label="Crustal thickness (km)",
     ticks="wSnE",
     ylabel=None,
     show=False,
