@@ -45,7 +45,7 @@ Strain calculations reproduce results published in the literature (e.g., [Banerd
 `Plt_tecto_Mars` Plot the [Knampeyer et al. (2006)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2006JE002708) dataset of extensional and compressional tectonic features on Mars.
 
 ## Example scripts
-`Run_demo`  [![link](misc/link1.svg =100x20)](docs/_build/html/notebooks/Run_demo.html) A jupyter notebook that contains example scripts to determine flexure, moho-relief, and strains on Mars under different assumptions, including Airy and Pratt isostasy, or due to the sole presence of a mantle plume.
+`Run_demo`  [<img src="misc/link1.svg" width="20">](docs/_build/html/notebooks/Run_demo.html) A jupyter notebook that contains example scripts to determine flexure, moho-relief, and strains on Mars under different assumptions, including Airy and Pratt isostasy, or due to the sole presence of a mantle plume.
 
 `Mars_crust_displacement` A script that demonstrates how to calculate the moho-relief and strains on Mars, as a function of the mean planetary crustal thickness and elastic thickness. The contributions from isostatic crustal root variations and displacement are shown assuming an elastic thickness of the lithosphere. We make use of the inferred displacement to predict the principal horizontal strains and principal angle, which are compared to extensional tectonic features mapped by [Knampeyer et al. (2006)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2006JE002708). 
 
