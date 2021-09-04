@@ -35,4 +35,4 @@ This routine has many applications and is highly versatile, and you can for exam
 
 * Compute Legendre polynomial first and second order derivatives.
 
-In addition to these functions, an example script is provided that will solve for the moho-relief on Mars and estimate the principal strains on the planet as a function of the input elastic thickness. A jupyter notebook is also added with more information on estimating the moho-relief on Mars, assuming Airy or Pratt isostasy, the displacement due to a mantle plume underneath Tharsis or due to internal loading in phase with the surface topography. 
+In addition to these functions, an example script is provided that will solve for the moho-relief on Mars and Venus, and estimate the principal strains on these planets as a function of the input elastic thickness. A script that compute the flexure beneath the south polar cap of Mars for an input elastic thickness. A jupyter notebook is also added with more information on estimating the moho-relief on Mars, assuming Airy or Pratt isostasy, the displacement due to a mantle plume underneath Tharsis or due to internal loading in phase with the surface topography. 
