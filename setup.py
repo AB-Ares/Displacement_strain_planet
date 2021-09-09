@@ -14,7 +14,7 @@ install_requires = ["pyshtools>=4.7.1", "sympy<=1.7", "cmcrameri", "jupyter"]
 
 setup(
     name="Displacement_strain_planet",
-    version="0.2.4",
+    version="0.2.5",
     description="Planetary crustal thickness, displacement, "
     + "stress and strain calculations in spherical harmonics.",
     long_description=long_description,
