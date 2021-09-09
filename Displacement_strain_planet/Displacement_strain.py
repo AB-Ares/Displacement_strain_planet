@@ -65,7 +65,6 @@ def SH_deriv(theta, phi, lmax):
         p_theta, dp_theta = pysh.legendre.PlmBar_d1(lmax, cost)
         dp_theta *= -sint  # Derivative with respect to
         # theta.
-        p_theta /= sint
         costsint = cost / sint
         sintt = 1.0 / sint ** 2
     for l in range(lmax + 1):
@@ -94,7 +93,6 @@ def SH_deriv(theta, phi, lmax):
                 Y_lm_d2_thetaphi_a[1, l, m_abs] = dp_theta[index] * mcosmphi
                 y_lm[1, l, m_abs] = p_theta[index] * sinmphi
 
-        y_lm[:, l, : l + 1] *= sint
         if theta == 0 or theta == pi:
             Y_lm_d2_theta_a[:, l, : l + 1] = 0.0  # Not defined.
         else:
@@ -119,7 +117,7 @@ def SH_deriv(theta, phi, lmax):
 # ==== SH_deriv_store ====
 
 
-def SH_deriv_store(lmax, path, save=True, compressed=False):
+def SH_deriv_store(lmax, path, lmaxgrid=None, save=True, compressed=False):
     """
     Compute and store or load spherical harmonic derivatives
     over the entire sphere (first and second order).
@@ -146,12 +144,14 @@ def SH_deriv_store(lmax, path, save=True, compressed=False):
 
     Parameters
     ----------
-    path : string
-        Path to store or load spherical harmonic derivatives.
     lmax : int
         Maximum spherical harmonic degree to compute for the derivatives.
-        This parameter determines the resolution of the grid as
-        latitude(2 * lmax + 2) and longitude(2 * (2 * lmax + 2))
+    path : string
+        Path to store or load spherical harmonic derivatives.
+    lmaxgrid : int, optional, default = None
+        The maximum spherical harmonic degree resolvable by the grid,
+        latitude(2 * lmaxgrid + 2) and longitude(2 * (2 * lmaxgrid + 2)).
+        Should be higher or equal than lmax. If None, this parameter is set to lmax.
     save : boolean, optional, default = True
         If True, save the data at the given path location.
     compressed : boolean, optional, default = False
@@ -159,13 +159,26 @@ def SH_deriv_store(lmax, path, save=True, compressed=False):
         npy, which decreases the file size by about a factor 2. This is
         recommended when lmax > 75.
     """
-    n = 2 * lmax + 2
-    poly_file = "%s/Y_lmsd1d2_lmax%s.%s" % (path, lmax, "npz" if compressed else "npy")
+    if lmaxgrid is None:
+        lmaxgrid = lmax
+    elif lmaxgrid < lmax:
+        raise ValueError(
+            "lmaxgrid should be higher or equal than lmax, input is %s" % (lmaxgrid)
+            + " with lmax = %s." % (lmax)
+        )
+    n = 2 * lmaxgrid + 2
+    poly_file = "%s/Y_lmsd1d2_lmax%s_lmaxgrid%s.%s" % (
+        path,
+        lmax,
+        lmaxgrid,
+        "npz" if compressed else "npy",
+    )
 
     if Path(poly_file).exists() == 0:
         print(
             "Pre-compute SH derivatives, may take some"
-            + " time depending on lmax, input lmax is %s" % (lmax)
+            + " time depending on lmax and lmaxgrid, which are %s and %s."
+            % (lmax, lmaxgrid)
         )
         index_size = int((lmax + 1) * (lmax + 2) / 2)
         shape_save = (n, 2 * n, 2, lmax + 1, lmax + 1)
@@ -184,14 +197,13 @@ def SH_deriv_store(lmax, path, save=True, compressed=False):
             t_i += 1
             sint = np.sin(theta)
             cost = np.cos(theta)
-            if theta == 0 or theta == pi:
+            if theta == 0:
                 dp_theta = np.zeros((index_size))
                 p_theta = np.zeros((index_size))
             else:
                 p_theta, dp_theta = pysh.legendre.PlmBar_d1(lmax, cost)
                 dp_theta *= -sint  # Derivative with
                 # respect to theta.
-                p_theta /= sint
                 costsint = cost / sint
                 sintt = 1.0 / sint ** 2
 
@@ -225,10 +237,9 @@ def SH_deriv_store(lmax, path, save=True, compressed=False):
                         )
                         y_lm[:, 1, l, m_abs] = p_theta[index] * sinmphi
 
-                y_lm[:, :, l, : l + 1] *= sint
                 y_lm_save[t_i, :, :, l, : l + 1] = y_lm[:, :, l, : l + 1]
 
-                if theta == 0 or theta == pi:
+                if theta == 0:
                     Y_lm_d2_theta_a[t_i, :, :, l, : l + 1] = 0.0
                     # Not defined.
                 else:
@@ -239,6 +250,7 @@ def SH_deriv_store(lmax, path, save=True, compressed=False):
                         - Y_lm_d1_theta_a[t_i, :, :, l, : l + 1] * costsint
                         - sintt * Y_lm_d2_phi_a[t_i, :, :, l, : l + 1]
                     )
+
         if save:
             if compressed:
                 np.savez_compressed(
@@ -312,6 +324,7 @@ def Displacement_strains(
     colat_max=180,
     lon_min=0,
     lon_max=360,
+    lmaxgrid=None,
     only_deflec=False,
     Y_lm_d1_t=None,
     Y_lm_d1_p=None,
@@ -382,6 +395,10 @@ def Displacement_strains(
         Minimum longitude for grid computation of strains and stresses.
     lon_max : float, optional, default = 360
         Maximum longitude for grid computation of strains and stresses.
+    lmaxgrid : int, optional, default = None
+        The maximum spherical harmonic degree resolvable by the grid,
+        latitude(2 * lmaxgrid + 2) and longitude(2 * (2 * lmaxgrid + 2)).
+        If None, this parameter is set to lmax.
     only_deflec : bool, optional, default = False
         Output only the displacement grid for all latitude and longitudes.
     Y_lm_d1_t : array, float, size(2,lmax+1,lmax+1), optional, default = None
@@ -415,7 +432,14 @@ def Displacement_strains(
         A_lm = pysh.SHCoeffs.from_array(A_lm).pad(lmax=lmax).coeffs
         w_lm = pysh.SHCoeffs.from_array(w_lm).pad(lmax=lmax).coeffs
 
-    n = 2 * lmax + 2
+    if lmaxgrid is None:
+        lmaxgrid = lmax
+    elif lmaxgrid < lmax:
+        raise ValueError(
+            "lmaxgrid should be higher or equal than lmax, input is %s" % (lmaxgrid)
+            + " with lmax = %s." % (lmax)
+        )
+    n = 2 * lmaxgrid + 2
 
     if Y_lm_d1_p is not None:
         if quiet is False:
@@ -432,7 +456,7 @@ def Displacement_strains(
             Y_lm_d2_p,
             Y_lm_d2_tp,
             y_lm,
-        ) = SH_deriv_store(lmax, path)
+        ) = SH_deriv_store(lmax, path, lmaxgrid=lmaxgrid)
 
     # Some constants for the elastic model.
     Re = R - (0.5 * Te)

@@ -154,7 +154,9 @@ print("Computing strains")  # This may take some time if it is the first time
 # Strains
 lmax = 30  # Lower lmax for faster computations
 Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp, y_lm = SH_deriv_store(
-    lmax, path, save=True
+    lmax,
+    path,
+    save=False,
 )
 
 colat_min = 0  # Minimum colatitude at which strain calculations are performed
