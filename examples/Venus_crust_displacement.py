@@ -147,8 +147,12 @@ pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
 
 print("Computing strains")  # This may take some time if it is the first time
 # Strains
+lmaxgrid = 80
 Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp, y_lm = SH_deriv_store(
-    lmax, path, save=False
+    lmax,
+    path,
+    save=False,
+    lmaxgrid=lmaxgrid,
 )
 
 colat_min = 0  # Minimum colatitude at which strain calculations are performed
@@ -168,6 +172,7 @@ kwargs_param_s = dict(
     Y_lm_d2_p=Y_lm_d2_p,
     Y_lm_d2_tp=Y_lm_d2_tp,
     y_lm=y_lm,
+    lmaxgrid=lmaxgrid,
 )
 
 # Strain
@@ -228,7 +233,7 @@ pysh.SHGrid.from_array(principal_angle).plot(
 )
 
 # Plot strain direction
-skip_i = int(lmax / 6)
+skip_i = int(lmax / 10)
 skip = (slice(None, None, skip_i), slice(None, None, skip_i))
 grid_long, grid_lat = np.meshgrid(
     np.linspace(0, 360, np.shape(principal_angle)[1]),

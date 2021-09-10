@@ -117,7 +117,7 @@ def SH_deriv(theta, phi, lmax):
 # ==== SH_deriv_store ====
 
 
-def SH_deriv_store(lmax, path, lmaxgrid=None, save=True, compressed=False):
+def SH_deriv_store(lmax, path, lmaxgrid=None, grid=None, save=True, compressed=False):
     """
     Compute and store or load spherical harmonic derivatives
     over the entire sphere (first and second order).
@@ -149,9 +149,14 @@ def SH_deriv_store(lmax, path, lmaxgrid=None, save=True, compressed=False):
     path : string
         Path to store or load spherical harmonic derivatives.
     lmaxgrid : int, optional, default = None
-        The maximum spherical harmonic degree resolvable by the grid,
-        latitude(2 * lmaxgrid + 2) and longitude(2 * (2 * lmaxgrid + 2)).
-        Should be higher or equal than lmax. If None, this parameter is set to lmax.
+        The maximum spherical harmonic degree resolvable by the grid.
+        If None, this parameter is set to lmax.
+        When grid=='GLQ', the gridshape is (lmaxgrid+1, 2*lmaxgrid+1) and
+        (2*lmaxgrid+2, 2*(2*lmaxgrid+2)) when grid=='DH'.
+    grid: string, optional, default = None
+        Either 'DH' or 'GLQ' for Driscoll and Healy grids or Gauss-Legendre
+        Quadrature grids following the convention of SHTOOLs.
+        If None, the grid is set to 'GLQ'.
     save : boolean, optional, default = True
         If True, save the data at the given path location.
     compressed : boolean, optional, default = False
@@ -166,9 +171,22 @@ def SH_deriv_store(lmax, path, lmaxgrid=None, save=True, compressed=False):
             "lmaxgrid should be higher or equal than lmax, input is %s" % (lmaxgrid)
             + " with lmax = %s." % (lmax)
         )
-    n = 2 * lmaxgrid + 2
-    poly_file = "%s/Y_lmsd1d2_lmax%s_lmaxgrid%s.%s" % (
+
+    if grid is None or grid == "GLQ":
+        nlat = lmaxgrid + 1
+        nlon = 2 * nlat - 1
+    elif grid == "DH":
+        nlat = 2 * lmaxgrid + 2
+        nlon = 2 * nlat
+    else:
+        raise ValueError(
+            "Grid format non recognized allowed are 'DH' and 'GLQ', input was %s"
+            % (grid)
+        )
+
+    poly_file = "%s/Y_lmsd1d2_%slmax%s_lmaxgrid%s.%s" % (
         path,
+        "GLQ" if grid is None else grid,
         lmax,
         lmaxgrid,
         "npz" if compressed else "npy",
@@ -181,18 +199,18 @@ def SH_deriv_store(lmax, path, lmaxgrid=None, save=True, compressed=False):
             % (lmax, lmaxgrid)
         )
         index_size = int((lmax + 1) * (lmax + 2) / 2)
-        shape_save = (n, 2 * n, 2, lmax + 1, lmax + 1)
+        shape_save = (nlat, nlon, 2, lmax + 1, lmax + 1)
         Y_lm_d1_theta_a = np.zeros(shape_save)
         Y_lm_d1_phi_a = np.zeros(shape_save)
         Y_lm_d2_phi_a = np.zeros(shape_save)
         Y_lm_d2_thetaphi_a = np.zeros(shape_save)
         Y_lm_d2_theta_a = np.zeros(shape_save)
         y_lm_save = np.zeros(shape_save)
-        phi_ar = np.linspace(0, 360, 2 * n, endpoint=False) * pi / 180.0
+        phi_ar = np.linspace(0, 360, nlon, endpoint=False) * pi / 180.0
         y_lm = np.zeros((len(phi_ar), 2, lmax + 1, lmax + 1))
 
         t_i = -1
-        for theta in np.linspace(0, 180, n, endpoint=False) * pi / 180.0:
+        for theta in np.linspace(0, 180, nlat, endpoint=False) * pi / 180.0:
             print(" colatitude %s of 180" % (int(theta * 180 / pi)), end="\r")
             t_i += 1
             sint = np.sin(theta)
@@ -325,6 +343,7 @@ def Displacement_strains(
     lon_min=0,
     lon_max=360,
     lmaxgrid=None,
+    grid=None,
     only_deflec=False,
     Y_lm_d1_t=None,
     Y_lm_d1_p=None,
@@ -396,9 +415,14 @@ def Displacement_strains(
     lon_max : float, optional, default = 360
         Maximum longitude for grid computation of strains and stresses.
     lmaxgrid : int, optional, default = None
-        The maximum spherical harmonic degree resolvable by the grid,
-        latitude(2 * lmaxgrid + 2) and longitude(2 * (2 * lmaxgrid + 2)).
+        The maximum spherical harmonic degree resolvable by the grid.
         If None, this parameter is set to lmax.
+        When grid=='GLQ', the gridshape is (lmaxgrid+1, 2*lmaxgrid+1) and
+        (2*lmaxgrid+2, 2*(2*lmaxgrid+2)) when grid=='DH'.
+    grid: string, optional, default = None
+        Either 'DH' or 'GLQ' for Driscoll and Healy grids or Gauss-Legendre
+        Quadrature grids following the convention of SHTOOLs.
+        If None, the grid is set to 'GLQ'.
     only_deflec : bool, optional, default = False
         Output only the displacement grid for all latitude and longitudes.
     Y_lm_d1_t : array, float, size(2,lmax+1,lmax+1), optional, default = None
@@ -439,7 +463,18 @@ def Displacement_strains(
             "lmaxgrid should be higher or equal than lmax, input is %s" % (lmaxgrid)
             + " with lmax = %s." % (lmax)
         )
-    n = 2 * lmaxgrid + 2
+
+    if grid is None or grid == "GLQ":
+        nlat = lmaxgrid + 1
+        nlon = 2 * nlat - 1
+    elif grid == "DH":
+        nlat = 2 * lmaxgrid + 2
+        nlon = 2 * nlat
+    else:
+        raise ValueError(
+            "Grid format non recognized allowed are 'DH' and 'GLQ', input was %s"
+            % (grid)
+        )
 
     if Y_lm_d1_p is not None:
         if quiet is False:
@@ -456,7 +491,7 @@ def Displacement_strains(
             Y_lm_d2_p,
             Y_lm_d2_tp,
             y_lm,
-        ) = SH_deriv_store(lmax, path, lmaxgrid=lmaxgrid)
+        ) = SH_deriv_store(lmax, path, lmaxgrid=lmaxgrid, grid=grid)
 
     # Some constants for the elastic model.
     Re = R - (0.5 * Te)
@@ -472,7 +507,7 @@ def Displacement_strains(
     w_lm[0, 0, 0] = 0.0
 
     # Allocate arrays.
-    shape = (n, 2 * n)
+    shape = (nlat, nlon)
     omega = np.zeros(shape)
     kappa_theta = np.zeros(shape)
     kappa_phi = np.zeros(shape)
@@ -482,8 +517,8 @@ def Displacement_strains(
 
     deg2rad = pi / 180.0
     grid_long, grid_lat = np.meshgrid(
-        np.linspace(0, 360, 2 * n, endpoint=False) * deg2rad,
-        np.linspace(0, 180, n, endpoint=False) * deg2rad,
+        np.linspace(0, 360, nlon, endpoint=False) * deg2rad,
+        np.linspace(0, 180, nlat, endpoint=False) * deg2rad,
     )
     mask = (
         (grid_lat > (colat_min - 1) * deg2rad)
@@ -601,11 +636,11 @@ def Principal_strainstress_angle(s_theta, s_phi, s_theta_phi):
 
     Parameters
     ----------
-    s_theta : array, float, size(n, 2 * n)
+    s_theta : array, float, size(nlat, nlon)
         Array of the colatitude component of the stress or strain field.
-    s_phi : array, float, size(n, 2 * n)
+    s_phi : array, float, size(nlat, nlon)
         Array of the longitude component of the stress or strain field.
-    s_theta_phi : array, float, size(n, 2 * n)
+    s_theta_phi : array, float, size(nlat, nlon)
         Array of the colatitude and longitude component of the stress or strain field.
     """
     min_strain = 0.5 * (
