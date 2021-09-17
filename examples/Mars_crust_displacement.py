@@ -124,11 +124,11 @@ ax3.set_visible(False)
 
 grid_W = pysh.SHCoeffs.from_array(w_lm / 1e3).expand(**args_expand) - R / 1e3
 grid_W.plot(ax=ax1, cb_label="Upward displacement (km)", **args_plot)
-
 # Add zero displacement contour
 ax1.contour(
     grid_W.data > 0, levels=[0.99], extent=(0, 360, -90, 90), colors="k", origin="upper"
 )
+
 pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
     ax=ax2,
     cb_label="Isostatic crustal root variations (km)",

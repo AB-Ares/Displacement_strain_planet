@@ -457,6 +457,7 @@ def Thin_shell_matrix(
     RCR = (R - c) / R
     eps = 12.0 * Re ** 2 / Te ** 2
     alph_B = 1.0 / (E * Te)
+    beta_B = 1.0 / (1.0 + eps)
     eta_B = eps / (1.0 + eps)
 
     gmoho = g0 * (1.0 + (((R - c) / R) ** 3 - 1.0) * rhoc / rhobar) / ((R - c) / R) ** 2
@@ -514,6 +515,7 @@ def Thin_shell_matrix(
     for l in range(1, lmax + 1):  # Ignore degree 0 from
         # calculations
         Lapla = float(-l * (l + 1))  # Laplacian identity.
+        Lapla_2 = Lapla + 2.0
 
         if first_inv is True:
 
@@ -595,10 +597,10 @@ def Thin_shell_matrix(
                 + g0 * (rhol * (H_lm1 - G_lm1) + drhol * w_lm1)
                 + gmoho * drho * (w_lm1 - dc_lm1 - Gc_lm1)
                 + gdrho * drhom_lm1 * M,
-                eta_B * D * Lapla * (Lapla + 2) * (Lapla + 2) * w_lm1
-                + Re ** 2 / alph_B * (Lapla + 2) * w_lm1
-                + Re4 * (Lapla + 2 - 1 - v) * q_lm1
-                - Re4 * (1.0 / (1 + eps) * (Lapla + 2) - 1 - v) * Lapla * omega_lm1,
+                eta_B * D * Lapla * Lapla_2 ** 2 * w_lm1
+                + Re ** 2 / alph_B * Lapla_2 * w_lm1
+                + Re4 * (Lapla_2 - 1.0 - v) * q_lm1
+                - Re4 * (beta_B * Lapla_2 - 1.0 - v) * Lapla * omega_lm1,
                 -omega_lm1
                 + v1v * rhol * g0 * Te * H_lm1 / R
                 - (
@@ -720,17 +722,17 @@ def Thin_shell_matrix(
 
         # Tangential displacement
         A_lm[:, l, : l + 1] = (
-            (1 / (1 + eps))
-            * (1 / (1 - v ** 2))
-            * (Lapla + 1 + v)
-            * (Lapla + 2)
+            beta_B
+            * (1.0 / (1.0 - v ** 2))
+            * (Lapla + 1.0 + v)
+            * Lapla_2
             * w_lm[:, l, : l + 1]
             + w_lm[:, l, : l + 1]
             + Re ** 2 * alph_B * q_lm[:, l, : l + 1]
             - Re
             * alph_B
-            / (1 + eps)
-            * (Lapla - eps * (1 + v))
+            / (1.0 + eps)
+            * (Lapla - eps * (1.0 + v))
             * Re
             * omega_lm[:, l, : l + 1]
         )
@@ -1037,7 +1039,7 @@ def Thin_shell_matrix_nmax(
 
     # Density contrast not at topography or moho and no
     # finite-amplitude correctio, return
-    if nmax == 1 and top_drho != 0 and base_drho != c:
+    if nmax == 1 and (sum_drho == 0 or (top_drho != 0 and base_drho != c)):
         (
             w_lm_o,
             A_lm_o,
