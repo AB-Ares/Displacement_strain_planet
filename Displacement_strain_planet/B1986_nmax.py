@@ -455,6 +455,9 @@ def Thin_shell_matrix(
     # rigidity.
     v1v = v / (1.0 - v)
     RCR = (R - c) / R
+    eps = 12.0 * Re ** 2 / Te ** 2
+    alph_B = 1.0 / (E * Te)
+    eta_B = eps / (1.0 + eps)
 
     gmoho = g0 * (1.0 + (((R - c) / R) ** 3 - 1.0) * rhoc / rhobar) / ((R - c) / R) ** 2
     if top_drho <= c:
@@ -510,45 +513,7 @@ def Thin_shell_matrix(
     # Solve matrix over all degrees.
     for l in range(1, lmax + 1):  # Ignore degree 0 from
         # calculations
-
         Lapla = float(-l * (l + 1))  # Laplacian identity.
-
-        # Degree-dependent from Banerdt correction after Beuthe
-        # (2008).
-        if l == 1:
-            alpha = 1.0e-20
-            gamma = 1.0e-20
-            beta = 1.0e-20
-            eta = 1.0e-20
-            # No displacement for degree-1.
-        else:
-            alpha = (
-                -Re4
-                * (Lapla + 1.0 - v)
-                / (
-                    (D / (1.0 + 1.0 / psi))
-                    * (Lapla ** 3 + 4.0 * Lapla ** 2 + 4.0 * Lapla)
-                    + Re ** 2 * (E * Te) * (Lapla + 2.0)
-                )
-            )
-
-            gamma = (Lapla * Re4 * ((1.0 / (1.0 + psi)) * (Lapla + 2.0) - 1 - v)) / (
-                (D / (1.0 + 1.0 / psi)) * (Lapla ** 3 + 4.0 * Lapla ** 2 + 4.0 * Lapla)
-                + Re ** 2 * (E * Te) * (Lapla + 2.0)
-            )
-
-            zeta = (
-                (1.0 / (1.0 + psi))
-                * (1.0 / (1.0 - v ** 2))
-                * (Lapla + 1.0 + v)
-                * (Lapla + 2.0)
-            )
-            beta = zeta * alpha + alpha + Re ** 2 / (E * Te)
-            eta = (
-                zeta * gamma
-                + gamma
-                - Re ** 2 / (E * Te * (1.0 + psi)) * (Lapla - psi * (1.0 + v))
-            )
 
         if first_inv is True:
 
@@ -630,7 +595,10 @@ def Thin_shell_matrix(
                 + g0 * (rhol * (H_lm1 - G_lm1) + drhol * w_lm1)
                 + gmoho * drho * (w_lm1 - dc_lm1 - Gc_lm1)
                 + gdrho * drhom_lm1 * M,
-                -w_lm1 + alpha * q_lm1 + gamma * omega_lm1,
+                eta_B * D * Lapla * (Lapla + 2) * (Lapla + 2) * w_lm1
+                + Re ** 2 / alph_B * (Lapla + 2) * w_lm1
+                + Re4 * (Lapla + 2 - 1 - v) * q_lm1
+                - Re4 * (1.0 / (1 + eps) * (Lapla + 2) - 1 - v) * Lapla * omega_lm1,
                 -omega_lm1
                 + v1v * rhol * g0 * Te * H_lm1 / R
                 - (
@@ -751,7 +719,21 @@ def Thin_shell_matrix(
         H_lm[:, l, : l + 1] = outs[idx_H_lm]
 
         # Tangential displacement
-        A_lm[:, l, : l + 1] = beta * q_lm[:, l, : l + 1] + eta * omega_lm[:, l, : l + 1]
+        A_lm[:, l, : l + 1] = (
+            (1 / (1 + eps))
+            * (1 / (1 - v ** 2))
+            * (Lapla + 1 + v)
+            * (Lapla + 2)
+            * w_lm[:, l, : l + 1]
+            + w_lm[:, l, : l + 1]
+            + Re ** 2 * alph_B * q_lm[:, l, : l + 1]
+            - Re
+            * alph_B
+            / (1 + eps)
+            * (Lapla - eps * (1 + v))
+            * Re
+            * omega_lm[:, l, : l + 1]
+        )
 
     return (
         w_lm,
