@@ -117,7 +117,9 @@ def SH_deriv(theta, phi, lmax):
 # ==== SH_deriv_store ====
 
 
-def SH_deriv_store(lmax, path, lmaxgrid=None, grid=None, save=True, compressed=False):
+def SH_deriv_store(
+    lmax, path, lmaxgrid=None, grid=None, save=True, compressed=False, quiet=True
+):
     """
     Compute and store or load spherical harmonic derivatives
     over the entire sphere (first and second order).
@@ -157,12 +159,14 @@ def SH_deriv_store(lmax, path, lmaxgrid=None, grid=None, save=True, compressed=F
         Either 'DH' or 'GLQ' for Driscoll and Healy grids or Gauss-Legendre
         Quadrature grids following the convention of SHTOOLs.
         If None, the grid is set to 'GLQ'.
-    save : boolean, optional, default = True
+    save : bool, optional, default = True
         If True, save the data at the given path location.
-    compressed : boolean, optional, default = False
+    compressed : bool, optional, default = False
         If True, the data is saved in compressed .npz format instead of
         npy, which decreases the file size by about a factor 2. This is
         recommended when lmax > 75.
+    quiet : bool, optional, default = True
+        If True, suppress printing output.
     """
     if lmaxgrid is None:
         lmaxgrid = lmax
@@ -211,7 +215,8 @@ def SH_deriv_store(lmax, path, lmaxgrid=None, grid=None, save=True, compressed=F
 
         t_i = -1
         for theta in np.linspace(0, 180, nlat, endpoint=False) * pi / 180.0:
-            print(" colatitude %s of 180" % (int(theta * 180 / pi)), end="\r")
+            if quiet is False:
+                print(" colatitude %s of 180" % (int(theta * 180 / pi)), end="\r")
             t_i += 1
             sint = np.sin(theta)
             cost = np.cos(theta)
@@ -270,6 +275,8 @@ def SH_deriv_store(lmax, path, lmaxgrid=None, grid=None, save=True, compressed=F
                     )
 
         if save:
+            if quiet is False:
+                print("Saving SH derivatives at: %s" % (path))
             if compressed:
                 np.savez_compressed(
                     poly_file,
@@ -292,6 +299,9 @@ def SH_deriv_store(lmax, path, lmaxgrid=None, grid=None, save=True, compressed=F
                         y_lm_save,
                     ],
                 )
+        else:
+            if quiet is False:
+                print("Not saving SH derivatives")
     else:
         if compressed:
             print(
@@ -698,9 +708,11 @@ def Plt_tecto_Mars(
     """
     comp_fault_dat = np.loadtxt("%s/Knapmeyer_2006_compdata.txt" % (path))
     ext_fault_dat = np.loadtxt("%s/Knapmeyer_2006_extedata.txt" % (path))
-    ind_comp_fault = np.isin(comp_fault_dat, np.arange(1, 5143 + 1, dtype=int))
+    idx_comp = 5143
+    idx_ext = 9676
+    ind_comp_fault = np.isin(comp_fault_dat, np.arange(1, idx_comp + 1, dtype=int))
     ind_comp_fault_2 = np.where(ind_comp_fault)[0]
-    ind_ext_fault = np.isin(ext_fault_dat, np.arange(1, 9676 + 1, dtype=int))
+    ind_ext_fault = np.isin(ext_fault_dat, np.arange(1, idx_ext + 1, dtype=int))
     ind_ext_fault_2 = np.where(ind_ext_fault)[0]
 
     if ax is None:
@@ -712,24 +724,33 @@ def Plt_tecto_Mars(
     faults_dats = [comp_fault_dat, ext_fault_dat]
     faults_cols = [compression_col, extension_col]
     labels = ["Compressional tectonic features", "Extensional tectonic features"]
+    max_idx = [idx_comp, idx_ext]
 
     if compression and not extension:
         faults_inds = [faults_inds[0]]
         faults_dats = [faults_dats[0]]
         faults_cols = [faults_cols[0]]
         labels = [labels[0]]
+        max_idx = [max_idx[0]]
     elif extension and not compression:
         faults_inds = [faults_inds[1]]
         faults_dats = [faults_dats[1]]
         faults_cols = [faults_cols[1]]
         labels = [labels[1]]
+        max_idx = [max_idx[1]]
 
-    for faults, dat, col, label in zip(faults_inds, faults_dats, faults_cols, labels):
+    for faults, dat, col, label, mx_ix in zip(
+        faults_inds, faults_dats, faults_cols, labels, max_idx
+    ):
         ax.plot(np.nan, np.nan, color=col, lw=lw, label=label)
-        for indx in range(1, len(faults)):
-            ind_fault_check = range(faults[indx - 1] + 1, faults[indx])
-            fault_dat_lon = dat[ind_fault_check][::2]
-            fault_dat_lat = dat[ind_fault_check][1::2]
+        for indx in range(1, len(faults) + 1):
+            if indx == mx_ix:  # Add last point
+                fault_dat_lon = dat[faults[indx - 1] + 1 :][::2]
+                fault_dat_lat = dat[faults[indx - 1] + 1 :][1::2]
+            else:
+                ind_fault_check = range(faults[indx - 1] + 1, faults[indx])
+                fault_dat_lon = dat[ind_fault_check][::2]
+                fault_dat_lat = dat[ind_fault_check][1::2]
             split = (
                 np.argwhere((fault_dat_lon[:-1] * fault_dat_lon[1:] < 0)).ravel() + 1
             )
