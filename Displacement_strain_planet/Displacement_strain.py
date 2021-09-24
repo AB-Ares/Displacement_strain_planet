@@ -118,7 +118,14 @@ def SH_deriv(theta, phi, lmax):
 
 
 def SH_deriv_store(
-    lmax, path, lmaxgrid=None, grid=None, save=True, compressed=False, quiet=True
+    lmax,
+    path,
+    dtype=np.float64,
+    lmaxgrid=None,
+    grid=None,
+    save=True,
+    compressed=False,
+    quiet=True,
 ):
     """
     Compute and store or load spherical harmonic derivatives
@@ -150,6 +157,9 @@ def SH_deriv_store(
         Maximum spherical harmonic degree to compute for the derivatives.
     path : string
         Path to store or load spherical harmonic derivatives.
+    dtype : data-type, optional, default = numpy.float64
+        The desired data-type for the arrays (default is that of numpy).
+        This can help reducing the size of the stored array.
     lmaxgrid : int, optional, default = None
         The maximum spherical harmonic degree resolvable by the grid.
         If None, this parameter is set to lmax.
@@ -188,28 +198,31 @@ def SH_deriv_store(
             % (grid)
         )
 
-    poly_file = "%s/Y_lmsd1d2_%slmax%s_lmaxgrid%s.%s" % (
+    poly_file = "%s/Y_lmsd1d2_%slmax%s_lmaxgrid%s_f%s.%s" % (
         path,
         "GLQ" if grid is None else grid,
         lmax,
         lmaxgrid,
+        str(dtype)[-4:-2],
         "npz" if compressed else "npy",
     )
 
     if Path(poly_file).exists() == 0:
-        print(
-            "Pre-compute SH derivatives, may take some"
-            + " time depending on lmax and lmaxgrid, which are %s and %s."
-            % (lmax, lmaxgrid)
-        )
+        if quiet is False:
+            print(
+                "Pre-compute SH derivatives, may take some"
+                + " time depending on lmax and lmaxgrid, which are %s and %s."
+                % (lmax, lmaxgrid)
+            )
+            print("dtype is %s." % (dtype))
         index_size = int((lmax + 1) * (lmax + 2) / 2)
         shape_save = (nlat, nlon, 2, lmax + 1, lmax + 1)
-        Y_lm_d1_theta_a = np.zeros(shape_save)
-        Y_lm_d1_phi_a = np.zeros(shape_save)
-        Y_lm_d2_phi_a = np.zeros(shape_save)
-        Y_lm_d2_thetaphi_a = np.zeros(shape_save)
-        Y_lm_d2_theta_a = np.zeros(shape_save)
-        y_lm_save = np.zeros(shape_save)
+        Y_lm_d1_theta_a = np.zeros(shape_save, dtype=dtype)
+        Y_lm_d1_phi_a = np.zeros(shape_save, dtype=dtype)
+        Y_lm_d2_phi_a = np.zeros(shape_save, dtype=dtype)
+        Y_lm_d2_thetaphi_a = np.zeros(shape_save, dtype=dtype)
+        Y_lm_d2_theta_a = np.zeros(shape_save, dtype=dtype)
+        y_lm_save = np.zeros(shape_save, dtype=dtype)
         phi_ar = np.linspace(0, 360, nlon, endpoint=False) * pi / 180.0
         y_lm = np.zeros((len(phi_ar), 2, lmax + 1, lmax + 1))
 
@@ -304,19 +317,22 @@ def SH_deriv_store(
                 print("Not saving SH derivatives")
     else:
         if compressed:
-            print(
-                "Loading precomputed compressed SH derivatives for strain calculations"
-            )
-            data = np.load(poly_file)
-            Y_lm_d1_theta_a = data["Y_lm_d1_t"]
-            Y_lm_d1_phi_a = data["Y_lm_d1_p"]
-            Y_lm_d2_theta_a = data["Y_lm_d2_t"]
-            Y_lm_d2_phi_a = data["Y_lm_d2_p"]
-            Y_lm_d2_thetaphi_a = data["Y_lm_d2_tp"]
-            y_lm_save = data["Y_lm"]
-            print("Loading done")
+            if quiet is False:
+                print(
+                    "Loading precomputed compressed SH derivatives for strain calculations"
+                )
+            with np.load(poly_file) as data:
+                Y_lm_d1_theta_a = data["Y_lm_d1_t"]
+                Y_lm_d1_phi_a = data["Y_lm_d1_p"]
+                Y_lm_d2_theta_a = data["Y_lm_d2_t"]
+                Y_lm_d2_phi_a = data["Y_lm_d2_p"]
+                Y_lm_d2_thetaphi_a = data["Y_lm_d2_tp"]
+                y_lm_save = data["Y_lm"]
+            if quiet is False:
+                print("Loading done")
         else:
-            print("Loading precomputed SH derivatives for strain calculations")
+            if quiet is False:
+                print("Loading precomputed SH derivatives for strain calculations")
             (
                 Y_lm_d1_theta_a,
                 Y_lm_d1_phi_a,
@@ -325,7 +341,8 @@ def SH_deriv_store(
                 Y_lm_d2_thetaphi_a,
                 y_lm_save,
             ) = np.load(poly_file, allow_pickle=True)
-            print("Loading done")
+            if quiet is False:
+                print("Loading done")
 
     return (
         Y_lm_d1_theta_a,
