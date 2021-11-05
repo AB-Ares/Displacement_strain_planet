@@ -5,8 +5,9 @@ Functions for calculating the Banerdt (1986) system of equations.
 import re
 import numpy as np
 import pyshtools as pysh
-from sympy import linsolve, lambdify, symbols
+from sympy import linsolve, lambdify, symbols, Expr
 from sympy.parsing.sympy_parser import parse_expr
+from sympy.functions.special.tensor_functions import KroneckerDelta
 
 # ==== corr_nmax_drho ====
 
@@ -572,27 +573,37 @@ def Thin_shell_matrix(
             # System of equations from Banerdt (1986).
             Eqns = [
                 -G_lm1
-                + rhobconst
-                * (
-                    rhol * H_lm1
-                    + drhol * w_lm1
-                    + drho * (w_lm1 - dc_lm1) * RCRl2 / DCfilter_mohoD
-                    + drhom_lm1
-                    * Rl3
-                    * (RtRl3 / DCfilter_drhomt - RbRl3 / DCfilter_drhomb)
+                + (
+                    rhobconst
+                    * (
+                        rhol * H_lm1
+                        + drhol * w_lm1
+                        + drho * (w_lm1 - dc_lm1) * RCRl2 / DCfilter_mohoD
+                        + drhom_lm1
+                        * Rl3
+                        * (RtRl3 / DCfilter_drhomt - RbRl3 / DCfilter_drhomb)
+                    )
+                    + rhol * H_corr1
+                    + drhol * w_corr1
+                    + drho * wdc_corr1 * RCRl
                 )
-                + rhol * H_corr1
-                + drhol * w_corr1
-                + drho * wdc_corr1 * RCRl,
+                * (
+                    (1.0 - KroneckerDelta(l, 1)) if "G_lm" in not_constraint else 1.0
+                ),  # Force the degree-1 geoid to zero
                 -Gc_lm1
-                + rhobconst
-                * (
-                    (rhol * H_lm1 + drhol * w_lm1) * RCRl1
-                    + drho * (w_lm1 - dc_lm1) * RCR ** 3
-                    + drhom_lm1 * Rl3 * (RtRCl - RbRCl)
+                + (
+                    rhobconst
+                    * (
+                        (rhol * H_lm1 + drhol * w_lm1) * RCRl1
+                        + drho * (w_lm1 - dc_lm1) * RCR ** 3
+                        + drhom_lm1 * Rl3 * (RtRCl - RbRCl)
+                    )
+                    + (rhol * H_corr1 + drhol * w_corr1) * RCRl1
+                    + drho * wdc_corr1 * RCR ** 3
                 )
-                + (rhol * H_corr1 + drhol * w_corr1) * RCRl1
-                + drho * wdc_corr1 * RCR ** 3,
+                * (
+                    (1.0 - KroneckerDelta(l, 1)) if "Gc_lm" in not_constraint else 1.0
+                ),  # Force the degree-1 geoid to zero
                 -q_lm1
                 + g0 * (rhol * (H_lm1 - G_lm1) + drhol * w_lm1)
                 + gmoho * drho * (w_lm1 - dc_lm1 - Gc_lm1)
@@ -709,6 +720,19 @@ def Thin_shell_matrix(
         idx_drhom_lm = int(np.where(a_symbs == "drhom_lm1")[0])
         idx_dc_lm = int(np.where(a_symbs == "dc_lm1")[0])
         idx_q_lm = int(np.where(a_symbs == "q_lm1")[0])
+
+        if np.array([isinstance(arrs, Expr) for arrs in outs]).any():
+            raise ValueError(
+                "System is non-linear at degree %i, cannot solve" % (l)
+                + "\nw_lm = %s" % (outs[idx_w_lm])
+                + "\nq_lm = %s" % (outs[idx_q_lm])
+                + "\nomega_lm = %s" % (outs[idx_omega_lm])
+                + "\ndc_lm = %s" % (outs[idx_dc_lm])
+                + "\ndrhom_lm = %s" % (outs[idx_drhom_lm])
+                + "\nG_lm = %s" % (outs[idx_G_lm])
+                + "\nGc_lm = %s" % (outs[idx_Gc_lm])
+                + "\nH_lm = %s" % (outs[idx_H_lm])
+            )
 
         # Write solutions
         w_lm[:, l, : l + 1] = outs[idx_w_lm]

@@ -7,7 +7,7 @@ PYTHON = python3
 SHELL=/bin/sh
 
 ODIR = ../docs/_build/html/notebooks
-JFLAGS = --to html --execute --ExecutePreprocessor.timeout=120 --output-dir=$(ODIR)
+JFLAGS = --to html --execute --output-dir=$(ODIR)
 
 IPYNB = Run_demo.ipynb
 

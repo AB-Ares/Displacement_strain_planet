@@ -114,7 +114,6 @@ print("Computing displacements and isostatic crustal root variations")
     drhom_lm=zeros.copy(),
     filter="Ma",
     filter_half=50,
-    quiet=False
 )
 
 # Plotting
@@ -134,7 +133,7 @@ pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
     cb_label="Isostatic crustal root variations (km)",
     ticks="wSnE",
     ylabel=None,
-    **args_plot
+    **args_plot,
 )
 
 # pysh.SHCoeffs.from_array(drhom_lm).expand(**args_expand).plot(
@@ -147,7 +146,7 @@ pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
     ticks="wSnE",
     ylabel=None,
     show=False,
-    **args_plot
+    **args_plot,
 )
 
 print("Computing strains")  # This may take some time if it is the first time
@@ -212,7 +211,7 @@ pysh.SHGrid.from_array(min_strain * 1e3).plot(
     ax=ax1,
     cb_label="Minimum principal horizontal strain",
     cmap_limits=[-4, 4],
-    **args_plot
+    **args_plot,
 )
 pysh.SHGrid.from_array(max_strain * 1e3).plot(
     ax=ax2,
@@ -220,13 +219,13 @@ pysh.SHGrid.from_array(max_strain * 1e3).plot(
     ticks="wSnE",
     ylabel=None,
     cmap_limits=[-4, 4],
-    **args_plot
+    **args_plot,
 )
 pysh.SHGrid.from_array(sum_strain * 1e3).plot(
     ax=ax3,
     cb_label="Sum of principal horizontal strains",
     cmap_limits=[-3, 3],
-    **args_plot
+    **args_plot,
 )
 pysh.SHGrid.from_array(principal_angle).plot(
     ax=ax4,

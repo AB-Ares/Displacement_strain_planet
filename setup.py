@@ -12,7 +12,7 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
 
 install_requires = [
     "pyshtools>=4.7.1",
-    "sympy<=1.7",
+    "sympy",
     "matplotlib>=3.3",
     "numpy",
     "cmcrameri",
