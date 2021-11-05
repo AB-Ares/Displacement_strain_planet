@@ -445,6 +445,13 @@ def Thin_shell_matrix(
 
     # Precompute some constants.
     M = base_drho - top_drho  # Thickness of the density anomaly
+    if M < 0:
+        raise ValueError(
+            "Thickness of the density anomaly is negative, "
+            + "base_drho and top_drho are probably inverted with values of "
+            + "%.2f and %.2f (km), respectively" % (base_drho / 1e3, top_drho / 1e3)
+        )
+
     Re = R - 0.5 * Te  # Midpoint of the elastic shell.
     Re4 = Re ** 4
     drho = rhom - rhoc
