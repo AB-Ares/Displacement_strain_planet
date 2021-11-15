@@ -7,7 +7,6 @@ import numpy as np
 import pyshtools as pysh
 from sympy import linsolve, lambdify, symbols, Expr, expand
 from sympy.parsing.sympy_parser import parse_expr
-from sympy.functions.special.tensor_functions import KroneckerDelta
 
 # ==== corr_nmax_drho ====
 
@@ -163,6 +162,7 @@ def Thin_shell_matrix(
     lambdify_func=None,
     first_inv=True,
     drho_corr=None,
+    COM=True,
 ):
     """
     Solve for the Banerdt et al. (1986) system of equations with
@@ -296,6 +296,9 @@ def Thin_shell_matrix(
     drho_corr : array size(2,lmax+1,lmax+1), optional, default = None
         Array with spherical harmonic coefficients for lateral
         lateral density variations corrections for omega_lm.
+    COM : bool, optional, default = True
+        if True, force the model to be in a center-of-mass frame by setting
+        the degree-1 geoid terms to zero.
     """
     # Declare all possible input arrays.
     input_arrays = np.array(
@@ -661,7 +664,7 @@ def Thin_shell_matrix(
                     + drho * wdc_corr1 * RCRl
                 )
                 * (
-                    (1.0 - KroneckerDelta(l, 1)) if "G_lm" in not_constraint else 1.0
+                    0.0 if "G_lm" in not_constraint and COM and l == 1 else 1.0
                 ),  # Force the degree-1 geoid to zero
                 -Gc_lm1
                 + (
@@ -675,7 +678,7 @@ def Thin_shell_matrix(
                     + drho * wdc_corr1 * RCR ** 3
                 )
                 * (
-                    (1.0 - KroneckerDelta(l, 1)) if "Gc_lm" in not_constraint else 1.0
+                    0.0 if "Gc_lm" in not_constraint and COM and l == 1 else 1.0
                 ),  # Force the degree-1 geoid to zero
                 -q_lm1
                 + g0 * (rhol * (H_lm1 - G_lm1) + drhol * w_lm1)
@@ -989,6 +992,7 @@ def Thin_shell_matrix_nmax(
     add_arrays=None,
     quiet=True,
     remove_equation=None,
+    COM=True,
     base_drho=50e3,
     top_drho=0,
     delta_max=5,
@@ -1103,6 +1107,9 @@ def Thin_shell_matrix_nmax(
         are written 'add_array1' 'add_array2' etc. Order is important.
     quiet : bool, optional, default = False
         if True, print various outputs.
+    COM : bool, optional, default = True
+        if True, force the model to be in a center-of-mass frame by setting
+        the degree-1 geoid terms to zero.
     remove_equation : string, optional, default = None
         String of the equation to be removed. This must be either
         'G_lm', 'Gc_lm', 'w_lm', 'omega_lm', or 'q_lm'.
@@ -1141,6 +1148,7 @@ def Thin_shell_matrix_nmax(
         remove_equation=remove_equation,
         add_equation=add_equation,
         quiet=quiet,
+        COM=COM,
     )
 
     # Increase grid resolution to avoid aliasing in the CilmPlus routines
