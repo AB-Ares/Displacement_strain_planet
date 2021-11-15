@@ -348,9 +348,12 @@ def Thin_shell_matrix(
         elif np.shape(add_arrays)[1:] == (2, lmax + 1, lmax + 1):
             single_add_arrays = False
         else:
+            print(np.shape(add_arrays))
             raise ValueError(
-                "Add_arrays should be dimensioned as (N, 2, lmax+1, lmax+1)"
-                + "Input array is dimensioned as %s." % (np.shape(add_arrays))
+                "Add_arrays should be dimensioned as (N, 2, lmax+1, lmax+1)."
+                + "\nInput array is dimensioned as {:s}.".format(
+                    repr(np.shape(add_arrays))
+                )
             )
 
     # The system is a total of 5 equations relating 8 unknowns.
