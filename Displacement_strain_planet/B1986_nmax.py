@@ -315,8 +315,6 @@ def Thin_shell_matrix(
     num_array_test = np.not_equal(
         np.array([type(arr) for arr in input_arrays]), type(None)
     )
-    # Size of input arrays
-    size_array_test = np.array([np.size(arr) for arr in input_arrays])
     sum_array_test = np.sum(num_array_test)
     # Input arrays
     constraint_test = input_constraints[num_array_test]
@@ -329,16 +327,17 @@ def Thin_shell_matrix(
             + "Input value was {:s}.".format(repr(lmax))
         )
 
-    if lmax > np.sqrt(np.max(size_array_test) / 2) - 1:
-        raise ValueError(
-            "lmax must be less or equal to %s. Input "
-            % (np.sqrt(np.max(size_array_test) / 2) - 1)
-            + "value was %s." % (lmax + 1)
-        )
+    for arr, csts in zip(input_arrays[num_array_test], constraint_test):
+        if np.shape(arr) != (2, lmax + 1, lmax + 1):
+            raise ValueError(
+                "Input array should be dimensioned as (2, lmax+1, lmax+1),"
+                + " where lmax = %s Input %s has shape of %s."
+                % (lmax, csts, str(np.shape(arr)))
+            )
 
     if filter_in is not None and np.size(filter_in) != lmax + 1:
         raise ValueError(
-            "Size of filter_in must be %s. Input " % (lmax + 1)
+            "The size of filter_in must be %s. Input " % (lmax + 1)
             + "size was %s." % (np.size(filter_in))
         )
 
@@ -349,10 +348,9 @@ def Thin_shell_matrix(
             single_add_arrays = False
         else:
             raise ValueError(
-                "Add_arrays should be dimensioned as (N, 2, lmax+1, lmax+1)."
-                + "\nInput array is dimensioned as {:s}.".format(
-                    repr(np.shape(add_arrays))
-                )
+                "Add_arrays should be dimensioned as (N, 2, lmax+1, lmax),"
+                + " where lmax is %s." % (lmax)
+                + "\nInput array is dimensioned as %s." % (str(np.shape(add_arrays)))
             )
 
     # The system is a total of 5 equations relating 8 unknowns.
