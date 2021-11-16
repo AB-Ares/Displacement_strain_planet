@@ -11,7 +11,7 @@ from Displacement_strain_planet import Thin_shell_matrix_nmax, Thin_shell_matrix
 # All we assume is that the polar cap load is compensated by flexure
 # of the surface and crust mantle interface, and that there are no
 # crustal thickness and internation density variations.
-
+#
 # The function ouputs the following spherical harmonic coefficients:
 # w_lm flexure,
 # A_lm poloidal term of the tangential displacement,
@@ -23,7 +23,7 @@ from Displacement_strain_planet import Thin_shell_matrix_nmax, Thin_shell_matrix
 # Gc_lm geoid at the moho depth,
 # G_lm geoid at the surface, and
 # H_lm topography.
-
+#
 # And the linear solution sols expressed as lambda functions
 # of all components. Lambda functions can be used to re-calculate
 # the same problem with different inputs very fast.

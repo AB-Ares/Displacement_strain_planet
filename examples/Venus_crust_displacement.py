@@ -18,31 +18,31 @@ from Displacement_strain_planet import (
 # 3 assumptions are required to solve the system, and we here assume
 # that the observed topography and geoid are known, and that there
 # are no density variations in the interior.
-
+#
 # Next, we will plot the associated principal horizontal strains,
 # along with the principal angle, and show that these are
 # consistent with the tectonic mapping of Knampeyer et al. (2006).
-
+#
 # More information can be found in the jupyter notebook Run_demo
-
+#
 # In the computation, we will make use of a downward continuation
 # minimum-amplitude filter to damp unrealistic oscilations of the
 # moho-relief. For this, we call the optional argument filter, set
 # it to "Ma", and set the degree at which the filter equals 0.5 to
 # 50 with a call to filter_half.
-
-# The function ouputs the following spherical harmonic coefficients: \
-# w_lm flexure, \
-# A_lm poloidal term of the tangential displacement,  \
-# moho_relief_lm` moho relief,  \
-# dc_lm isostatic crustal root variations,  \
-# drhom_lm internal density variations,  \
-# omega_lm tangential load potential,  \
-# q_lm net load on the lithosphere,  \
-# Gc_lm geoid at the moho depth,  \
-# G_lm geoid at the surface, and \
+#
+# The function ouputs the following spherical harmonic coefficients:
+# w_lm flexure,
+# A_lm poloidal term of the tangential displacement,
+# moho_relief_lm` moho relief,
+# dc_lm isostatic crustal root variations,
+# drhom_lm internal density variations,
+# omega_lm tangential load potential,
+# q_lm net load on the lithosphere,
+# Gc_lm geoid at the moho depth,
+# G_lm geoid at the surface, and
 # H_lm topography.
-
+#
 # And the linear solution sols expressed as lambda functions
 # of all components. Lambda functions can be used to re-calculate
 # the same problem with different inputs very fast.
