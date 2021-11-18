@@ -1274,15 +1274,6 @@ def Thin_shell_matrix_nmax(
             else:
                 wdc_grid = ones * R_c
 
-        # Error messages if iteration not converging
-        var_unit = "km"
-        var_relief = "Moho relief"
-        if not any_dc and not any_w:
-            var_relief = "Grid density"
-            var_unit = "kg m-3"
-        elif not any_dc:
-            var_relief = "Flexure relief"
-
         lambdify_func_o = None
         first_inv = True
         delta = 1.0e9
@@ -1380,7 +1371,7 @@ def Thin_shell_matrix_nmax(
             if density_var_H:
                 drho_corr = v1v * drhom_lm_o * g0 * Te * H_lm_o / R
                 drho_H = rhol
-                if any_drho and drhom_lm_o[0, 0, 0] < 500:
+                if any_drho and drhom_lm_o[0, 0, 0] > 500:
                     H_drho_grid = rho_grid
                 else:
                     H_drho_grid = rho_grid + rhol
@@ -1393,7 +1384,7 @@ def Thin_shell_matrix_nmax(
                 else:
                     drho_corr = v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
                 drho_wdc = rhom - rhoc
-                if any_drho and drhom_lm_o[0, 0, 0] < 500:
+                if any_drho and drhom_lm_o[0, 0, 0] > 500:
                     wdc_drho_grid = rhom - rho_grid
                 else:
                     wdc_drho_grid = rhom - (rhoc + rho_grid)
@@ -1502,6 +1493,15 @@ def Thin_shell_matrix_nmax(
                 grid_prev = R - wdc_grid - c
             else:
                 grid_prev = w_grid if any_w else rho_grid
+
+            # Error messages if iteration not converging
+            var_unit = "km"
+            var_relief = "Moho relief"
+            if not any_dc and not any_w:
+                var_relief = "Grid density"
+                var_unit = "kg m-3"
+            elif not any_dc:
+                var_relief = "Flexure relief"
 
             if iter > iter_max:
                 raise ValueError(
