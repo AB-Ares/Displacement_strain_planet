@@ -77,4 +77,4 @@ Alternatively, you can install Displacement-strain-planet via pip
 
 ## Cite
 You can cite the latest release of the package as:
-Adrien Broquet. (2021). AB-Ares/Displacement_strain_planet: 0.2.6 (Version 0.2.6). Zenodo. http://doi.org/10.5281/zenodo.4916799
+Adrien Broquet. (2021). AB-Ares/Displacement_strain_planet: 0.3.0 (Version 0.3.0). Zenodo. http://doi.org/10.5281/zenodo.4916799
