@@ -96,7 +96,7 @@ def corr_nmax_drho(
     # Density contrast in the relief correction.
     if density_var and nmax == 1:
         MS_lm_drho, D = pysh.gravmag.CilmPlusRhoHDH(
-            shape_grid, 1, mass, rho_grid, lmax=lmax
+            shape_grid, nmax, mass, rho_grid, lmax=lmax
         )
         MS_lm_drho_cst = MS_lm_nmax.copy()
         MS_lm_drho_cst *= D ** 2
@@ -487,11 +487,15 @@ def Thin_shell_matrix(
         else:
             print("Using stored solutions with new inputs")
 
-    if dc_lm is not None:
-        # For filtering drhom when dc contains only zeros
-        any_dc = np.sum(dc_lm[:, 1:, :])
+    if dc_lm is not None and w_lm is not None:
+        # For filtering drhom when there is no moho relief
+        any_wdc = np.sum(w_lm[:, 1:, :] - dc_lm[:, 1:, :])
+    elif base_drho == c:
+        # For filtering when drhom is in moho relief
+        any_wdc = False
     else:
-        any_dc = True
+        # No filtering for drhom
+        any_wdc = True
 
     # Allocate arrays to be used for outputs.
     shape = (2, lmax + 1, lmax + 1)
@@ -626,23 +630,17 @@ def Thin_shell_matrix(
             RCRl2 = RCR ** (l + 2)
 
             DCfilter_mohoD = 1.0
-            DCfilter_drhomt = 1.0
-            DCfilter_drhomb = 1.0
+            DCfilter_drhom = 1.0
             if filter_in is not None:
                 DCfilter_mohoD = filter_in[l]
-                if not any_dc:
-                    DCfilter_drhomt = filter_in[l]
-                    DCfilter_drhomb = filter_in[l]
+                if not any_wdc:
+                    DCfilter_drhom = filter_in[l]
             elif filter is not None:
                 DCfilter_mohoD = DownContFilter(l, filter_half, R, R_c, type=filter)
-                if not any_dc:
-                    DCfilter_drhomt = DownContFilter(
-                        l, filter_half, R, R_top_drho, type=filter
+                if not any_wdc:
+                    DCfilter_drhom = DownContFilter(
+                        l, filter_half, R, R_base_drho, type=filter
                     )
-                    DCfilter_drhomb = DownContFilter(
-                        l, filter_half, R, R_top_drho, type=filter
-                    )
-
             if R_top_drho <= R_c:
                 RtRCl = (R_top_drho / R_c) ** l
             else:
@@ -676,9 +674,7 @@ def Thin_shell_matrix(
                         rhol * H_lm1
                         + drhol * w_lm1
                         + drho * (w_lm1 - dc_lm1) * RCRl2 / DCfilter_mohoD
-                        + drhom_lm1
-                        * Rl3
-                        * (RtRl3 / DCfilter_drhomt - RbRl3 / DCfilter_drhomb)
+                        + drhom_lm1 * Rl3 * (RtRl3 - RbRl3) / DCfilter_drhom
                     )
                     + rhol * H_corr1
                     + drhol * w_corr1
@@ -1183,7 +1179,11 @@ def Thin_shell_matrix_nmax(
 
     # Density contrast not at topography or moho and no
     # finite-amplitude correctio, return
-    if nmax == 1 and (not any_drho or (top_drho != 0 and base_drho != c)):
+    if (
+        nmax == 1
+        and (not any_drho or (top_drho != 0 and base_drho != c))
+        and any_drho is not None
+    ):
         (
             w_lm_o,
             A_lm_o,
@@ -1392,10 +1392,7 @@ def Thin_shell_matrix_nmax(
             if density_var_H:
                 drho_corr = v1v * drhom_lm_o * g0 * Te * H_lm_o / R
                 drho_H = rhol
-                if any_drho and drhom_lm_o[0, 0, 0] > 500:
-                    H_drho_grid = rho_grid
-                else:
-                    H_drho_grid = rho_grid + rhol
+                H_drho_grid = rho_grid
             if density_var_dc:
                 gmoho = (
                     g0 * (1.0 + ((R_c / R) ** 3 - 1.0) * rhoc / rhobar) / (R_c / R) ** 2
@@ -1405,10 +1402,7 @@ def Thin_shell_matrix_nmax(
                 else:
                     drho_corr = v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
                 drho_wdc = rhom - rhoc
-                if any_drho and drhom_lm_o[0, 0, 0] > 500:
-                    wdc_drho_grid = rhom - rho_grid
-                else:
-                    wdc_drho_grid = rhom - (rhoc + rho_grid)
+                wdc_drho_grid = rhom - rho_grid
 
             H_lm_o[0, 0, 0] = R
             if not precomp_H_grid:
