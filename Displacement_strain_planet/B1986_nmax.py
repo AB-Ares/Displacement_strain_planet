@@ -76,6 +76,7 @@ def corr_nmax_drho(
     filter_half : int, optional, default = None
         Spherical harmonic degree at which the filter equals 0.5.
     """
+
     # Finite-amplitude correction.
     MS_lm_nmax = np.zeros((2, lmax + 1, lmax + 1))
     # This is the computation in Thin_shell_matrix.
@@ -93,33 +94,47 @@ def corr_nmax_drho(
         FA_lm_nmax = MS_lm_nmax
 
     # Density contrast in the relief correction.
-    if density_var:
+    if density_var and nmax == 1:
         MS_lm_drho, D = pysh.gravmag.CilmPlusRhoHDH(
             shape_grid, 1, mass, rho_grid, lmax=lmax
         )
-        MS_lm_drho_cst = MS_lm_nmax
-        if filter_in is not None:
+        MS_lm_drho_cst = MS_lm_nmax.copy()
+        MS_lm_drho_cst *= D ** 2
+
+        if filter_in is not None and c != 0:
             for l in range(1, lmax + 1):
-                MS_lm_drho_cst[:, l, : l + 1] /= filter_in[l]
                 MS_lm_drho[:, l, : l + 1] /= filter_in[l]
-        elif filter is not None:
+                MS_lm_drho_cst[:, l, : l + 1] /= filter_in[l]
+        elif filter is not None and c != 0:
             for l in range(1, lmax + 1):
-                MS_lm_drho_cst[:, l, : l + 1] /= DownContFilter(
-                    l, filter_half, R, R - c, type=filter
-                )
                 MS_lm_drho[:, l, : l + 1] /= DownContFilter(
                     l, filter_half, R, R - c, type=filter
                 )
-        if nmax == 1:
-            MS_lm_drho_cst *= D ** 2
-
+                MS_lm_drho_cst[:, l, : l + 1] /= DownContFilter(
+                    l, filter_half, R, R - c, type=filter
+                )
         # Divide because the thin-shell code multiplies by
         # density contrast, to correct for finite-amplitude.
         # Here we also correct for density variations, so the
         # correction is already scaled by the density contrast.
-        delta_MS_FA = R * (MS_lm_drho - MS_lm_drho_cst + FA_lm_nmax - MS_lm_nmax) / drho
+        delta_MS_FA = R * (MS_lm_drho - MS_lm_drho_cst) / drho
     else:
-        delta_MS_FA = R * (FA_lm_nmax - MS_lm_nmax)
+        if filter_in is not None and c != 0:
+            for l in range(1, lmax + 1):
+                FA_lm_nmax[:, l, : l + 1] /= filter_in[l]
+                MS_lm_nmax[:, l, : l + 1] /= filter_in[l]
+        elif filter is not None and c != 0:
+            for l in range(1, lmax + 1):
+                FA_lm_nmax[:, l, : l + 1] /= DownContFilter(
+                    l, filter_half, R, R - c, type=filter
+                )
+                MS_lm_nmax[:, l, : l + 1] /= DownContFilter(
+                    l, filter_half, R, R - c, type=filter
+                )
+        if density_var and nmax != 1:
+            delta_MS_FA = R * (FA_lm_nmax - MS_lm_nmax) / drho
+        else:
+            delta_MS_FA = R * (FA_lm_nmax - MS_lm_nmax)
 
     return delta_MS_FA
 
@@ -143,7 +158,7 @@ def Thin_shell_matrix(
     top_drho=0,
     filter_in=None,
     filter=None,
-    filter_half=None,
+    filter_half=50,
     H_lm=None,
     drhom_lm=None,
     dc_lm=None,
@@ -472,6 +487,12 @@ def Thin_shell_matrix(
         else:
             print("Using stored solutions with new inputs")
 
+    if dc_lm is not None:
+        # For filtering drhom when dc contains only zeros
+        any_dc = np.sum(dc_lm[:, 1:, :])
+    else:
+        any_dc = True
+
     # Allocate arrays to be used for outputs.
     shape = (2, lmax + 1, lmax + 1)
     if first_inv:
@@ -494,13 +515,13 @@ def Thin_shell_matrix(
         dc_lm = np.zeros(shape)
     if wdc_corr is None:
         wdc_corr = np.zeros(shape)
+    if H_corr is None:
         H_corr = np.zeros(shape)
+    if w_corr is None:
         w_corr = np.zeros(shape)
+    if drho_corr is None:
         drho_corr = np.zeros(shape)
     A_lm = np.zeros(shape)
-
-    # For filtering drhom when dc contains only zeros
-    any_dc = np.sum(dc_lm)
 
     if Te == 0:  # Avoid numerical problems with infinite values
         Te = 1
@@ -661,7 +682,7 @@ def Thin_shell_matrix(
                     )
                     + rhol * H_corr1
                     + drhol * w_corr1
-                    + drho * wdc_corr1 * RCRl
+                    + drho * wdc_corr1 * RCRl2
                 )
                 * (
                     0.0 if "G_lm" in not_constraint and COM and l == 1 else 1.0
@@ -1436,9 +1457,10 @@ def Thin_shell_matrix_nmax(
                 drho_wdc,
                 R,
                 density_var=density_var_dc,
-                filter=filter,
-                filter_half=filter_half,
                 c=c,
+                filter=filter,
+                filter_in=filter_in,
+                filter_half=filter_half,
             )
 
             if iter != 1:
