@@ -117,7 +117,16 @@ def SH_deriv(theta, phi, lmax):
 # ==== SH_deriv_store ====
 
 
-def SH_deriv_store(lmax, path, lmaxgrid=None, save=True, compressed=False):
+def SH_deriv_store(
+    lmax,
+    path,
+    dtype=np.float64,
+    lmaxgrid=None,
+    grid=None,
+    save=True,
+    compressed=False,
+    quiet=True,
+):
     """
     Compute and store or load spherical harmonic derivatives
     over the entire sphere (first and second order).
@@ -148,16 +157,26 @@ def SH_deriv_store(lmax, path, lmaxgrid=None, save=True, compressed=False):
         Maximum spherical harmonic degree to compute for the derivatives.
     path : string
         Path to store or load spherical harmonic derivatives.
+    dtype : data-type, optional, default = numpy.float64
+        The desired data-type for the arrays (default is that of numpy).
+        This can help reducing the size of the stored array.
     lmaxgrid : int, optional, default = None
-        The maximum spherical harmonic degree resolvable by the grid,
-        latitude(2 * lmaxgrid + 2) and longitude(2 * (2 * lmaxgrid + 2)).
-        Should be higher or equal than lmax. If None, this parameter is set to lmax.
-    save : boolean, optional, default = True
+        The maximum spherical harmonic degree resolvable by the grid.
+        If None, this parameter is set to lmax.
+        When grid=='GLQ', the gridshape is (lmaxgrid+1, 2*lmaxgrid+1) and
+        (2*lmaxgrid+2, 2*(2*lmaxgrid+2)) when grid=='DH'.
+    grid: string, optional, default = None
+        Either 'DH' or 'GLQ' for Driscoll and Healy grids or Gauss-Legendre
+        Quadrature grids following the convention of SHTOOLs.
+        If None, the grid is set to 'GLQ'.
+    save : bool, optional, default = True
         If True, save the data at the given path location.
-    compressed : boolean, optional, default = False
+    compressed : bool, optional, default = False
         If True, the data is saved in compressed .npz format instead of
         npy, which decreases the file size by about a factor 2. This is
         recommended when lmax > 75.
+    quiet : bool, optional, default = True
+        If True, suppress printing output.
     """
     if lmaxgrid is None:
         lmaxgrid = lmax
@@ -166,34 +185,51 @@ def SH_deriv_store(lmax, path, lmaxgrid=None, save=True, compressed=False):
             "lmaxgrid should be higher or equal than lmax, input is %s" % (lmaxgrid)
             + " with lmax = %s." % (lmax)
         )
-    n = 2 * lmaxgrid + 2
-    poly_file = "%s/Y_lmsd1d2_lmax%s_lmaxgrid%s.%s" % (
+
+    if grid is None or grid == "GLQ":
+        nlat = lmaxgrid + 1
+        nlon = 2 * nlat - 1
+    elif grid == "DH":
+        nlat = 2 * lmaxgrid + 2
+        nlon = 2 * nlat
+    else:
+        raise ValueError(
+            "Grid format non recognized allowed are 'DH' and 'GLQ', input was %s"
+            % (grid)
+        )
+
+    poly_file = "%s/Y_lmsd1d2_%slmax%s_lmaxgrid%s_f%s.%s" % (
         path,
+        "GLQ" if grid is None else grid,
         lmax,
         lmaxgrid,
+        str(dtype)[-4:-2],
         "npz" if compressed else "npy",
     )
 
     if Path(poly_file).exists() == 0:
-        print(
-            "Pre-compute SH derivatives, may take some"
-            + " time depending on lmax and lmaxgrid, which are %s and %s."
-            % (lmax, lmaxgrid)
-        )
+        if quiet is False:
+            print(
+                "Pre-compute SH derivatives, may take some"
+                + " time depending on lmax and lmaxgrid, which are %s and %s."
+                % (lmax, lmaxgrid)
+            )
+            print("dtype is %s." % (dtype))
         index_size = int((lmax + 1) * (lmax + 2) / 2)
-        shape_save = (n, 2 * n, 2, lmax + 1, lmax + 1)
-        Y_lm_d1_theta_a = np.zeros(shape_save)
-        Y_lm_d1_phi_a = np.zeros(shape_save)
-        Y_lm_d2_phi_a = np.zeros(shape_save)
-        Y_lm_d2_thetaphi_a = np.zeros(shape_save)
-        Y_lm_d2_theta_a = np.zeros(shape_save)
-        y_lm_save = np.zeros(shape_save)
-        phi_ar = np.linspace(0, 360, 2 * n, endpoint=False) * pi / 180.0
+        shape_save = (nlat, nlon, 2, lmax + 1, lmax + 1)
+        Y_lm_d1_theta_a = np.zeros(shape_save, dtype=dtype)
+        Y_lm_d1_phi_a = np.zeros(shape_save, dtype=dtype)
+        Y_lm_d2_phi_a = np.zeros(shape_save, dtype=dtype)
+        Y_lm_d2_thetaphi_a = np.zeros(shape_save, dtype=dtype)
+        Y_lm_d2_theta_a = np.zeros(shape_save, dtype=dtype)
+        y_lm_save = np.zeros(shape_save, dtype=dtype)
+        phi_ar = np.linspace(0, 360, nlon, endpoint=False) * pi / 180.0
         y_lm = np.zeros((len(phi_ar), 2, lmax + 1, lmax + 1))
 
         t_i = -1
-        for theta in np.linspace(0, 180, n, endpoint=False) * pi / 180.0:
-            print(" colatitude %s of 180" % (int(theta * 180 / pi)), end="\r")
+        for theta in np.linspace(0, 180, nlat, endpoint=False) * pi / 180.0:
+            if quiet is False:
+                print(" colatitude %s of 180" % (int(theta * 180 / pi)), end="\r")
             t_i += 1
             sint = np.sin(theta)
             cost = np.cos(theta)
@@ -252,6 +288,8 @@ def SH_deriv_store(lmax, path, lmaxgrid=None, save=True, compressed=False):
                     )
 
         if save:
+            if quiet is False:
+                print("Saving SH derivatives at: %s" % (path))
             if compressed:
                 np.savez_compressed(
                     poly_file,
@@ -274,21 +312,27 @@ def SH_deriv_store(lmax, path, lmaxgrid=None, save=True, compressed=False):
                         y_lm_save,
                     ],
                 )
+        else:
+            if quiet is False:
+                print("Not saving SH derivatives")
     else:
         if compressed:
-            print(
-                "Loading precomputed compressed SH derivatives for strain calculations"
-            )
-            data = np.load(poly_file)
-            Y_lm_d1_theta_a = data["Y_lm_d1_t"]
-            Y_lm_d1_phi_a = data["Y_lm_d1_p"]
-            Y_lm_d2_theta_a = data["Y_lm_d2_t"]
-            Y_lm_d2_phi_a = data["Y_lm_d2_p"]
-            Y_lm_d2_thetaphi_a = data["Y_lm_d2_tp"]
-            y_lm_save = data["Y_lm"]
-            print("Loading done")
+            if quiet is False:
+                print(
+                    "Loading precomputed compressed SH derivatives for strain calculations"
+                )
+            with np.load(poly_file) as data:
+                Y_lm_d1_theta_a = data["Y_lm_d1_t"]
+                Y_lm_d1_phi_a = data["Y_lm_d1_p"]
+                Y_lm_d2_theta_a = data["Y_lm_d2_t"]
+                Y_lm_d2_phi_a = data["Y_lm_d2_p"]
+                Y_lm_d2_thetaphi_a = data["Y_lm_d2_tp"]
+                y_lm_save = data["Y_lm"]
+            if quiet is False:
+                print("Loading done")
         else:
-            print("Loading precomputed SH derivatives for strain calculations")
+            if quiet is False:
+                print("Loading precomputed SH derivatives for strain calculations")
             (
                 Y_lm_d1_theta_a,
                 Y_lm_d1_phi_a,
@@ -297,7 +341,8 @@ def SH_deriv_store(lmax, path, lmaxgrid=None, save=True, compressed=False):
                 Y_lm_d2_thetaphi_a,
                 y_lm_save,
             ) = np.load(poly_file, allow_pickle=True)
-            print("Loading done")
+            if quiet is False:
+                print("Loading done")
 
     return (
         Y_lm_d1_theta_a,
@@ -325,6 +370,7 @@ def Displacement_strains(
     lon_min=0,
     lon_max=360,
     lmaxgrid=None,
+    grid=None,
     only_deflec=False,
     Y_lm_d1_t=None,
     Y_lm_d1_p=None,
@@ -396,9 +442,14 @@ def Displacement_strains(
     lon_max : float, optional, default = 360
         Maximum longitude for grid computation of strains and stresses.
     lmaxgrid : int, optional, default = None
-        The maximum spherical harmonic degree resolvable by the grid,
-        latitude(2 * lmaxgrid + 2) and longitude(2 * (2 * lmaxgrid + 2)).
+        The maximum spherical harmonic degree resolvable by the grid.
         If None, this parameter is set to lmax.
+        When grid=='GLQ', the gridshape is (lmaxgrid+1, 2*lmaxgrid+1) and
+        (2*lmaxgrid+2, 2*(2*lmaxgrid+2)) when grid=='DH'.
+    grid: string, optional, default = None
+        Either 'DH' or 'GLQ' for Driscoll and Healy grids or Gauss-Legendre
+        Quadrature grids following the convention of SHTOOLs.
+        If None, the grid is set to 'GLQ'.
     only_deflec : bool, optional, default = False
         Output only the displacement grid for all latitude and longitudes.
     Y_lm_d1_t : array, float, size(2,lmax+1,lmax+1), optional, default = None
@@ -439,7 +490,18 @@ def Displacement_strains(
             "lmaxgrid should be higher or equal than lmax, input is %s" % (lmaxgrid)
             + " with lmax = %s." % (lmax)
         )
-    n = 2 * lmaxgrid + 2
+
+    if grid is None or grid == "GLQ":
+        nlat = lmaxgrid + 1
+        nlon = 2 * nlat - 1
+    elif grid == "DH":
+        nlat = 2 * lmaxgrid + 2
+        nlon = 2 * nlat
+    else:
+        raise ValueError(
+            "Grid format non recognized allowed are 'DH' and 'GLQ', input was %s"
+            % (grid)
+        )
 
     if Y_lm_d1_p is not None:
         if quiet is False:
@@ -456,7 +518,7 @@ def Displacement_strains(
             Y_lm_d2_p,
             Y_lm_d2_tp,
             y_lm,
-        ) = SH_deriv_store(lmax, path, lmaxgrid=lmaxgrid)
+        ) = SH_deriv_store(lmax, path, lmaxgrid=lmaxgrid, grid=grid)
 
     # Some constants for the elastic model.
     Re = R - (0.5 * Te)
@@ -472,7 +534,7 @@ def Displacement_strains(
     w_lm[0, 0, 0] = 0.0
 
     # Allocate arrays.
-    shape = (n, 2 * n)
+    shape = (nlat, nlon)
     omega = np.zeros(shape)
     kappa_theta = np.zeros(shape)
     kappa_phi = np.zeros(shape)
@@ -482,8 +544,8 @@ def Displacement_strains(
 
     deg2rad = pi / 180.0
     grid_long, grid_lat = np.meshgrid(
-        np.linspace(0, 360, 2 * n, endpoint=False) * deg2rad,
-        np.linspace(0, 180, n, endpoint=False) * deg2rad,
+        np.linspace(0, 360, nlon, endpoint=False) * deg2rad,
+        np.linspace(0, 180, nlat, endpoint=False) * deg2rad,
     )
     mask = (
         (grid_lat > (colat_min - 1) * deg2rad)
@@ -601,11 +663,11 @@ def Principal_strainstress_angle(s_theta, s_phi, s_theta_phi):
 
     Parameters
     ----------
-    s_theta : array, float, size(n, 2 * n)
+    s_theta : array, float, size(nlat, nlon)
         Array of the colatitude component of the stress or strain field.
-    s_phi : array, float, size(n, 2 * n)
+    s_phi : array, float, size(nlat, nlon)
         Array of the longitude component of the stress or strain field.
-    s_theta_phi : array, float, size(n, 2 * n)
+    s_theta_phi : array, float, size(nlat, nlon)
         Array of the colatitude and longitude component of the stress or strain field.
     """
     min_strain = 0.5 * (
@@ -663,9 +725,11 @@ def Plt_tecto_Mars(
     """
     comp_fault_dat = np.loadtxt("%s/Knapmeyer_2006_compdata.txt" % (path))
     ext_fault_dat = np.loadtxt("%s/Knapmeyer_2006_extedata.txt" % (path))
-    ind_comp_fault = np.isin(comp_fault_dat, np.arange(1, 5143 + 1, dtype=int))
+    idx_comp = 5143
+    idx_ext = 9676
+    ind_comp_fault = np.isin(comp_fault_dat, np.arange(1, idx_comp + 1, dtype=int))
     ind_comp_fault_2 = np.where(ind_comp_fault)[0]
-    ind_ext_fault = np.isin(ext_fault_dat, np.arange(1, 9676 + 1, dtype=int))
+    ind_ext_fault = np.isin(ext_fault_dat, np.arange(1, idx_ext + 1, dtype=int))
     ind_ext_fault_2 = np.where(ind_ext_fault)[0]
 
     if ax is None:
@@ -677,24 +741,33 @@ def Plt_tecto_Mars(
     faults_dats = [comp_fault_dat, ext_fault_dat]
     faults_cols = [compression_col, extension_col]
     labels = ["Compressional tectonic features", "Extensional tectonic features"]
+    max_idx = [idx_comp, idx_ext]
 
     if compression and not extension:
         faults_inds = [faults_inds[0]]
         faults_dats = [faults_dats[0]]
         faults_cols = [faults_cols[0]]
         labels = [labels[0]]
+        max_idx = [max_idx[0]]
     elif extension and not compression:
         faults_inds = [faults_inds[1]]
         faults_dats = [faults_dats[1]]
         faults_cols = [faults_cols[1]]
         labels = [labels[1]]
+        max_idx = [max_idx[1]]
 
-    for faults, dat, col, label in zip(faults_inds, faults_dats, faults_cols, labels):
+    for faults, dat, col, label, mx_ix in zip(
+        faults_inds, faults_dats, faults_cols, labels, max_idx
+    ):
         ax.plot(np.nan, np.nan, color=col, lw=lw, label=label)
-        for indx in range(1, len(faults)):
-            ind_fault_check = range(faults[indx - 1] + 1, faults[indx])
-            fault_dat_lon = dat[ind_fault_check][::2]
-            fault_dat_lat = dat[ind_fault_check][1::2]
+        for indx in range(1, len(faults) + 1):
+            if indx == mx_ix:  # Add last point
+                fault_dat_lon = dat[faults[indx - 1] + 1 :][::2]
+                fault_dat_lat = dat[faults[indx - 1] + 1 :][1::2]
+            else:
+                ind_fault_check = range(faults[indx - 1] + 1, faults[indx])
+                fault_dat_lon = dat[ind_fault_check][::2]
+                fault_dat_lat = dat[ind_fault_check][1::2]
             split = (
                 np.argwhere((fault_dat_lon[:-1] * fault_dat_lon[1:] < 0)).ravel() + 1
             )

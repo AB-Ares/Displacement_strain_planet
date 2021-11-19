@@ -19,31 +19,31 @@ from Displacement_strain_planet import (
 # 3 assumptions are required to solve the system, and we here assume
 # that the observed topography and geoid are known, and that there
 # are no density variations in the interior.
-
+#
 # Next, we will plot the associated principal horizontal strains,
 # along with the principal angle, and show that these are
 # consistent with the tectonic mapping of Knampeyer et al. (2006).
-
+#
 # More information can be found in the jupyter notebook Run_demo
-
+#
 # In the computation, we will make use of a downward continuation
 # minimum-amplitude filter to damp unrealistic oscilations of the
 # moho-relief. For this, we call the optional argument filter, set
 # it to "Ma", and set the degree at which the filter equals 0.5 to
 # 50 with a call to filter_half.
-
-# The function ouputs the following spherical harmonic coefficients: \
-# w_lm flexure, \
-# A_lm poloidal term of the tangential displacement,  \
-# moho_relief_lm` moho relief,  \
-# dc_lm isostatic crustal root variations,  \
-# drhom_lm internal density variations,  \
-# omega_lm tangential load potential,  \
-# q_lm net load on the lithosphere,  \
-# Gc_lm geoid at the moho depth,  \
-# G_lm geoid at the surface, and \
+#
+# The function ouputs the following spherical harmonic coefficients:
+# w_lm flexure,
+# A_lm poloidal term of the tangential displacement,
+# moho_relief_lm` moho relief,
+# dc_lm isostatic crustal root variations,
+# drhom_lm internal density variations,
+# omega_lm tangential load potential,
+# q_lm net load on the lithosphere,
+# Gc_lm geoid at the moho depth,
+# G_lm geoid at the surface, and
 # H_lm topography.
-
+#
 # And the linear solution sols expressed as lambda functions
 # of all components. Lambda functions can be used to re-calculate
 # the same problem with different inputs very fast.
@@ -114,7 +114,6 @@ print("Computing displacements and isostatic crustal root variations")
     drhom_lm=zeros.copy(),
     filter="Ma",
     filter_half=50,
-    quiet=False
 )
 
 # Plotting
@@ -124,22 +123,18 @@ ax3.set_visible(False)
 
 grid_W = pysh.SHCoeffs.from_array(w_lm / 1e3).expand(**args_expand) - R / 1e3
 grid_W.plot(ax=ax1, cb_label="Upward displacement (km)", **args_plot)
-
 # Add zero displacement contour
 ax1.contour(
     grid_W.data > 0, levels=[0.99], extent=(0, 360, -90, 90), colors="k", origin="upper"
 )
+
 pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
     ax=ax2,
     cb_label="Isostatic crustal root variations (km)",
     ticks="wSnE",
     ylabel=None,
-    **args_plot
+    **args_plot,
 )
-
-# pysh.SHCoeffs.from_array(drhom_lm).expand(**args_expand).plot(
-#    ax=ax3, cb_label="Lateral density variations (kg m$^{-3}$)", **args_plot
-# )
 
 (pysh.SHCoeffs.from_array((H_lm - moho_relief_lm) / 1e3).expand(**args_expand)).plot(
     ax=ax4,
@@ -147,16 +142,15 @@ pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
     ticks="wSnE",
     ylabel=None,
     show=False,
-    **args_plot
+    **args_plot,
 )
 
 print("Computing strains")  # This may take some time if it is the first time
 # Strains
 lmax = 30  # Lower lmax for faster computations
+lmaxgrid = 60  # Controls the grid output resolution
 Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp, y_lm = SH_deriv_store(
-    lmax,
-    path,
-    save=False,
+    lmax, path, save=False, lmaxgrid=lmaxgrid
 )
 
 colat_min = 0  # Minimum colatitude at which strain calculations are performed
@@ -176,6 +170,7 @@ kwargs_param_s = dict(
     Y_lm_d2_p=Y_lm_d2_p,
     Y_lm_d2_tp=Y_lm_d2_tp,
     y_lm=y_lm,
+    lmaxgrid=lmaxgrid,
 )
 
 # Strain
@@ -209,7 +204,7 @@ pysh.SHGrid.from_array(min_strain * 1e3).plot(
     ax=ax1,
     cb_label="Minimum principal horizontal strain",
     cmap_limits=[-4, 4],
-    **args_plot
+    **args_plot,
 )
 pysh.SHGrid.from_array(max_strain * 1e3).plot(
     ax=ax2,
@@ -217,13 +212,13 @@ pysh.SHGrid.from_array(max_strain * 1e3).plot(
     ticks="wSnE",
     ylabel=None,
     cmap_limits=[-4, 4],
-    **args_plot
+    **args_plot,
 )
 pysh.SHGrid.from_array(sum_strain * 1e3).plot(
     ax=ax3,
     cb_label="Sum of principal horizontal strains",
     cmap_limits=[-3, 3],
-    **args_plot
+    **args_plot,
 )
 pysh.SHGrid.from_array(principal_angle).plot(
     ax=ax4,
@@ -237,7 +232,7 @@ pysh.SHGrid.from_array(principal_angle).plot(
 )
 
 # Plot strain direction
-skip_i = int(lmax / 6)
+skip_i = int(lmaxgrid / 10)
 skip = (slice(None, None, skip_i), slice(None, None, skip_i))
 grid_long, grid_lat = np.meshgrid(
     np.linspace(0, 360, np.shape(principal_angle)[1]),
