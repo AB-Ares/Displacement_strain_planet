@@ -488,11 +488,8 @@ def Thin_shell_matrix(
             print("Using stored solutions with new inputs")
 
     if dc_lm is not None and w_lm is not None:
-        # For filtering drhom when there is no moho relief
+        # Filtering drhom when there is no moho relief
         any_wdc = np.sum(w_lm[:, 1:, :] - dc_lm[:, 1:, :])
-    elif base_drho == c:
-        # For filtering when drhom is in moho relief
-        any_wdc = False
     else:
         # No filtering for drhom
         any_wdc = True
