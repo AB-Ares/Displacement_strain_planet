@@ -487,9 +487,9 @@ def Thin_shell_matrix(
         else:
             print("Using stored solutions with new inputs")
 
-    if dc_lm is not None and w_lm is not None:
-        # Filtering drhom when there is no moho relief
-        any_wdc = np.sum(w_lm[:, 1:, :] - dc_lm[:, 1:, :])
+    if dc_lm is not None:
+        # Filtering drhom when there is no isostatic root variations
+        any_wdc = np.sum(dc_lm[:, 1:, :])
     else:
         # No filtering for drhom
         any_wdc = True
@@ -627,16 +627,24 @@ def Thin_shell_matrix(
             RCRl2 = RCR ** (l + 2)
 
             DCfilter_mohoD = 1.0
+            DCfilter_mohoDc = 1.0
             DCfilter_drhom = 1.0
+            DCfilter_drhomc = 1.0
             if filter_in is not None:
                 DCfilter_mohoD = filter_in[l]
+                DCfilter_mohoDc = filter_in[l]
                 if not any_wdc:
                     DCfilter_drhom = filter_in[l]
+                    DCfilter_drhomc = filter_in[l]
             elif filter is not None:
                 DCfilter_mohoD = DownContFilter(l, filter_half, R, R_c, type=filter)
+                DCfilter_mohoDc = DownContFilter(l, filter_half, R_c, R_c, type=filter)
                 if not any_wdc:
                     DCfilter_drhom = DownContFilter(
                         l, filter_half, R, R_base_drho, type=filter
+                    )
+                    DCfilter_drhomc = DownContFilter(
+                        l, filter_half, R_c, R_base_drho, type=filter
                     )
             if R_top_drho <= R_c:
                 RtRCl = (R_top_drho / R_c) ** l
@@ -670,7 +678,7 @@ def Thin_shell_matrix(
                     * (
                         rhol * H_lm1
                         + drhol * w_lm1
-                        + drho * (w_lm1 - dc_lm1) * RCRl2 / DCfilter_mohoD
+                        + drho * (w_lm1 - dc_lm1 / DCfilter_mohoD) * RCRl2
                         + drhom_lm1 * Rl3 * (RtRl3 - RbRl3) / DCfilter_drhom
                     )
                     + rhol * H_corr1
@@ -685,8 +693,8 @@ def Thin_shell_matrix(
                     rhobconst
                     * (
                         (rhol * H_lm1 + drhol * w_lm1) * RCRl1
-                        + drho * (w_lm1 - dc_lm1) * RCR ** 3
-                        + drhom_lm1 * Rl3 * (RtRCl - RbRCl)
+                        + drho * (w_lm1 - dc_lm1 / DCfilter_mohoDc) * RCR ** 3
+                        + drhom_lm1 * Rl3 * (RtRCl - RbRCl) / DCfilter_drhomc
                     )
                     + (rhol * H_corr1 + drhol * w_corr1) * RCRl1
                     + drho * wdc_corr1 * RCR ** 3
