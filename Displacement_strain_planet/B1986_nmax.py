@@ -1020,6 +1020,7 @@ def Thin_shell_matrix_nmax(
     delta_max=5,
     iter_max=250,
     delta_out=500e3,
+    iterate=True,
 ):
     """
     Solve the Banerdt (1986) system of 5 equations
@@ -1148,6 +1149,8 @@ def Thin_shell_matrix_nmax(
     delta_out : float, optional, default = 500e3
         If the delta is larger than this value, the algorithm stops
         and prints that it is not converging.
+    iterate : bool, optional, default = True
+        if False, solve the system without any corrections.
     """
     rhobar = mass * 3.0 / 4.0 / np.pi / R ** 3
     R_c = R - c
@@ -1188,6 +1191,7 @@ def Thin_shell_matrix_nmax(
         nmax == 1
         and (not any_drho or (top_drho != 0 and base_drho != c))
         and any_drho is not None
+        or iterate is False
     ):
         (
             w_lm_o,
