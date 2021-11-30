@@ -672,7 +672,7 @@ def Thin_shell_matrix(
 
             # System of equations from Banerdt (1986).
             Eqns = [
-                -G_lm1
+                -G_lm1  # eq (2) G_lm
                 + (
                     rhobconst
                     * (
@@ -688,7 +688,7 @@ def Thin_shell_matrix(
                 * (
                     0.0 if "G_lm" in not_constraint and COM and l == 1 else 1.0
                 ),  # Force the degree-1 geoid to zero
-                -Gc_lm1
+                -Gc_lm1  # eq(2) Gc_lm
                 + (
                     rhobconst
                     * (
@@ -702,24 +702,27 @@ def Thin_shell_matrix(
                 * (
                     0.0 if "Gc_lm" in not_constraint and COM and l == 1 else 1.0
                 ),  # Force the degree-1 geoid to zero
-                -q_lm1
+                -q_lm1  # eq (3) q_lm
                 + g0 * (rhol * (H_lm1 - G_lm1) + drhol * w_lm1)
                 + gmoho * drho * (w_lm1 - dc_lm1 - Gc_lm1)
                 + gdrho * drhom_lm1 * M * mass_correc,
-                eta_B * D * Lapla * Lapla_2 ** 2 * w_lm1
+                eta_B * D * Lapla * Lapla_2 ** 2 * w_lm1  # eq (4) w_lm
                 + Re ** 2 / alph_B * Lapla_2 * w_lm1
                 + Re4 * (Lapla_2 - 1.0 - v) * q_lm1
                 - Re4 * (beta_B * Lapla_2 - 1.0 - v) * Lapla * omega_lm1,
-                -omega_lm1
+                -omega_lm1  # eq (5) omega_lm
                 + v1v * rhol * g0 * Te * H_lm1 / R
                 - (
                     drhol * g0 * v1v * Te
                     + rhoc * gmoho * (v1v * Te - c)
-                    - rhom * gmoho * (Te - c)
+                    - rhom * gmoho * ((Te - c) if c < Te else 0)
+                    # If crustal interface below Te, no tangential load associated
                 )
                 * w_lm1
                 / R
-                - v1v * drho * gmoho * (Te - c) * dc_lm1 / R
+                - v1v * drho * gmoho * ((Te - c) if c < Te else 0)
+                # If crustal interface below Te, no tangential load associated
+                * dc_lm1 / R
                 - 0.5
                 * v1v
                 * drhom_lm1
@@ -730,6 +733,14 @@ def Thin_shell_matrix(
                 # If mantle load below Te, no tangential load associated
                 / R + drho_corr1,
             ]
+
+            # At degree-1, w_lm vanishes from eq (4), which now only
+            # relates q_lm and omega_lm.
+            # Thus, we replace the degree-1 equation for omega_lm by eq (4)
+            # and eq (4) now becomes w_lm = 0
+            if l == 1:
+                Eqns[4] = Eqns[3].copy()
+                Eqns[3] = w_lm1
 
             if add_equation is not None:
                 add_equation_subbed = add_equation.copy()
@@ -766,7 +777,7 @@ def Thin_shell_matrix(
                         )
                     )
 
-            if remove_equation is not None:
+            if remove_equation is not None and l != 1:
                 for item in [remove_equation]:
                     Eqns.pop(int(np.where(equation_order == item)[0]))
 
@@ -781,27 +792,18 @@ def Thin_shell_matrix(
         else:
             linsolve_vector = lambdify_func[l]
 
+        # Results.
         # Depending on the input arrays, pass a symbol or the
         # input values.
-        H_lm1 = test_symb("H_lm", H_lm[:, l, : l + 1], *args_symb)
-        G_lm1 = test_symb("G_lm", G_lm[:, l, : l + 1], *args_symb)
-        Gc_lm1 = test_symb("Gc_lm", Gc_lm[:, l, : l + 1], *args_symb)
-        q_lm1 = test_symb("q_lm", q_lm[:, l, : l + 1], *args_symb)
-        omega_lm1 = test_symb("omega_lm", omega_lm[:, l, : l + 1], *args_symb)
-        dc_lm1 = test_symb("dc_lm", dc_lm[:, l, : l + 1], *args_symb)
-        drhom_lm1 = test_symb("drhom_lm", drhom_lm[:, l, : l + 1], *args_symb)
-        w_lm1 = test_symb("w_lm", w_lm[:, l, : l + 1], *args_symb)
-
-        # Results.
         args_linsolve = dict(
-            w_lm1=w_lm1,
-            Gc_lm1=Gc_lm1,
-            G_lm1=G_lm1,
-            H_lm1=H_lm1,
-            q_lm1=q_lm1,
-            omega_lm1=omega_lm1,
-            dc_lm1=dc_lm1,
-            drhom_lm1=drhom_lm1,
+            w_lm1=test_symb("w_lm", w_lm[:, l, : l + 1], *args_symb),
+            Gc_lm1=test_symb("Gc_lm", Gc_lm[:, l, : l + 1], *args_symb),
+            G_lm1=test_symb("G_lm", G_lm[:, l, : l + 1], *args_symb),
+            H_lm1=test_symb("H_lm", H_lm[:, l, : l + 1], *args_symb),
+            q_lm1=test_symb("q_lm", q_lm[:, l, : l + 1], *args_symb),
+            omega_lm1=test_symb("omega_lm", omega_lm[:, l, : l + 1], *args_symb),
+            dc_lm1=test_symb("dc_lm", dc_lm[:, l, : l + 1], *args_symb),
+            drhom_lm1=test_symb("drhom_lm", drhom_lm[:, l, : l + 1], *args_symb),
             wdc_corr1=wdc_corr[:, l, : l + 1],
             H_corr1=H_corr[:, l, : l + 1],
             w_corr1=w_corr[:, l, : l + 1],
@@ -839,14 +841,14 @@ def Thin_shell_matrix(
                 "System is non-evenly determined at degree %i, cannot solve" % (l)
                 + "\nSystem of equations: \n%s" % (Eqns)
                 + "\nSolutions found:"
-                + "\nw_lm = %s" % (outs[idx_w_lm][0, 0])
-                + "\nq_lm = %s" % (outs[idx_q_lm][0, 0])
-                + "\nomega_lm = %s" % (outs[idx_omega_lm][0, 0])
-                + "\ndc_lm = %s" % (outs[idx_dc_lm][0, 0])
-                + "\ndrhom_lm = %s" % (outs[idx_drhom_lm][0, 0])
-                + "\nG_lm = %s" % (outs[idx_G_lm][0, 0])
-                + "\nGc_lm = %s" % (outs[idx_Gc_lm][0, 0])
-                + "\nH_lm = %s" % (outs[idx_H_lm][0, 0])
+                + "\nw_lm = %s" % (outs[idx_w_lm])
+                + "\nq_lm = %s" % (outs[idx_q_lm])
+                + "\nomega_lm = %s" % (outs[idx_omega_lm])
+                + "\ndc_lm = %s" % (outs[idx_dc_lm])
+                + "\ndrhom_lm = %s" % (outs[idx_drhom_lm])
+                + "\nG_lm = %s" % (outs[idx_G_lm])
+                + "\nGc_lm = %s" % (outs[idx_Gc_lm])
+                + "\nH_lm = %s" % (outs[idx_H_lm])
             )
 
         # Write solutions
