@@ -526,7 +526,8 @@ def Thin_shell_matrix(
 
     if Te == 0:  # Avoid numerical problems with infinite values
         Te = 1
-        print("Elastic thickness set to 1 m to avoid numerical problems")
+        if first_inv:
+            print("Elastic thickness set to 1 m to avoid numerical problems")
 
     # Precompute some constants.
     M = base_drho - top_drho  # Thickness of the density anomaly
@@ -544,8 +545,8 @@ def Thin_shell_matrix(
     Re4 = Re ** 4
     drho = rhom - rhoc
     drhol = rhoc - rhol
-    eps = np.inf if Te == 1 else 12.0 * Re ** 2 / Te ** 2
-    alph_B = np.inf if Te == 1 else 1.0 / (E * Te)
+    eps = 12.0 * Re ** 2 / Te ** 2
+    alph_B = 1.0 / (E * Te)
     # Avoids error printing when dividing by zero.
     D = E * Te ** 3 / (12.0 * (1.0 - v ** 2))  # Shell's
     # rigidity.
@@ -715,12 +716,12 @@ def Thin_shell_matrix(
                 - (
                     drhol * g0 * v1v * Te
                     + rhoc * gmoho * (v1v * Te - c)
-                    - rhom * gmoho * ((Te - c) if c < Te else 0)
+                    - rhom * gmoho * (Te - c if c < Te else 0)
                     # If crustal interface below Te, no tangential load associated
                 )
                 * w_lm1
                 / R
-                - v1v * drho * gmoho * ((Te - c) if c < Te else 0)
+                - v1v * drho * gmoho * (Te - c if c < Te else 0)
                 # If crustal interface below Te, no tangential load associated
                 * dc_lm1 / R
                 - 0.5
@@ -729,7 +730,7 @@ def Thin_shell_matrix(
                 * mass_correc
                 * gdrho
                 * (Te - top_drho)
-                * (np.min([M, Te - top_drho]) if top_drho <= Te else 0)
+                * (np.min([M, Te - top_drho]) if top_drho < Te else 0)
                 # If mantle load below Te, no tangential load associated
                 / R + drho_corr1,
             ]

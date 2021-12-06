@@ -371,7 +371,6 @@ def Displacement_strains(
     lon_max=360,
     lmaxgrid=None,
     grid=None,
-    only_deflec=False,
     Y_lm_d1_t=None,
     Y_lm_d1_p=None,
     Y_lm_d2_t=None,
@@ -450,8 +449,6 @@ def Displacement_strains(
         Either 'DH' or 'GLQ' for Driscoll and Healy grids or Gauss-Legendre
         Quadrature grids following the convention of SHTOOLs.
         If None, the grid is set to 'GLQ'.
-    only_deflec : bool, optional, default = False
-        Output only the displacement grid for all latitude and longitudes.
     Y_lm_d1_t : array, float, size(2,lmax+1,lmax+1), optional, default = None
         Array with the first derivative
         of Legendre polynomials with respect to colatitude.
@@ -768,6 +765,7 @@ def Plt_tecto_Mars(
                 ind_fault_check = range(faults[indx - 1] + 1, faults[indx])
                 fault_dat_lon = dat[ind_fault_check][::2]
                 fault_dat_lat = dat[ind_fault_check][1::2]
+
             split = (
                 np.argwhere((fault_dat_lon[:-1] * fault_dat_lon[1:] < 0)).ravel() + 1
             )
@@ -776,9 +774,9 @@ def Plt_tecto_Mars(
                 fault_lon_split = np.split(fault_dat_lon, split)
                 fault_dat_lat = np.split(fault_dat_lat, split)
                 for fault_lon, fault_lat in zip(fault_lon_split, fault_dat_lat):
-                    ax.plot((fault_lon + 360) % 360, fault_lat, color=col, lw=lw)
+                    ax.plot(fault_lon % 360, fault_lat, color=col, lw=lw)
             else:
-                ax.plot((fault_dat_lon + 360) % 360, fault_dat_lat, color=col, lw=lw)
+                ax.plot(fault_dat_lon % 360, fault_dat_lat, color=col, lw=lw)
 
     if legend_show:
         ax.legend(loc=legend_loc)
