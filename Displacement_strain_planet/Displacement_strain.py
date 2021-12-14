@@ -129,26 +129,27 @@ def SH_deriv_store(
 ):
     """
     Compute and store or load spherical harmonic derivatives
-    over the entire sphere (first and second order).
+    over the entire sphere (first and second order). The spherical
+    harmonic degree and order correspond to the index l*(l+1)/2+m
 
     Returns
     -------
-    Y_lm_d1_theta_a : array, size(2,lmax+1,lmax+1)
+    Y_lm_d1_theta_a : array, size(2,(lmax+1)*(lmax+2)/2)
         Array with the first derivative
         of Legendre polynomials with respect to colatitude.
-    Y_lm_d1_phi_a : array, size(2,lmax+1,lmax+1)
+    Y_lm_d1_phi_a : array, size(2,(lmax+1)*(lmax+2)/2)
         Array with the first derivative
         of Legendre polynomials with respect to longitude.
-    Y_lm_d2_theta_a : array, size(2,lmax+1,lmax+1)
+    Y_lm_d2_theta_a : array, size(2,(lmax+1)*(lmax+2)/2)
         Array with the second derivative
         of Legendre polynomials with respect to colatitude.
-    Y_lm_d2_phi_a : array, size(2,lmax+1,lmax+1)
+    Y_lm_d2_phi_a : array, size(2,(lmax+1)*(lmax+2)/2)
         Array with the second derivative
         of Legendre polynomials with respect to longitude.
-    Y_lm_d2_thetaphi_a : array, size(2,lmax+1,lmax+1)
+    Y_lm_d2_thetaphi_a : array, size(2,(lmax+1)*(lmax+2)/2)
         Array with the first derivative
         of Legendre polynomials with respect to colatitude and longitude.
-    y_lm_save : array, size(2,lmax+1,lmax+1)
+    y_lm_save : array, size(2,(lmax+1)*(lmax+2)/2)
         Array of spherical harmonic functions.
 
     Parameters
@@ -216,7 +217,7 @@ def SH_deriv_store(
             )
             print("dtype is %s." % (dtype))
         index_size = int((lmax + 1) * (lmax + 2) / 2)
-        shape_save = (nlat, nlon, 2, lmax + 1, lmax + 1)
+        shape_save = (nlat, nlon, 2, index_size)
         Y_lm_d1_theta_a = np.zeros(shape_save, dtype=dtype)
         Y_lm_d1_phi_a = np.zeros(shape_save, dtype=dtype)
         Y_lm_d2_phi_a = np.zeros(shape_save, dtype=dtype)
@@ -224,7 +225,7 @@ def SH_deriv_store(
         Y_lm_d2_theta_a = np.zeros(shape_save, dtype=dtype)
         y_lm_save = np.zeros(shape_save, dtype=dtype)
         phi_ar = np.linspace(0, 360, nlon, endpoint=False) * pi / 180.0
-        y_lm = np.zeros((len(phi_ar), 2, lmax + 1, lmax + 1))
+        y_lm = np.zeros((len(phi_ar), 2, index_size))
 
         t_i = -1
         for theta in np.linspace(0, 180, nlat, endpoint=False) * pi / 180.0:
@@ -257,36 +258,37 @@ def SH_deriv_store(
                         m2cosphi = -(m ** 2) * cosmphi  # Second
                         # cos(m*phi)
                         # derivative
-                        Y_lm_d1_theta_a[t_i, :, 0, l, m] = dp_theta[index] * cosmphi
-                        Y_lm_d1_phi_a[t_i, :, 0, l, m] = p_theta[index] * msinmphi
-                        Y_lm_d2_phi_a[t_i, :, 0, l, m] = p_theta[index] * m2cosphi
-                        Y_lm_d2_thetaphi_a[t_i, :, 0, l, m] = dp_theta[index] * msinmphi
-                        y_lm[:, 0, l, m] = p_theta[index] * cosmphi
+                        Y_lm_d1_theta_a[t_i, :, 0, index] = dp_theta[index] * cosmphi
+                        Y_lm_d1_phi_a[t_i, :, 0, index] = p_theta[index] * msinmphi
+                        Y_lm_d2_phi_a[t_i, :, 0, index] = p_theta[index] * m2cosphi
+                        Y_lm_d2_thetaphi_a[t_i, :, 0, index] = (
+                            dp_theta[index] * msinmphi
+                        )
+                        y_lm[:, 0, index] = p_theta[index] * cosmphi
                     else:
                         mcosmphi = m_abs * cosmphi
                         m2sinphi = -(m_abs ** 2) * sinmphi
-                        Y_lm_d1_theta_a[t_i, :, 1, l, m_abs] = dp_theta[index] * sinmphi
-                        Y_lm_d1_phi_a[t_i, :, 1, l, m_abs] = p_theta[index] * mcosmphi
-                        Y_lm_d2_phi_a[t_i, :, 1, l, m_abs] = p_theta[index] * m2sinphi
-                        Y_lm_d2_thetaphi_a[t_i, :, 1, l, m_abs] = (
+                        Y_lm_d1_theta_a[t_i, :, 1, index] = dp_theta[index] * sinmphi
+                        Y_lm_d1_phi_a[t_i, :, 1, index] = p_theta[index] * mcosmphi
+                        Y_lm_d2_phi_a[t_i, :, 1, index] = p_theta[index] * m2sinphi
+                        Y_lm_d2_thetaphi_a[t_i, :, 1, index] = (
                             dp_theta[index] * mcosmphi
                         )
-                        y_lm[:, 1, l, m_abs] = p_theta[index] * sinmphi
+                        y_lm[:, 1, index] = p_theta[index] * sinmphi
 
-                y_lm_save[t_i, :, :, l, : l + 1] = y_lm[:, :, l, : l + 1]
+                    y_lm_save[t_i, :, :, index] = y_lm[:, :, index]
 
-                if theta == 0:
-                    Y_lm_d2_theta_a[t_i, :, :, l, : l + 1] = 0.0
-                    # Not defined.
-                else:
-                    # Make use of the Laplacian identity to
-                    # estimate last derivative.
-                    Y_lm_d2_theta_a[t_i, :, :, l, : l + 1] = (
-                        lapla * y_lm[:, :, l, : l + 1]
-                        - Y_lm_d1_theta_a[t_i, :, :, l, : l + 1] * costsint
-                        - sintt * Y_lm_d2_phi_a[t_i, :, :, l, : l + 1]
-                    )
-
+                    if theta == 0:
+                        Y_lm_d2_theta_a[t_i, :, :, index] = 0.0
+                        # Not defined.
+                    else:
+                        # Make use of the Laplacian identity to
+                        # estimate last derivative.
+                        Y_lm_d2_theta_a[t_i, :, :, index] = (
+                            lapla * y_lm[:, :, index]
+                            - Y_lm_d1_theta_a[t_i, :, :, index] * costsint
+                            - sintt * Y_lm_d2_phi_a[t_i, :, :, index]
+                        )
         if save:
             if quiet is False:
                 print("Saving SH derivatives at: %s" % (path))
@@ -565,6 +567,10 @@ def Displacement_strains(
     )
     cotcsc = csc * cot
 
+    # Convert 3-D of SH to 2-D indexed array
+    w_lm = pysh.shio.SHCilmToCindex(w_lm, lmax)
+    A_lm = pysh.shio.SHCilmToCindex(A_lm, lmax)
+
     y_lm = y_lm[mask]
     Y_lm_d2_t = Y_lm_d2_t[mask]
     Y_lm_d2_p = Y_lm_d2_p[mask]
@@ -572,10 +578,11 @@ def Displacement_strains(
     Y_lm_d1_p = Y_lm_d1_p[mask]
     Y_lm_d2_tp = Y_lm_d2_tp[mask]
 
-    ein_sum = "mijk,ijk->m"
-    ein_sum_mul = "mijk,ijk,m->m"
+    ein_sum = "mij,ij->m"
+    ein_sum_mul = "mik,ik,m->m"
     path_sum = ["einsum_path", (0, 1)]  # Generated from np.einsum_path
     path_mul = ["einsum_path", (0, 1), (0, 1)]  # Generated from np.einsum_path
+
     w_deflec_ylm = R_m1 * np.einsum(ein_sum, y_lm, w_lm, optimize=path_sum)
     eps_theta[mask] = (
         R_m1 * np.einsum(ein_sum, Y_lm_d2_t, A_lm, optimize=path_sum) + w_deflec_ylm
