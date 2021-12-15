@@ -5,7 +5,7 @@ Functions for calculating the Banerdt (1986) system of equations.
 import re
 import numpy as np
 import pyshtools as pysh
-from sympy import linsolve, lambdify, symbols, Expr, expand
+from sympy import linsolve, lambdify, symbols, Expr, expand, srepr
 from sympy.parsing.sympy_parser import parse_expr
 
 # ==== corr_nmax_drho ====
@@ -21,19 +21,13 @@ def corr_nmax_drho(
     nmax,
     drho,
     R,
-    c=0,
     density_var=False,
-    filter_in=None,
-    filter=None,
-    filter_half=None,
 ):
     """
-    Calculate the difference in gravitational exterior
-    to relief referenced to a spherical interface
-    (with or without laterally varying density)
-    between the mass-sheet case and when using the
-    finite amplitude algorithm of Wieczorek &
-    Phillips (1998).
+    Calculate the gravitational difference (with or
+    without laterally varying density) between the
+    mass-sheet case and when using the finite amplitude
+    algorithm of Wieczorek & Phillips (1998).
 
     Returns
     -------
@@ -64,17 +58,8 @@ def corr_nmax_drho(
         Mean density contrast.
     R : float
         Mean radius of the planet.
-    c : float, optional, default = 0
-        Maximum depth at which the density variations occurs.
     density_var : bool, optional, default = False
         If True, correct for density variations.
-    filter_in : array, size(lmax+1), optional, default = None
-        Array with the input filter to use.
-    filter : string, optional, default = None
-        If 'Ma' or 'Mc', apply minimum-amplitude or minimum-curvature
-        filtering.
-    filter_half : int, optional, default = None
-        Spherical harmonic degree at which the filter equals 0.5.
     """
 
     # Finite-amplitude correction.
@@ -101,36 +86,12 @@ def corr_nmax_drho(
         MS_lm_drho_cst = MS_lm_nmax.copy()
         MS_lm_drho_cst *= D ** 2
 
-        if filter_in is not None and c != 0:
-            for l in range(1, lmax + 1):
-                MS_lm_drho[:, l, : l + 1] /= filter_in[l]
-                MS_lm_drho_cst[:, l, : l + 1] /= filter_in[l]
-        elif filter is not None and c != 0:
-            for l in range(1, lmax + 1):
-                MS_lm_drho[:, l, : l + 1] /= DownContFilter(
-                    l, filter_half, R, R - c, type=filter
-                )
-                MS_lm_drho_cst[:, l, : l + 1] /= DownContFilter(
-                    l, filter_half, R, R - c, type=filter
-                )
         # Divide because the thin-shell code multiplies by
         # density contrast, to correct for finite-amplitude.
         # Here we also correct for density variations, so the
         # correction is already scaled by the density contrast.
         delta_MS_FA = R * (MS_lm_drho - MS_lm_drho_cst) / drho
     else:
-        if filter_in is not None and c != 0:
-            for l in range(1, lmax + 1):
-                FA_lm_nmax[:, l, : l + 1] /= filter_in[l]
-                MS_lm_nmax[:, l, : l + 1] /= filter_in[l]
-        elif filter is not None and c != 0:
-            for l in range(1, lmax + 1):
-                FA_lm_nmax[:, l, : l + 1] /= DownContFilter(
-                    l, filter_half, R, R - c, type=filter
-                )
-                MS_lm_nmax[:, l, : l + 1] /= DownContFilter(
-                    l, filter_half, R, R - c, type=filter
-                )
         if density_var and nmax != 1:
             delta_MS_FA = R * (FA_lm_nmax - MS_lm_nmax) / drho
         else:
@@ -174,10 +135,11 @@ def Thin_shell_matrix(
     w_corr=None,
     wdc_corr=None,
     H_corr=None,
+    drho_omega_corr=None,
+    drho_q_corr=None,
+    COM=True,
     lambdify_func=None,
     first_inv=True,
-    drho_corr=None,
-    COM=True,
 ):
     """
     Solve for the Banerdt et al. (1986) system of equations with
@@ -302,18 +264,21 @@ def Thin_shell_matrix(
     H_corr : array size(2,lmax+1,lmax+1), optional, default = None
         Array with spherical harmonic coefficients for finite-amplitude
         and or lateral density variations corrections of the H_lm relief.
+    drho_omega_corr : array size(2,lmax+1,lmax+1), optional, default = None
+        Array with spherical harmonic coefficients for lateral
+        lateral density variations corrections for omega_lm.
+    drho_q_corr : array size(2,lmax+1,lmax+1), optional, default = None
+        Array with spherical harmonic coefficients for lateral
+        lateral density variations corrections for q_lm.
+    COM : bool, optional, default = True
+        if True, force the model to be in a center-of-mass frame by setting
+        the degree-1 geoid terms to zero.
     lambdify_func : array size(lmax+1), optional, default = None
         Reuse the lambidfy functions of the first run.
     first_inv : bool, optional, default = True
         If True, the code assumes that this is the first time doing
         the inversion in this setup, and will store the lambdify results
         in 'lambdify_func'
-    drho_corr : array size(2,lmax+1,lmax+1), optional, default = None
-        Array with spherical harmonic coefficients for lateral
-        lateral density variations corrections for omega_lm.
-    COM : bool, optional, default = True
-        if True, force the model to be in a center-of-mass frame by setting
-        the degree-1 geoid terms to zero.
     """
     # Declare all possible input arrays.
     input_arrays = np.array(
@@ -409,8 +374,16 @@ def Thin_shell_matrix(
                     # H_corr *= add_array1
                     if not first_inv:
                         if cnsts == "drhom_lm":
-                            drho_corr[drhom_lm == 0] = 0.0
-                            drho_corr *= add_arrays[i]
+                            drho_omega_corr[drhom_lm == 0] = 0.0
+                            drho_omega_corr *= add_arrays[i]
+                            drho_q_corr[drhom_lm == 0] = 0.0
+                            drho_q_corr *= add_arrays[i]
+                        elif cnsts == "omega_lm":
+                            drho_omega_corr[omega_lm == 0] = 0.0
+                            drho_omega_corr *= add_arrays[i]
+                        elif cnsts == "q_lm":
+                            drho_q_corr[q_lm == 0] = 0.0
+                            drho_q_corr *= add_arrays[i]
                         elif cnsts == "H_lm":
                             H_corr[H_lm == 0] = 0.0
                             H_corr *= add_arrays[i]
@@ -487,15 +460,12 @@ def Thin_shell_matrix(
         else:
             print("Using stored solutions with new inputs")
 
-    if dc_lm is not None and w_lm is not None:
-        # For filtering drhom when there is no moho relief
-        any_wdc = np.sum(w_lm[:, 1:, :] - dc_lm[:, 1:, :])
-    elif base_drho == c:
-        # For filtering when drhom is in moho relief
-        any_wdc = False
+    if dc_lm is not None:
+        # Filtering drhom when there is no isostatic root variations
+        any_dc = np.sum(dc_lm[:, 1:, :]) != 0
     else:
         # No filtering for drhom
-        any_wdc = True
+        any_dc = True
 
     # Allocate arrays to be used for outputs.
     shape = (2, lmax + 1, lmax + 1)
@@ -523,13 +493,16 @@ def Thin_shell_matrix(
         H_corr = np.zeros(shape)
     if w_corr is None:
         w_corr = np.zeros(shape)
-    if drho_corr is None:
-        drho_corr = np.zeros(shape)
+    if drho_omega_corr is None:
+        drho_omega_corr = np.zeros(shape)
+    if drho_q_corr is None:
+        drho_q_corr = np.zeros(shape)
     A_lm = np.zeros(shape)
 
     if Te == 0:  # Avoid numerical problems with infinite values
         Te = 1
-        print("Elastic thickness set to 1 m to avoid numerical problems")
+        if first_inv:
+            print("Elastic thickness set to 1 m to avoid numerical problems")
 
     # Precompute some constants.
     M = base_drho - top_drho  # Thickness of the density anomaly
@@ -547,8 +520,8 @@ def Thin_shell_matrix(
     Re4 = Re ** 4
     drho = rhom - rhoc
     drhol = rhoc - rhol
-    eps = np.inf if Te == 1 else 12.0 * Re ** 2 / Te ** 2
-    alph_B = np.inf if Te == 1 else 1.0 / (E * Te)
+    eps = 12.0 * Re ** 2 / Te ** 2
+    alph_B = 1.0 / (E * Te)
     # Avoids error printing when dividing by zero.
     D = E * Te ** 3 / (12.0 * (1.0 - v ** 2))  # Shell's
     # rigidity.
@@ -564,7 +537,7 @@ def Thin_shell_matrix(
     )
     mass_correc = 1.0
     # Mass correction for the mantle density anomaly to account for the
-    # planet sphericity
+    # planet sphericity, work in progress.
 
     R_drho_mid = (R_top_drho + R_top_drho) / 2.0
     gmoho = g0 * (1.0 + (RCR ** 3 - 1.0) * rhoc / rhobar) / RCR ** 2
@@ -581,6 +554,10 @@ def Thin_shell_matrix(
             / (R_drho_mid / R) ** 2
         )
 
+    # If we have non-zero w_corr, this mean that geoid corrections
+    # for density contrasts within the flexure should be accounted for
+    w_corr_test = np.sum(w_corr[:, 1:, :]) != 0 and drhol != 0
+
     # Store symbolized array names with sympy. Order is 
     # important. These will be denoted e.g. 'H_lm1' for H_lm.
     add_constraints = ""
@@ -589,7 +566,7 @@ def Thin_shell_matrix(
         for i in [0] if single_add_arrays else range(np.shape(add_arrays)[0]):
             if i + 1 not in add_muls:
                 add_constraints += " add_array%s" % (i + 1)
-    add_constraints += " wdc_corr1 w_corr1 H_corr1 drho_corr1"
+    add_constraints += " wdc_corr1 w_corr1 H_corr1 drho_omega_corr1 drho_q_corr1"
 
     a_symb_uknwn = symbols(" ".join([symb + "1 " for symb in not_constraint]))
     a_symb_knwn = symbols(
@@ -598,7 +575,7 @@ def Thin_shell_matrix(
     args_symb = (constraint_test, not_constraint, a_symb_uknwn)
 
     if remove_equation is not None and not quiet and first_inv:
-        print("Removing equation for %s." % (remove_equation))
+        print("Removing equation for: %s." % (remove_equation))
     if add_equation is not None:
         if not quiet and first_inv:
             print("Adding an equation:\n%s." % (add_equation))
@@ -630,16 +607,28 @@ def Thin_shell_matrix(
             RCRl2 = RCR ** (l + 2)
 
             DCfilter_mohoD = 1.0
+            DCfilter_mohoDc = 1.0
             DCfilter_drhom = 1.0
+            DCfilter_drhomc = 1.0
             if filter_in is not None:
-                DCfilter_mohoD = filter_in[l]
-                if not any_wdc:
+                if any_dc:
+                    DCfilter_mohoD = filter_in[l]
+                    DCfilter_mohoDc = filter_in[l]
+                else:
                     DCfilter_drhom = filter_in[l]
+                    DCfilter_drhomc = filter_in[l]
             elif filter is not None:
-                DCfilter_mohoD = DownContFilter(l, filter_half, R, R_c, type=filter)
-                if not any_wdc:
+                if any_dc:
+                    DCfilter_mohoD = DownContFilter(l, filter_half, R, R_c, type=filter)
+                    DCfilter_mohoDc = DownContFilter(
+                        l, filter_half, R_c, R_c, type=filter
+                    )
+                else:
                     DCfilter_drhom = DownContFilter(
                         l, filter_half, R, R_base_drho, type=filter
+                    )
+                    DCfilter_drhomc = DownContFilter(
+                        l, filter_half, R_c, R_base_drho, type=filter
                     )
             if R_top_drho <= R_c:
                 RtRCl = (R_top_drho / R_c) ** l
@@ -661,13 +650,13 @@ def Thin_shell_matrix(
                 " w_lm1 Gc_lm1 q_lm1 omega_lm1 dc_lm1 drhom_lm1 G_lm1 H_lm1 "
             )
 
-            wdc_corr1, w_corr1, H_corr1, drho_corr1 = symbols(
-                " wdc_corr1 w_corr1 H_corr1 drho_corr1"
+            wdc_corr1, w_corr1, H_corr1, drho_omega_corr1, drho_q_corr1 = symbols(
+                " wdc_corr1 w_corr1 H_corr1 drho_omega_corr1 drho_q_corr1 "
             )
 
             # System of equations from Banerdt (1986).
             Eqns = [
-                -G_lm1
+                -G_lm1  # eq (2) G_lm
                 + (
                     rhobconst
                     * (
@@ -677,53 +666,61 @@ def Thin_shell_matrix(
                         + drhom_lm1 * Rl3 * (RtRl3 - RbRl3) / DCfilter_drhom
                     )
                     + rhol * H_corr1
-                    + drhol * w_corr1
-                    + drho * wdc_corr1 * RCRl2
+                    + ((drhol * w_corr1) if not w_corr_test else w_corr1)
+                    + drho * wdc_corr1 * RCRl2 / DCfilter_mohoD
                 )
                 * (
                     0.0 if "G_lm" in not_constraint and COM and l == 1 else 1.0
                 ),  # Force the degree-1 geoid to zero
-                -Gc_lm1
+                -Gc_lm1  # eq(2) Gc_lm
                 + (
                     rhobconst
                     * (
                         (rhol * H_lm1 + drhol * w_lm1) * RCRl1
-                        + drho * (w_lm1 - dc_lm1) * RCR ** 3
-                        + drhom_lm1 * Rl3 * (RtRCl - RbRCl)
+                        + drho * (w_lm1 - dc_lm1) * (RCR ** 3) / DCfilter_mohoDc
+                        + drhom_lm1 * Rl3 * (RtRCl - RbRCl) / DCfilter_drhomc
                     )
-                    + (rhol * H_corr1 + drhol * w_corr1) * RCRl1
-                    + drho * wdc_corr1 * RCR ** 3
+                    + (
+                        rhol * H_corr1
+                        + ((drhol * w_corr1) if not w_corr_test else w_corr1)
+                    )
+                    * RCRl1
+                    + drho * wdc_corr1 * RCR ** 3 / DCfilter_mohoDc
                 )
                 * (
                     0.0 if "Gc_lm" in not_constraint and COM and l == 1 else 1.0
                 ),  # Force the degree-1 geoid to zero
-                -q_lm1
+                -q_lm1  # eq (3) q_lm
                 + g0 * (rhol * (H_lm1 - G_lm1) + drhol * w_lm1)
                 + gmoho * drho * (w_lm1 - dc_lm1 - Gc_lm1)
-                + gdrho * drhom_lm1 * M * mass_correc,
-                eta_B * D * Lapla * Lapla_2 ** 2 * w_lm1
+                + gdrho * drhom_lm1 * M * mass_correc
+                + drho_q_corr1,
+                eta_B * D * Lapla * Lapla_2 ** 2 * w_lm1  # eq (4) w_lm
                 + Re ** 2 / alph_B * Lapla_2 * w_lm1
                 + Re4 * (Lapla_2 - 1.0 - v) * q_lm1
                 - Re4 * (beta_B * Lapla_2 - 1.0 - v) * Lapla * omega_lm1,
-                -omega_lm1
+                -omega_lm1  # eq (5) omega_lm
                 + v1v * rhol * g0 * Te * H_lm1 / R
                 - (
                     drhol * g0 * v1v * Te
                     + rhoc * gmoho * (v1v * Te - c)
-                    - rhom * gmoho * (Te - c)
+                    - rhom * gmoho * (Te - c if c < Te else 0)
+                    # If crustal interface below Te, no tangential load associated
                 )
                 * w_lm1
                 / R
-                - v1v * drho * gmoho * (Te - c) * dc_lm1 / R
+                - v1v * drho * gmoho * (Te - c if c < Te else 0)
+                # If crustal interface below Te, no tangential load associated
+                * dc_lm1 / R
                 - 0.5
                 * v1v
                 * drhom_lm1
                 * mass_correc
                 * gdrho
                 * (Te - top_drho)
-                * (np.min([M, Te - top_drho]) if top_drho <= Te else 0)
+                * (np.min([M, Te - top_drho]) if top_drho < Te else 0)
                 # If mantle load below Te, no tangential load associated
-                / R + drho_corr1,
+                / R + drho_omega_corr1,
             ]
 
             if add_equation is not None:
@@ -761,7 +758,36 @@ def Thin_shell_matrix(
                         )
                     )
 
-            if remove_equation is not None:
+            # At degree-1, w_lm vanishes from eq (4), and makes the eq only
+            # relate q_lm and omega_lm. w_lm should be zero at degree-1 in
+            # a center of mass-reference frame.
+            # Thus, we replace the degree-1 equation for omega_lm by eq (4)
+            # and eq (4) now becomes w_lm = 0 if:
+            if (
+                l == 1
+                and COM  # 1) We are in a COM (default = True)
+                and (  # 2) w_lm is not in add_equation,
+                    # or not directly related to one other symbol
+                    add_equation is not None
+                    and (
+                        "w_lm" not in str(add_equation_subbed)
+                        or (
+                            "w_lm" in str(add_equation_subbed)
+                            and srepr(add_equation_subbed).count("Symbol") > 2
+                        )
+                    )
+                    or add_equation is None
+                )
+                and (
+                    "w_lm"
+                    not in constraint_test  # 3) w_lm is not an input, or equal zero
+                    or ("w_lm" in constraint_test and w_lm[0, 1, 0] == 0)
+                )
+            ):
+                Eqns[4] = Eqns[3].copy()
+                Eqns[3] = w_lm1
+
+            if remove_equation is not None and l != 1:
                 for item in [remove_equation]:
                     Eqns.pop(int(np.where(equation_order == item)[0]))
 
@@ -776,31 +802,23 @@ def Thin_shell_matrix(
         else:
             linsolve_vector = lambdify_func[l]
 
+        # Results.
         # Depending on the input arrays, pass a symbol or the
         # input values.
-        H_lm1 = test_symb("H_lm", H_lm[:, l, : l + 1], *args_symb)
-        G_lm1 = test_symb("G_lm", G_lm[:, l, : l + 1], *args_symb)
-        Gc_lm1 = test_symb("Gc_lm", Gc_lm[:, l, : l + 1], *args_symb)
-        q_lm1 = test_symb("q_lm", q_lm[:, l, : l + 1], *args_symb)
-        omega_lm1 = test_symb("omega_lm", omega_lm[:, l, : l + 1], *args_symb)
-        dc_lm1 = test_symb("dc_lm", dc_lm[:, l, : l + 1], *args_symb)
-        drhom_lm1 = test_symb("drhom_lm", drhom_lm[:, l, : l + 1], *args_symb)
-        w_lm1 = test_symb("w_lm", w_lm[:, l, : l + 1], *args_symb)
-
-        # Results.
         args_linsolve = dict(
-            w_lm1=w_lm1,
-            Gc_lm1=Gc_lm1,
-            G_lm1=G_lm1,
-            H_lm1=H_lm1,
-            q_lm1=q_lm1,
-            omega_lm1=omega_lm1,
-            dc_lm1=dc_lm1,
-            drhom_lm1=drhom_lm1,
+            w_lm1=test_symb("w_lm", w_lm[:, l, : l + 1], *args_symb),
+            Gc_lm1=test_symb("Gc_lm", Gc_lm[:, l, : l + 1], *args_symb),
+            G_lm1=test_symb("G_lm", G_lm[:, l, : l + 1], *args_symb),
+            H_lm1=test_symb("H_lm", H_lm[:, l, : l + 1], *args_symb),
+            q_lm1=test_symb("q_lm", q_lm[:, l, : l + 1], *args_symb),
+            omega_lm1=test_symb("omega_lm", omega_lm[:, l, : l + 1], *args_symb),
+            dc_lm1=test_symb("dc_lm", dc_lm[:, l, : l + 1], *args_symb),
+            drhom_lm1=test_symb("drhom_lm", drhom_lm[:, l, : l + 1], *args_symb),
             wdc_corr1=wdc_corr[:, l, : l + 1],
             H_corr1=H_corr[:, l, : l + 1],
             w_corr1=w_corr[:, l, : l + 1],
-            drho_corr1=drho_corr[:, l, : l + 1],
+            drho_omega_corr1=drho_omega_corr[:, l, : l + 1],
+            drho_q_corr1=drho_q_corr[:, l, : l + 1],
         )
 
         if add_arrays is not None:
@@ -834,14 +852,20 @@ def Thin_shell_matrix(
                 "System is non-evenly determined at degree %i, cannot solve" % (l)
                 + "\nSystem of equations: \n%s" % (Eqns)
                 + "\nSolutions found:"
-                + "\nw_lm = %s" % (outs[idx_w_lm][0, 0])
-                + "\nq_lm = %s" % (outs[idx_q_lm][0, 0])
-                + "\nomega_lm = %s" % (outs[idx_omega_lm][0, 0])
-                + "\ndc_lm = %s" % (outs[idx_dc_lm][0, 0])
-                + "\ndrhom_lm = %s" % (outs[idx_drhom_lm][0, 0])
-                + "\nG_lm = %s" % (outs[idx_G_lm][0, 0])
-                + "\nGc_lm = %s" % (outs[idx_Gc_lm][0, 0])
-                + "\nH_lm = %s" % (outs[idx_H_lm][0, 0])
+                + "\nw_lm = %s" % (outs[idx_w_lm])
+                + "\nq_lm = %s" % (outs[idx_q_lm])
+                + "\nomega_lm = %s" % (outs[idx_omega_lm])
+                + "\ndc_lm = %s" % (outs[idx_dc_lm])
+                + "\ndrhom_lm = %s" % (outs[idx_drhom_lm])
+                + "\nG_lm = %s" % (outs[idx_G_lm])
+                + "\nGc_lm = %s" % (outs[idx_Gc_lm])
+                + "\nH_lm = %s" % (outs[idx_H_lm])
+                + (
+                    "Make sure the add_equation doesn't involve w_lm, G_lm,"
+                    + "or Gc_lm, which are specifically treated when COM is True (default)"
+                )
+                if l == 1 and COM
+                else ""
             )
 
         # Write solutions
@@ -1015,6 +1039,7 @@ def Thin_shell_matrix_nmax(
     delta_max=5,
     iter_max=250,
     delta_out=500e3,
+    iterate=True,
 ):
     """
     Solve the Banerdt (1986) system of 5 equations
@@ -1143,6 +1168,8 @@ def Thin_shell_matrix_nmax(
     delta_out : float, optional, default = 500e3
         If the delta is larger than this value, the algorithm stops
         and prints that it is not converging.
+    iterate : bool, optional, default = True
+        if False, solve the system without any corrections.
     """
     rhobar = mass * 3.0 / 4.0 / np.pi / R ** 3
     R_c = R - c
@@ -1173,9 +1200,9 @@ def Thin_shell_matrix_nmax(
     args_grid = dict(sampling=2, lmax=lmaxgrid, extend=False, lmax_calc=lmax)
 
     # Precompute some sums that will be used later for checks
-    any_dc = np.sum(dc_lm)
-    any_w = np.sum(w_lm)
-    any_drho = np.sum(drhom_lm)
+    any_dc = np.sum(dc_lm) != 0 if dc_lm is not None else None
+    any_w = np.sum(w_lm) != 0 if w_lm is not None else None
+    any_drho = np.sum(drhom_lm) != 0 if drhom_lm is not None else None
 
     # Density contrast not at topography or moho and no
     # finite-amplitude correctio, return
@@ -1183,6 +1210,7 @@ def Thin_shell_matrix_nmax(
         nmax == 1
         and (not any_drho or (top_drho != 0 and base_drho != c))
         and any_drho is not None
+        or iterate is False
     ):
         (
             w_lm_o,
@@ -1199,7 +1227,7 @@ def Thin_shell_matrix_nmax(
         ) = Thin_shell_matrix(*args_param_m, **args_param_lm)
 
         if not quiet:
-            print("Returning without finite-amplitude corrections")
+            print("Returning without corrections")
             print("Set the interfaces degree-0 coefficients")
         w_lm_o[0, 0, 0] = R
         dc_lm_o[0, 0, 0] = 0
@@ -1223,7 +1251,7 @@ def Thin_shell_matrix_nmax(
     else:
         # Correct for density contrast in surface or moho
         # relief, and/or finite-amplitude correction
-        density_var_H, density_var_dc = False, False
+        density_var_H, density_var_dc, density_var_w = False, False, False
         precomp_drho = False
         first_drhom, first_nmax = True, True
         if drhom_lm is None or any_drho:
@@ -1231,10 +1259,14 @@ def Thin_shell_matrix_nmax(
                 # Correct for density variations in the surface
                 # relief
                 density_var_H = True
-            if base_drho == c:
+            if base_drho == c or top_drho == c:
                 # Correct for density variations in the moho
                 # relief
                 density_var_dc = True
+            if base_drho < c and top_drho == 0 and rhol == rhoc:
+                # Correct for density variations in the flexure relief
+                # within the crust
+                density_var_w = True
 
         # If only finite-amplitude correction, density
         # contrast is multipled in the thin-shell code
@@ -1247,18 +1279,40 @@ def Thin_shell_matrix_nmax(
             rho_grid = pysh.expand.MakeGridDH(drhom_lm, **args_grid)
             precomp_drho = True
             if drhom_lm[0, 0, 0] > 500:
-                rhoc = drhom_lm[0, 0, 0]
-                rhol = drhom_lm[0, 0, 0]
+                if base_drho <= c:
+                    rhoc = drhom_lm[0, 0, 0]
+                    rhol = drhom_lm[0, 0, 0]
+                    if not quiet:
+                        print(
+                            "rhol and rhoc are set to the mean input density variations (%.2f kg m-3)"
+                            % (rhoc)
+                        )
+                else:
+                    rhom = drhom_lm[0, 0, 0]
+                    if not quiet:
+                        print(
+                            "rhom is set to the mean input density variations (%.2f kg m-3)"
+                            % (rhom)
+                        )
+                # Update parameters
                 args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax, E, v)
-                if not quiet:
-                    print(
-                        "rhol and rhoc are set to the mean input density variations (%.2f kg m-3)"
-                        % (rhoc)
-                    )
             else:
-                rho_grid += rhoc
-                if not quiet:
-                    print("Add input rhoc (%.2f kg m-3) to density variations" % (rhoc))
+                # Density contrast is in the crust
+                if base_drho <= c:
+                    rho_grid += rhoc
+                    if not quiet:
+                        print(
+                            "Add input rhoc (%.2f kg m-3) to density variations"
+                            % (rhoc)
+                        )
+                # Density contrast is in the mantle
+                else:
+                    rho_grid += rhom
+                    if not quiet:
+                        print(
+                            "Add input rhom (%.2f kg m-3) to density variations"
+                            % (rhom)
+                        )
 
         # Geoid correction due to density variations
         # and or finite-amplitude corrections.
@@ -1271,7 +1325,8 @@ def Thin_shell_matrix_nmax(
         delta_H_geoid = np.zeros(shape)
         # Tangential load potential corrections due to density
         # variations at the reliefs
-        drho_corr = np.zeros(shape)
+        drho_omega_corr = np.zeros(shape)
+        drho_q_corr = np.zeros(shape)
 
         precomp_H_grid, precomp_w_grid, precomp_dc_grid = False, False, False
         # Precompute grids
@@ -1321,16 +1376,19 @@ def Thin_shell_matrix_nmax(
                 wdc_corr=delta_wdc_geoid,
                 w_corr=delta_w_geoid,
                 H_corr=delta_H_geoid,
+                drho_omega_corr=drho_omega_corr,
+                drho_q_corr=drho_q_corr,
                 first_inv=first_inv,
                 lambdify_func=lambdify_func_o,
-                drho_corr=drho_corr
             )
             first_inv = False
 
             # Precompute some sums that will be used later for checks
-            any_dc = np.sum(dc_lm_o[:, 1:, :]) != 0
-            any_w = np.sum(w_lm_o[:, 1:, :]) != 0
-            any_drho = np.sum(drhom_lm_o[:, 1:, :]) != 0
+            any_dc = np.sum(dc_lm_o[:, 1:, :]) != 0 if any_dc is None else any_dc
+            any_w = np.sum(w_lm_o[:, 1:, :]) != 0 if any_w is None else any_w
+            any_drho = (
+                np.sum(drhom_lm_o[:, 1:, :]) != 0 if any_drho is None else any_drho
+            )
 
             # Correct for density contrast in surface or moho
             # relief, and/or finite-amplitude correction
@@ -1360,7 +1418,8 @@ def Thin_shell_matrix_nmax(
                 delta_wdc_geoid = (delta_wdc_geoid_2 + delta_wdc_geoid_1) / 2.0
                 delta_H_geoid = (delta_H_geoid_2 + delta_H_geoid_1) / 2.0
                 delta_w_geoid = (delta_w_geoid_2 + delta_w_geoid_1) / 2.0
-                drho_corr = (delta_drho_2 + delta_drho_1) / 2.0
+                drho_omega_corr = (delta_drho_omega_2 + delta_drho_omega_1) / 2.0
+                drho_q_corr = (delta_drho_q_2 + delta_drho_q_1) / 2.0
                 if not quiet:
                     print(
                         "Skipping iteration %s, with convergence" % (iter) + " scheme"
@@ -1370,39 +1429,49 @@ def Thin_shell_matrix_nmax(
             if any_drho and not precomp_drho:
                 rho_grid = pysh.expand.MakeGridDH(drhom_lm_o, **args_grid)
                 if drhom_lm_o[0, 0, 0] > 500:
-                    rhoc = drhom_lm_o[0, 0, 0]
-                    rhol = drhom_lm_o[0, 0, 0]
-                    args_param_m = (
-                        g0,
-                        R,
-                        c,
-                        Te,
-                        rhom,
-                        rhoc,
-                        rhol,
-                        rhobar,
-                        lmax,
-                        E,
-                        v,
-                    )
+                    if base_drho <= c:
+                        rhoc = drhom_lm_o[0, 0, 0]
+                        rhol = drhom_lm_o[0, 0, 0]
+                    else:
+                        rhom = drhom_lm[0, 0, 0]
+                    args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax, E, v)
                 else:
-                    rho_grid += rhoc
+                    if base_drho <= c:
+                        rho_grid += rhoc
+                    else:
+                        rho_grid += rhom
 
             v1v = v / (1.0 - v)
             if density_var_H:
-                drho_corr = v1v * drhom_lm_o * g0 * Te * H_lm_o / R
                 drho_H = rhol
                 H_drho_grid = rho_grid
+                drho_omega_corr = v1v * drhom_lm_o * g0 * Te * H_lm_o / R
+                drho_q_corr = drhom_lm_o * (H_lm_o - G_lm_o) * g0
             if density_var_dc:
                 gmoho = (
                     g0 * (1.0 + ((R_c / R) ** 3 - 1.0) * rhoc / rhobar) / (R_c / R) ** 2
                 )
                 if density_var_H:
-                    drho_corr += v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
+                    drho_omega_corr += v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
+                    drho_q_corr += drhom_lm_o * dc_lm_o * gmoho
                 else:
-                    drho_corr = v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
+                    drho_omega_corr = v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
+                    drho_q_corr = drhom_lm_o * dc_lm_o * gmoho
                 drho_wdc = rhom - rhoc
-                wdc_drho_grid = rhom - rho_grid
+                if base_drho <= c:
+                    # Anomaly in the crust
+                    wdc_drho_grid = rhom - rho_grid
+                else:
+                    # Anomaly in the mantle
+                    wdc_drho_grid = rho_grid - rhoc
+            if density_var_w:
+                w_drho_grid = rhoc - rho_grid
+                if density_var_H or density_var_dc:
+                    drho_omega_corr += v1v * drhom_lm_o * g0 * Te * w_lm_o / R
+                    drho_q_corr += drhom_lm_o * w_lm_o * g0
+                else:
+                    drho_omega_corr = v1v * drhom_lm_o * g0 * Te * w_lm_o / R
+                    drho_q_corr = drhom_lm_o * w_lm_o * g0
 
             H_lm_o[0, 0, 0] = R
             if not precomp_H_grid:
@@ -1423,17 +1492,18 @@ def Thin_shell_matrix_nmax(
             w_lm_o[0, 0, 0] = R
             if not precomp_w_grid:
                 w_grid = pysh.expand.MakeGridDH(w_lm_o, **args_grid)
-            if rhoc != rhol:
+            if rhoc != rhol or density_var_w:
                 delta_w_geoid = corr_nmax_drho(
                     w_lm_o,
                     drhom_lm_o,
                     w_grid,
-                    w_drho_grid,
+                    w_drho_grid if density_var_w else ones,
                     lmax,
                     mass,
                     nmax,
                     drho_w,
                     R,
+                    density_var=density_var_w,
                 )
 
             wdc_lm_o = w_lm_o - dc_lm_o
@@ -1451,10 +1521,6 @@ def Thin_shell_matrix_nmax(
                 drho_wdc,
                 R,
                 density_var=density_var_dc,
-                c=c,
-                filter=filter,
-                filter_in=filter_in,
-                filter_half=filter_half,
             )
 
             if iter != 1:
@@ -1498,12 +1564,14 @@ def Thin_shell_matrix_nmax(
                 delta_wdc_geoid_2 = delta_wdc_geoid
                 delta_H_geoid_2 = delta_H_geoid
                 delta_w_geoid_2 = delta_w_geoid
-                delta_drho_2 = drho_corr
+                delta_drho_omega_2 = drho_omega_corr
+                delta_drho_q_2 = drho_q_corr
             else:
                 delta_wdc_geoid_1 = delta_wdc_geoid
                 delta_H_geoid_1 = delta_H_geoid
                 delta_w_geoid_1 = delta_w_geoid
-                delta_drho_1 = drho_corr
+                delta_drho_omega_1 = drho_omega_corr
+                delta_drho_q_1 = drho_q_corr
 
             if any_dc:
                 grid_prev = R - wdc_grid - c

@@ -9,7 +9,7 @@ Planetary gravity, crustal thickness, displacement, stress, and strain calculati
 
 **Displacement_strain_planet** provides several functions and example scripts for generating gravity, crustal thickness, displacement, lateral density variations, stress, and strain maps on a planet given a set of input constraints such as from observed gravity and topography data.
 
-These functions solve the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of equations under different assumptions. Various improvements have been made to the model including the possibility to account for finite-amplitude correction and filtering [(Wieczorek & Phillips, 1998)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/97JE03136), lateral density variations at any arbitrary depth and within the surface or moho-relief [(Wieczorek et al., 2013)](https://science.sciencemag.org/content/early/2012/12/04/science.1231530?versioned=true), and density difference between the surface topography and crust [(Broquet & Wieczorek, 2019)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019JE005959). 
+These functions solve the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of equations under different assumptions. Various improvements have been made to the model including the possibility to account for finite-amplitude correction and filtering [(Wieczorek & Phillips, 1998)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/97JE03136), lateral density variations at any arbitrary depth and within the surface, flexure, or moho reliefs [(Wieczorek et al., 2013)](https://science.sciencemag.org/content/early/2012/12/04/science.1231530?versioned=true), and density difference between the surface topography and crust [(Broquet & Wieczorek, 2019)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019JE005959). 
 
 ### Comments
 #### Dependencies
@@ -77,4 +77,4 @@ Alternatively, you can install Displacement-strain-planet via pip
 
 ## Cite
 You can cite the latest release of the package as:
-Adrien Broquet. (2021). AB-Ares/Displacement_strain_planet: 0.3.0 (Version 0.3.0). Zenodo. http://doi.org/10.5281/zenodo.4916799
+Adrien Broquet. (2021). AB-Ares/Displacement_strain_planet: 0.3.1 (Version 0.3.1). Zenodo. http://doi.org/10.5281/zenodo.4916799
