@@ -1263,7 +1263,7 @@ def Thin_shell_matrix_nmax(
                 # Correct for density variations in the moho
                 # relief
                 density_var_dc = True
-            if base_drho < c and top_drho > c and rhol == rhoc:
+            if base_drho < c and top_drho == 0 and rhol == rhoc:
                 # Correct for density variations in the flexure relief
                 # within the crust
                 density_var_w = True
@@ -1287,7 +1287,7 @@ def Thin_shell_matrix_nmax(
                             "rhol and rhoc are set to the mean input density variations (%.2f kg m-3)"
                             % (rhoc)
                         )
-                elif top_drho > c:
+                else:
                     rhom = drhom_lm[0, 0, 0]
                     if not quiet:
                         print(
@@ -1297,6 +1297,7 @@ def Thin_shell_matrix_nmax(
                 # Update parameters
                 args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax, E, v)
             else:
+                # Density contrast is in the crust
                 if base_drho <= c:
                     rho_grid += rhoc
                     if not quiet:
@@ -1304,12 +1305,13 @@ def Thin_shell_matrix_nmax(
                             "Add input rhoc (%.2f kg m-3) to density variations"
                             % (rhoc)
                         )
-                elif top_drho > c:
+                # Density contrast is in the mantle
+                else:
                     rho_grid += rhom
                     if not quiet:
                         print(
                             "Add input rhom (%.2f kg m-3) to density variations"
-                            % (rhoc)
+                            % (rhom)
                         )
 
         # Geoid correction due to density variations
@@ -1430,13 +1432,13 @@ def Thin_shell_matrix_nmax(
                     if base_drho <= c:
                         rhoc = drhom_lm_o[0, 0, 0]
                         rhol = drhom_lm_o[0, 0, 0]
-                    elif top_drho > c:
+                    else:
                         rhom = drhom_lm[0, 0, 0]
                     args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax, E, v)
                 else:
                     if base_drho <= c:
                         rho_grid += rhoc
-                    elif top_drho > c:
+                    else:
                         rho_grid += rhom
 
             v1v = v / (1.0 - v)
@@ -1456,12 +1458,12 @@ def Thin_shell_matrix_nmax(
                     drho_omega_corr = v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
                     drho_q_corr = drhom_lm_o * dc_lm_o * gmoho
                 drho_wdc = rhom - rhoc
-                if top_drho == c:
-                    # Anomaly in the mantle
-                    wdc_drho_grid = rho_grid - rhoc
-                else:
+                if base_drho <= c:
                     # Anomaly in the crust
                     wdc_drho_grid = rhom - rho_grid
+                else:
+                    # Anomaly in the mantle
+                    wdc_drho_grid = rho_grid - rhoc
             if density_var_w:
                 w_drho_grid = rhoc - rho_grid
                 if density_var_H or density_var_dc:
