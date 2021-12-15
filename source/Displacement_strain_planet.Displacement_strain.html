@@ -1,79 +1,37 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>Displacement_strain_planet.Displacement_strain module &mdash; Displacement_strain_planet</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="prev" title="Displacement_strain_planet.B1986_nmax module" href="Displacement_strain_planet.B1986_nmax.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../index.html" class="icon icon-home"> Displacement_strain_planet
-          
-
-          
-            
             <img src="../_static/bender.jpeg" class="logo" alt="Logo"/>
-          
           </a>
-
-          
-            
-            
               <div class="version">
-                0.3.0
+                0.3.1
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -81,18 +39,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
@@ -112,78 +59,37 @@
 </li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Displacement_strain_planet</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
           <li><a href="Displacement_strain_planet.html">Displacement_strain_planet package</a> &raquo;</li>
-        
       <li>Displacement_strain_planet.Displacement_strain module</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="module-Displacement_strain_planet.Displacement_strain">
-<span id="displacement-strain-planet-displacement-strain-module"></span><h1>Displacement_strain_planet.Displacement_strain module<a class="headerlink" href="#module-Displacement_strain_planet.Displacement_strain" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="module-Displacement_strain_planet.Displacement_strain">
+<span id="displacement-strain-planet-displacement-strain-module"></span><h1>Displacement_strain_planet.Displacement_strain module<a class="headerlink" href="#module-Displacement_strain_planet.Displacement_strain" title="Permalink to this headline"></a></h1>
 <p>Functions for calculating Legendre polynomial derivatives, stresses
 and strains and plotting the Knapmeyer et al. (2006) tectonic dataset.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="Displacement_strain_planet.Displacement_strain.Displacement_strains">
-<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.Displacement_strain.</span></span><span class="sig-name descname"><span class="pre">Displacement_strains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A_lm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_lm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Te</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colat_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colat_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">180</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">360</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmaxgrid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_deflec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d1_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d1_p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d2_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d2_p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d2_tp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_lm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strain.Displacement_strains" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.Displacement_strain.</span></span><span class="sig-name descname"><span class="pre">Displacement_strains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A_lm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_lm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Te</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colat_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colat_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">180</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">360</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmaxgrid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d1_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d1_p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d2_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d2_p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d2_tp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_lm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strain.Displacement_strains" title="Permalink to this definition"></a></dt>
 <dd><p>Computes the Banerdt (1986) equations to determine strains
 from displacements with a correction to the theta_phi term.</p>
 <dl class="field-list simple">
@@ -232,7 +138,6 @@ When grid==’GLQ’, the gridshape is (lmaxgrid+1, 2*lmaxgrid+1) and
 <li><p><strong>grid</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Either ‘DH’ or ‘GLQ’ for Driscoll and Healy grids or Gauss-Legendre
 Quadrature grids following the convention of SHTOOLs.
 If None, the grid is set to ‘GLQ’.</p></li>
-<li><p><strong>only_deflec</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>default = False</em>) – Output only the displacement grid for all latitude and longitudes.</p></li>
 <li><p><strong>Y_lm_d1_t</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the first derivative
 of Legendre polynomials with respect to colatitude.</p></li>
 <li><p><strong>Y_lm_d1_p</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array with the first derivative
@@ -253,7 +158,7 @@ of Legendre polynomials with respect to colatitude and longitude.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="Displacement_strain_planet.Displacement_strain.Plt_tecto_Mars">
-<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.Displacement_strain.</span></span><span class="sig-name descname"><span class="pre">Plt_tecto_Mars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'purple'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'upper</span> <span class="pre">left'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strain.Plt_tecto_Mars" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.Displacement_strain.</span></span><span class="sig-name descname"><span class="pre">Plt_tecto_Mars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'purple'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'upper</span> <span class="pre">left'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strain.Plt_tecto_Mars" title="Permalink to this definition"></a></dt>
 <dd><p>Plot the Knampeyer et al. (2006) dataset of
 extensional and compressional tectonic features
 on Mars.</p>
@@ -276,7 +181,7 @@ on Mars.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="Displacement_strain_planet.Displacement_strain.Principal_strainstress_angle">
-<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.Displacement_strain.</span></span><span class="sig-name descname"><span class="pre">Principal_strainstress_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s_theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_theta_phi</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strain.Principal_strainstress_angle" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.Displacement_strain.</span></span><span class="sig-name descname"><span class="pre">Principal_strainstress_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s_theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_theta_phi</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strain.Principal_strainstress_angle" title="Permalink to this definition"></a></dt>
 <dd><p>Calculate principal strains, stresses, and
 their principal angles.</p>
 <dl class="field-list simple">
@@ -301,7 +206,7 @@ their principal angles.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="Displacement_strain_planet.Displacement_strain.SH_deriv">
-<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.Displacement_strain.</span></span><span class="sig-name descname"><span class="pre">SH_deriv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strain.SH_deriv" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.Displacement_strain.</span></span><span class="sig-name descname"><span class="pre">SH_deriv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strain.SH_deriv" title="Permalink to this definition"></a></dt>
 <dd><p>Compute spherical harmonic derivatives at a given
 location (first and second order).</p>
 <dl class="field-list simple">
@@ -333,7 +238,7 @@ of Legendre polynomials with respect to colatitude and longitude.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="Displacement_strain_planet.Displacement_strain.SH_deriv_store">
-<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.Displacement_strain.</span></span><span class="sig-name descname"><span class="pre">SH_deriv_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">lmax</span></em>, <em class="sig-param"><span class="pre">path</span></em>, <em class="sig-param"><span class="pre">dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></em>, <em class="sig-param"><span class="pre">lmaxgrid=None</span></em>, <em class="sig-param"><span class="pre">grid=None</span></em>, <em class="sig-param"><span class="pre">save=True</span></em>, <em class="sig-param"><span class="pre">compressed=False</span></em>, <em class="sig-param"><span class="pre">quiet=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strain.SH_deriv_store" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.Displacement_strain.</span></span><span class="sig-name descname"><span class="pre">SH_deriv_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">lmax</span></em>, <em class="sig-param"><span class="pre">path</span></em>, <em class="sig-param"><span class="pre">dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></em>, <em class="sig-param"><span class="pre">lmaxgrid=None</span></em>, <em class="sig-param"><span class="pre">grid=None</span></em>, <em class="sig-param"><span class="pre">save=True</span></em>, <em class="sig-param"><span class="pre">compressed=False</span></em>, <em class="sig-param"><span class="pre">quiet=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strain.SH_deriv_store" title="Permalink to this definition"></a></dt>
 <dd><p>Compute and store or load spherical harmonic derivatives
 over the entire sphere (first and second order).</p>
 <dl class="field-list simple">
@@ -376,45 +281,33 @@ recommended when lmax &gt; 75.</p></li>
 </dl>
 </dd></dl>
 
-</div>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="Displacement_strain_planet.B1986_nmax.html" class="btn btn-neutral float-left" title="Displacement_strain_planet.B1986_nmax module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright .
+    <p>&#169; Copyright .</p>
+  </div>
 
-    </p>
-  </div> 
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
