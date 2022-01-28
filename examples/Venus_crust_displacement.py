@@ -186,11 +186,14 @@ kwargs_param_s = dict(
     kappa_theta,
     kappa_phi,
     tau,
+    tot_theta,
+    tot_phi,
+    tot_thetaphi,
 ) = Displacement_strains(A_lm, w_lm, *args_param_s, **kwargs_param_s, quiet=False)
 
 # Principal strains
 (min_strain, max_strain, sum_strain, principal_angle,) = Principal_strainstress_angle(
-    -eps_theta - kappa_theta, -eps_phi - kappa_phi, -omega - tau
+    -tot_theta, -tot_phi, -tot_thetaphi
 )
 
 args_plot = dict(

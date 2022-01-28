@@ -513,7 +513,7 @@ def Thin_shell_matrix(
             + "%.2f and %.2f (km), respectively" % (base_drho / 1e3, top_drho / 1e3)
         )
 
-    Re = R - 0.5 * Te  # Midpoint of the elastic shell.
+    Re = R - Te / 2.0  # Reference radius for displacement equations
     R_base_drho = R - base_drho
     R_top_drho = R - top_drho
     R_c = R - c

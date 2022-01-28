@@ -31,7 +31,7 @@
             <img src="../_static/bender.jpeg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                0.3.1
+                0.3.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -162,7 +162,7 @@ on Mars.</p>
 <dt class="sig sig-object py" id="Displacement_strain_planet.Displacement_strains">
 <span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.</span></span><span class="sig-name descname"><span class="pre">Displacement_strains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A_lm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_lm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Te</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colat_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colat_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">180</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">360</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmaxgrid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d1_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d1_p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d2_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d2_p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_lm_d2_tp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_lm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strains" title="Permalink to this definition"></a></dt>
 <dd><p>Computes the Banerdt (1986) equations to determine strains
-from displacements with a correction to the theta_phi term.</p>
+and stresses from the displacements.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><ul class="simple">
@@ -177,13 +177,17 @@ This is equation A16 from Banerdt (1986).</p></li>
 <li><p><strong>eps_phi</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the elongation with respect to longitude.
 This is equation A17 from Banerdt (1986).</p></li>
 <li><p><strong>omega</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the shearing deformation.
-This is equation A18 from Banerdt (1986). Corrected for the prefactor 2.</p></li>
+This is equation A18 from Banerdt (1986).</p></li>
 <li><p><strong>kappa_theta</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the bending deformation with respect to colatitude.
 This is equation A19 from Banerdt (1986).</p></li>
 <li><p><strong>kappa_phi</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the bending deformation with respect to longitude.
 This is equation A20 from Banerdt (1986).</p></li>
 <li><p><strong>tau</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the twisting deformation.
-This is equation A21 from Banerdt (1986). Corrected for the prefactor 2.</p></li>
+This is equation A21 from Banerdt (1986).</p></li>
+<li><p><strong>tot_theta</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the total deformation with respect to colatitude.</p></li>
+<li><p><strong>tot_phi</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the total deformation with respect to longitude.</p></li>
+<li><p><strong>tot_thetaphi</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the total deformation with respect to colatitude
+and longitude.</p></li>
 </ul>
 </p>
 </dd>
@@ -336,21 +340,22 @@ of Legendre polynomials with respect to colatitude and longitude.</p></li>
 <dt class="sig sig-object py" id="Displacement_strain_planet.SH_deriv_store">
 <span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.</span></span><span class="sig-name descname"><span class="pre">SH_deriv_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">lmax</span></em>, <em class="sig-param"><span class="pre">path</span></em>, <em class="sig-param"><span class="pre">dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></em>, <em class="sig-param"><span class="pre">lmaxgrid=None</span></em>, <em class="sig-param"><span class="pre">grid=None</span></em>, <em class="sig-param"><span class="pre">save=True</span></em>, <em class="sig-param"><span class="pre">compressed=False</span></em>, <em class="sig-param"><span class="pre">quiet=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.SH_deriv_store" title="Permalink to this definition"></a></dt>
 <dd><p>Compute and store or load spherical harmonic derivatives
-over the entire sphere (first and second order).</p>
+over the entire sphere (first and second order). The spherical
+harmonic degree and order correspond to the index l*(l+1)/2+m</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><ul class="simple">
-<li><p><strong>Y_lm_d1_theta_a</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the first derivative
+<li><p><strong>Y_lm_d1_theta_a</strong> (<em>array, size(2,(lmax+1)*(lmax+2)/2)</em>) – Array with the first derivative
 of Legendre polynomials with respect to colatitude.</p></li>
-<li><p><strong>Y_lm_d1_phi_a</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the first derivative
+<li><p><strong>Y_lm_d1_phi_a</strong> (<em>array, size(2,(lmax+1)*(lmax+2)/2)</em>) – Array with the first derivative
 of Legendre polynomials with respect to longitude.</p></li>
-<li><p><strong>Y_lm_d2_theta_a</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the second derivative
+<li><p><strong>Y_lm_d2_theta_a</strong> (<em>array, size(2,(lmax+1)*(lmax+2)/2)</em>) – Array with the second derivative
 of Legendre polynomials with respect to colatitude.</p></li>
-<li><p><strong>Y_lm_d2_phi_a</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the second derivative
+<li><p><strong>Y_lm_d2_phi_a</strong> (<em>array, size(2,(lmax+1)*(lmax+2)/2)</em>) – Array with the second derivative
 of Legendre polynomials with respect to longitude.</p></li>
-<li><p><strong>Y_lm_d2_thetaphi_a</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the first derivative
+<li><p><strong>Y_lm_d2_thetaphi_a</strong> (<em>array, size(2,(lmax+1)*(lmax+2)/2)</em>) – Array with the first derivative
 of Legendre polynomials with respect to colatitude and longitude.</p></li>
-<li><p><strong>y_lm_save</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array of spherical harmonic functions.</p></li>
+<li><p><strong>y_lm_save</strong> (<em>array, size(2,(lmax+1)*(lmax+2)/2)</em>) – Array of spherical harmonic functions.</p></li>
 </ul>
 </p>
 </dd>

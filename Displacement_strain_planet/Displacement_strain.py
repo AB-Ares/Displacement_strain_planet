@@ -384,7 +384,7 @@ def Displacement_strains(
 ):
     """
     Computes the Banerdt (1986) equations to determine strains
-    from displacements with a correction to the theta_phi term.
+    and stresses from the displacements.
 
     Returns
     -------
@@ -405,7 +405,7 @@ def Displacement_strains(
         This is equation A17 from Banerdt (1986).
     omega : array, size(2,lmax+1,lmax+1)
         Array with the shearing deformation.
-        This is equation A18 from Banerdt (1986). Corrected for the prefactor 2.
+        This is equation A18 from Banerdt (1986).
     kappa_theta : array, size(2,lmax+1,lmax+1)
         Array with the bending deformation with respect to colatitude.
         This is equation A19 from Banerdt (1986).
@@ -414,7 +414,14 @@ def Displacement_strains(
         This is equation A20 from Banerdt (1986).
     tau : array, size(2,lmax+1,lmax+1)
         Array with the twisting deformation.
-        This is equation A21 from Banerdt (1986). Corrected for the prefactor 2.
+        This is equation A21 from Banerdt (1986).
+    tot_theta : array, size(2,lmax+1,lmax+1)
+        Array with the total deformation with respect to colatitude.
+    tot_phi : array, size(2,lmax+1,lmax+1)
+        Array with the total deformation with respect to longitude.
+    tot_thetaphi : array, size(2,lmax+1,lmax+1)
+        Array with the total deformation with respect to colatitude
+        and longitude.
 
     Parameters
     ----------
@@ -520,13 +527,13 @@ def Displacement_strains(
         ) = SH_deriv_store(lmax, path, lmaxgrid=lmaxgrid, grid=grid)
 
     # Some constants for the elastic model.
-    Re = R - (0.5 * Te)
-    psi = 12.0 * Re ** 2 / Te ** 2
+    Te_half = Te / 2.0
+    eps = Te_half / (1 + Te_half / R)
+    psi = 12.0 * R ** 2 / Te ** 2
     D = (E * (Te * Te * Te)) / ((12.0 * (1.0 - v ** 2)))
     DpsiTeR = (D * psi) / (Te * R ** 2)
     R_m1 = 1.0 / R
     n_Rm2 = -(R_m1 ** 2)
-    Te_half = Te / 2.0
 
     # Remove reference radius
     A_lm[0, 0, 0] = 0.0
@@ -595,9 +602,13 @@ def Displacement_strains(
         )
         + w_deflec_ylm
     )
-    omega[mask] = R_m1 * (
-        np.einsum(ein_sum_mul, Y_lm_d2_tp, A_lm, csc, optimize=path_mul)
-        - np.einsum(ein_sum_mul, Y_lm_d1_p, A_lm, cotcsc, optimize=path_mul)
+    omega[mask] = (
+        2.0
+        * R_m1
+        * (
+            np.einsum(ein_sum_mul, Y_lm_d2_tp, A_lm, csc, optimize=path_mul)
+            - np.einsum(ein_sum_mul, Y_lm_d1_p, A_lm, cotcsc, optimize=path_mul)
+        )
     )
 
     kappa_theta[mask] = (
@@ -612,26 +623,26 @@ def Displacement_strains(
         )
         + (-R_m1) * w_deflec_ylm
     )
-    tau[mask] = n_Rm2 * (
-        np.einsum(ein_sum_mul, Y_lm_d2_tp, w_lm, csc, optimize=path_mul)
-        - np.einsum(ein_sum_mul, Y_lm_d1_p, w_lm, cotcsc, optimize=path_mul)
+    tau[mask] = (
+        2.0
+        * n_Rm2
+        * (
+            np.einsum(ein_sum_mul, Y_lm_d2_tp, w_lm, csc, optimize=path_mul)
+            - np.einsum(ein_sum_mul, Y_lm_d1_p, w_lm, cotcsc, optimize=path_mul)
+        )
     )
 
     stress_theta = (
-        (eps_theta + v * eps_phi + Te_half * (kappa_theta + v * kappa_phi))
-        * DpsiTeR
-        / 1e6
+        (eps_theta + v * eps_phi + eps * (kappa_theta + v * kappa_phi)) * DpsiTeR / 1e6
     )  # MPa
     stress_phi = (
-        (eps_phi + v * eps_theta + Te_half * (kappa_phi + v * kappa_theta))
-        * DpsiTeR
-        / 1e6
+        (eps_phi + v * eps_theta + eps * (kappa_phi + v * kappa_theta)) * DpsiTeR / 1e6
     )  # MPa
-    stress_theta_phi = (omega + Te_half * tau) * 0.5 * DpsiTeR * (1.0 - v) / 1e6  # MPa
+    stress_theta_phi = (omega + eps * tau) * 0.5 * DpsiTeR * (1.0 - v) / 1e6  # MPa
 
-    kappa_theta[mask] *= Te_half  # Strain
-    kappa_phi[mask] *= Te_half  # Strain
-    tau[mask] *= Te_half  # Strain
+    tot_theta = eps_theta + kappa_theta * eps
+    tot_phi = eps_phi + kappa_phi * eps
+    tot_thetaphi = (omega + tau * eps) / 2.0
 
     return (
         stress_theta,
@@ -643,6 +654,9 @@ def Displacement_strains(
         kappa_theta,
         kappa_phi,
         tau,
+        tot_theta,
+        tot_phi,
+        tot_thetaphi,
     )
 
 
