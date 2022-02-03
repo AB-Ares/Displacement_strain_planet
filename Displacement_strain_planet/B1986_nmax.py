@@ -656,7 +656,8 @@ def Thin_shell_matrix(
 
             # System of equations from Banerdt (1986).
             Eqns = [
-                -G_lm1  # eq (2) G_lm
+                # eq (1) G_lm
+                -G_lm1
                 + (
                     rhobconst
                     * (
@@ -672,7 +673,8 @@ def Thin_shell_matrix(
                 * (
                     0.0 if "G_lm" in not_constraint and COM and l == 1 else 1.0
                 ),  # Force the degree-1 geoid to zero
-                -Gc_lm1  # eq(2) Gc_lm
+                # eq(2) Gc_lm
+                -Gc_lm1
                 + (
                     rhobconst
                     * (
@@ -690,16 +692,19 @@ def Thin_shell_matrix(
                 * (
                     0.0 if "Gc_lm" in not_constraint and COM and l == 1 else 1.0
                 ),  # Force the degree-1 geoid to zero
-                -q_lm1  # eq (3) q_lm
+                # eq (3) q_lm
+                -q_lm1
                 + g0 * (rhol * (H_lm1 - G_lm1) + drhol * w_lm1)
                 + gmoho * drho * (w_lm1 - dc_lm1 - Gc_lm1)
                 + gdrho * drhom_lm1 * M * mass_correc
                 + drho_q_corr1,
-                eta_B * D * Lapla * Lapla_2 ** 2 * w_lm1  # eq (4) w_lm
+                # eq (4) w_lm
+                eta_B * D * Lapla * Lapla_2 ** 2 * w_lm1
                 + Re ** 2 / alph_B * Lapla_2 * w_lm1
                 + Re4 * (Lapla_2 - 1.0 - v) * q_lm1
                 - Re4 * (beta_B * Lapla_2 - 1.0 - v) * Lapla * omega_lm1,
-                -omega_lm1  # eq (5) omega_lm
+                # eq (5) omega_lm
+                -omega_lm1
                 + v1v * rhol * g0 * Te * H_lm1 / R
                 - (
                     drhol * g0 * v1v * Te
