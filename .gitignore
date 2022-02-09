@@ -3,3 +3,4 @@ Displacement_strain_planet/__pycache__/
 dist/
 build/
 .DS_Store
+examples/.ipynb_checkpoints/Run_demo-checkpoint.ipynb
