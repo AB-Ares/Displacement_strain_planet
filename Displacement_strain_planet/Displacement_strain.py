@@ -226,6 +226,8 @@ def SH_deriv_store(
         y_lm_save = np.zeros(shape_save, dtype=dtype)
         phi_ar = np.linspace(0, 360, nlon, endpoint=False) * pi / 180.0
         y_lm = np.zeros((len(phi_ar), 2, index_size))
+        cosmphi_a = np.zeros((lmax + 1, len(phi_ar)))
+        sinmphi_a = np.zeros((lmax + 1, len(phi_ar)))
 
         t_i = -1
         for theta in np.linspace(0, 180, nlat, endpoint=False) * pi / 180.0:
@@ -246,35 +248,37 @@ def SH_deriv_store(
 
             for l in range(lmax + 1):
                 lapla = float(-l * (l + 1))
+                cosmphi_a[l] = np.cos(l * phi_ar)
+                sinmphi_a[l] = np.sin(l * phi_ar)
                 for m in range(-l, l + 1):
                     m_abs = np.abs(m)
                     index = int(l * (l + 1) / 2 + m_abs)
-                    cosmphi = np.cos(m_abs * phi_ar)
-                    sinmphi = np.sin(m_abs * phi_ar)
                     if m >= 0:
-                        msinmphi = -m * sinmphi  # First
-                        # cos(m*phi)
-                        # derivative
-                        m2cosphi = -(m ** 2) * cosmphi  # Second
-                        # cos(m*phi)
-                        # derivative
-                        Y_lm_d1_theta_a[t_i, :, 0, index] = dp_theta[index] * cosmphi
+                        # First cos(m*phi) derivative
+                        msinmphi = -m * sinmphi_a[m_abs]
+                        # Second cos(m*phi) derivative
+                        m2cosphi = -(m ** 2) * cosmphi_a[m_abs]
+                        Y_lm_d1_theta_a[t_i, :, 0, index] = (
+                            dp_theta[index] * cosmphi_a[m_abs]
+                        )
                         Y_lm_d1_phi_a[t_i, :, 0, index] = p_theta[index] * msinmphi
                         Y_lm_d2_phi_a[t_i, :, 0, index] = p_theta[index] * m2cosphi
                         Y_lm_d2_thetaphi_a[t_i, :, 0, index] = (
                             dp_theta[index] * msinmphi
                         )
-                        y_lm[:, 0, index] = p_theta[index] * cosmphi
+                        y_lm[:, 0, index] = p_theta[index] * cosmphi_a[m_abs]
                     else:
-                        mcosmphi = m_abs * cosmphi
-                        m2sinphi = -(m_abs ** 2) * sinmphi
-                        Y_lm_d1_theta_a[t_i, :, 1, index] = dp_theta[index] * sinmphi
+                        mcosmphi = m_abs * cosmphi_a[m_abs]
+                        m2sinphi = -(m_abs ** 2) * sinmphi_a[m_abs]
+                        Y_lm_d1_theta_a[t_i, :, 1, index] = (
+                            dp_theta[index] * sinmphi_a[m_abs]
+                        )
                         Y_lm_d1_phi_a[t_i, :, 1, index] = p_theta[index] * mcosmphi
                         Y_lm_d2_phi_a[t_i, :, 1, index] = p_theta[index] * m2sinphi
                         Y_lm_d2_thetaphi_a[t_i, :, 1, index] = (
                             dp_theta[index] * mcosmphi
                         )
-                        y_lm[:, 1, index] = p_theta[index] * sinmphi
+                        y_lm[:, 1, index] = p_theta[index] * sinmphi_a[m_abs]
 
                     y_lm_save[t_i, :, :, index] = y_lm[:, :, index]
 
