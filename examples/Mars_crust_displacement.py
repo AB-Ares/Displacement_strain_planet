@@ -66,7 +66,7 @@ G = pysh.constants.G.value  # Gravitational constant
 gm = pot_clm.gm  # GM given in the gravity
 # model file
 mass = gm / G  # Mass of the planet
-g0 = gm / R ** 2  # Mean gravitational
+g0 = gm / R**2  # Mean gravitational
 # attraction of the planet
 
 # Remove 100% of C20
@@ -190,9 +190,12 @@ kwargs_param_s = dict(
 ) = Displacement_strains(A_lm, w_lm, *args_param_s, **kwargs_param_s, quiet=False)
 
 # Principal strains
-(min_strain, max_strain, sum_strain, principal_angle,) = Principal_strainstress_angle(
-    -tot_theta, -tot_phi, -tot_thetaphi
-)
+(
+    min_strain,
+    max_strain,
+    sum_strain,
+    principal_angle,
+) = Principal_strainstress_angle(-tot_theta, -tot_phi, -tot_thetaphi)
 
 args_plot = dict(
     tick_interval=[45, 30],

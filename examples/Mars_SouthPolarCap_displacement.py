@@ -36,9 +36,9 @@ G = pysh.constants.G.value  # Gravitational constant
 gm = pysh.constants.Mars.gm.value  # GM given in the gravity
 # model file
 mass = gm / G  # Mass of the planet
-g0 = gm / R ** 2  # Mean gravitational
+g0 = gm / R**2  # Mean gravitational
 # attraction of the planet
-rhobar = mass * 3.0 / 4.0 / np.pi / R ** 3
+rhobar = mass * 3.0 / 4.0 / np.pi / R**3
 
 # Parameters
 c = 60e3  # Mean Crustal thickness
