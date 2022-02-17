@@ -49,6 +49,7 @@ from Displacement_strain_planet import (
 # the same problem with different inputs very fast.
 #################################################################
 
+quiet = False
 lmax = 90  # Maximum spherical harmonic degree to perform all
 # calculations
 pot_clm = pysh.datasets.Mars.GMM3(lmax=lmax)
@@ -114,6 +115,7 @@ print("Computing displacements and isostatic crustal root variations")
     drhom_lm=zeros.copy(),
     filter="Ma",
     filter_half=50,
+    quiet=quiet,
 )
 
 # Plotting
@@ -150,7 +152,7 @@ print("Computing strains")  # This may take some time if it is the first time
 lmax = 30  # Lower lmax for faster computations
 lmaxgrid = 60  # Controls the grid output resolution
 Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp, y_lm = SH_deriv_store(
-    lmax, path, save=False, lmaxgrid=lmaxgrid
+    lmax, path, quiet=quiet, save=False, lmaxgrid=lmaxgrid
 )
 
 colat_min = 0  # Minimum colatitude at which strain calculations are performed
@@ -187,7 +189,7 @@ kwargs_param_s = dict(
     tot_theta,
     tot_phi,
     tot_thetaphi,
-) = Displacement_strains(A_lm, w_lm, *args_param_s, **kwargs_param_s, quiet=False)
+) = Displacement_strains(A_lm, w_lm, *args_param_s, **kwargs_param_s, quiet=quiet)
 
 # Principal strains
 (
