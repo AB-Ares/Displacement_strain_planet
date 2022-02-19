@@ -74,7 +74,7 @@ def corr_nmax_drho(
         FA_lm_nmax, D = pysh.gravmag.CilmPlusRhoHDH(
             shape_grid, nmax, mass, rho_grid, lmax=lmax
         )
-        MS_lm_nmax *= D ** 2
+        MS_lm_nmax *= D**2
     else:
         FA_lm_nmax = MS_lm_nmax
 
@@ -84,7 +84,7 @@ def corr_nmax_drho(
             shape_grid, nmax, mass, rho_grid, lmax=lmax
         )
         MS_lm_drho_cst = MS_lm_nmax.copy()
-        MS_lm_drho_cst *= D ** 2
+        MS_lm_drho_cst *= D**2
 
         # Divide because the thin-shell code multiplies by
         # density contrast, to correct for finite-amplitude.
@@ -513,17 +513,17 @@ def Thin_shell_matrix(
             + "%.2f and %.2f (km), respectively" % (base_drho / 1e3, top_drho / 1e3)
         )
 
-    Re = R - 0.5 * Te  # Midpoint of the elastic shell.
+    Re = R - Te / 2.0  # Reference radius for displacement equations
     R_base_drho = R - base_drho
     R_top_drho = R - top_drho
     R_c = R - c
-    Re4 = Re ** 4
+    Re4 = Re**4
     drho = rhom - rhoc
     drhol = rhoc - rhol
-    eps = 12.0 * Re ** 2 / Te ** 2
+    eps = 12.0 * Re**2 / Te**2
     alph_B = 1.0 / (E * Te)
     # Avoids error printing when dividing by zero.
-    D = E * Te ** 3 / (12.0 * (1.0 - v ** 2))  # Shell's
+    D = E * Te**3 / (12.0 * (1.0 - v**2))  # Shell's
     # rigidity.
     v1v = v / (1.0 - v)
     RCR = R_c / R
@@ -532,15 +532,15 @@ def Thin_shell_matrix(
     mass_correc = (
         1.0
         / 3.0
-        * (R_base_drho ** 3 - R_top_drho ** 3)
-        / (R_top_drho ** 2 * (R_base_drho - R_top_drho))
+        * (R_base_drho**3 - R_top_drho**3)
+        / (R_top_drho**2 * (R_base_drho - R_top_drho))
     )
     mass_correc = 1.0
     # Mass correction for the mantle density anomaly to account for the
     # planet sphericity, work in progress.
 
     R_drho_mid = (R_top_drho + R_top_drho) / 2.0
-    gmoho = g0 * (1.0 + (RCR ** 3 - 1.0) * rhoc / rhobar) / RCR ** 2
+    gmoho = g0 * (1.0 + (RCR**3 - 1.0) * rhoc / rhobar) / RCR**2
     if top_drho <= c:
         gdrho = (
             g0
@@ -602,7 +602,7 @@ def Thin_shell_matrix(
             # upward continuation
             Rl3 = R / float(l + 3)
             rhobconst = 3.0 / (rhobar * float(2 * l + 1))
-            RCRl = RCR ** l
+            RCRl = RCR**l
             RCRl1 = RCR ** (l + 1)
             RCRl2 = RCR ** (l + 2)
 
@@ -639,8 +639,8 @@ def Thin_shell_matrix(
             else:
                 RbRCl = (R_c / R_base_drho) ** (l + 1)
 
-            RtRCl *= R_top_drho ** 3 / (R_c * R ** 2)
-            RbRCl *= R_base_drho ** 3 / (R_c * R ** 2)
+            RtRCl *= R_top_drho**3 / (R_c * R**2)
+            RbRCl *= R_base_drho**3 / (R_c * R**2)
 
             RtRl3 = (R_top_drho / R) ** (l + 3)
             RbRl3 = (R_base_drho / R) ** (l + 3)
@@ -656,7 +656,8 @@ def Thin_shell_matrix(
 
             # System of equations from Banerdt (1986).
             Eqns = [
-                -G_lm1  # eq (2) G_lm
+                # eq (1) G_lm
+                -G_lm1
                 + (
                     rhobconst
                     * (
@@ -672,12 +673,13 @@ def Thin_shell_matrix(
                 * (
                     0.0 if "G_lm" in not_constraint and COM and l == 1 else 1.0
                 ),  # Force the degree-1 geoid to zero
-                -Gc_lm1  # eq(2) Gc_lm
+                # eq(2) Gc_lm
+                -Gc_lm1
                 + (
                     rhobconst
                     * (
                         (rhol * H_lm1 + drhol * w_lm1) * RCRl1
-                        + drho * (w_lm1 - dc_lm1) * (RCR ** 3) / DCfilter_mohoDc
+                        + drho * (w_lm1 - dc_lm1) * (RCR**3) / DCfilter_mohoDc
                         + drhom_lm1 * Rl3 * (RtRCl - RbRCl) / DCfilter_drhomc
                     )
                     + (
@@ -685,21 +687,24 @@ def Thin_shell_matrix(
                         + ((drhol * w_corr1) if not w_corr_test else w_corr1)
                     )
                     * RCRl1
-                    + drho * wdc_corr1 * RCR ** 3 / DCfilter_mohoDc
+                    + drho * wdc_corr1 * RCR**3 / DCfilter_mohoDc
                 )
                 * (
                     0.0 if "Gc_lm" in not_constraint and COM and l == 1 else 1.0
                 ),  # Force the degree-1 geoid to zero
-                -q_lm1  # eq (3) q_lm
+                # eq (3) q_lm
+                -q_lm1
                 + g0 * (rhol * (H_lm1 - G_lm1) + drhol * w_lm1)
                 + gmoho * drho * (w_lm1 - dc_lm1 - Gc_lm1)
                 + gdrho * drhom_lm1 * M * mass_correc
                 + drho_q_corr1,
-                eta_B * D * Lapla * Lapla_2 ** 2 * w_lm1  # eq (4) w_lm
-                + Re ** 2 / alph_B * Lapla_2 * w_lm1
+                # eq (4) w_lm
+                eta_B * D * Lapla * Lapla_2**2 * w_lm1
+                + Re**2 / alph_B * Lapla_2 * w_lm1
                 + Re4 * (Lapla_2 - 1.0 - v) * q_lm1
                 - Re4 * (beta_B * Lapla_2 - 1.0 - v) * Lapla * omega_lm1,
-                -omega_lm1  # eq (5) omega_lm
+                # eq (5) omega_lm
+                -omega_lm1
                 + v1v * rhol * g0 * Te * H_lm1 / R
                 - (
                     drhol * g0 * v1v * Te
@@ -881,12 +886,12 @@ def Thin_shell_matrix(
         # Tangential displacement
         A_lm[:, l, : l + 1] = (
             beta_B
-            * (1.0 / (1.0 - v ** 2))
+            * (1.0 / (1.0 - v**2))
             * (Lapla + 1.0 + v)
             * Lapla_2
             * w_lm[:, l, : l + 1]
             + w_lm[:, l, : l + 1]
-            + Re ** 2 * alph_B * q_lm[:, l, : l + 1]
+            + Re**2 * alph_B * q_lm[:, l, : l + 1]
             - Re
             * alph_B
             / (1.0 + eps)
@@ -1171,7 +1176,7 @@ def Thin_shell_matrix_nmax(
     iterate : bool, optional, default = True
         if False, solve the system without any corrections.
     """
-    rhobar = mass * 3.0 / 4.0 / np.pi / R ** 3
+    rhobar = mass * 3.0 / 4.0 / np.pi / R**3
     R_c = R - c
     args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax, E, v)
     args_param_lm = dict(

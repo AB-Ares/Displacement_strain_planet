@@ -66,7 +66,7 @@ def SH_deriv(theta, phi, lmax):
         dp_theta *= -sint  # Derivative with respect to
         # theta.
         costsint = cost / sint
-        sintt = 1.0 / sint ** 2
+        sintt = 1.0 / sint**2
     for l in range(lmax + 1):
         lapla = float(-l * (l + 1))
         for m in range(-l, l + 1):
@@ -77,7 +77,7 @@ def SH_deriv(theta, phi, lmax):
             if m >= 0:
                 msinmphi = -m * sinmphi  # First cos(m*phi)
                 # derivative.
-                m2cosphi = -(m ** 2) * cosmphi  # Second cos(m*phi)
+                m2cosphi = -(m**2) * cosmphi  # Second cos(m*phi)
                 # derivative.
                 Y_lm_d1_theta_a[0, l, m] = dp_theta[index] * cosmphi
                 Y_lm_d1_phi_a[0, l, m] = p_theta[index] * msinmphi
@@ -86,7 +86,7 @@ def SH_deriv(theta, phi, lmax):
                 y_lm[0, l, m] = p_theta[index] * cosmphi
             else:
                 mcosmphi = m_abs * cosmphi
-                m2sinphi = -(m_abs ** 2) * sinmphi
+                m2sinphi = -(m_abs**2) * sinmphi
                 Y_lm_d1_theta_a[1, l, m_abs] = dp_theta[index] * sinmphi
                 Y_lm_d1_phi_a[1, l, m_abs] = p_theta[index] * mcosmphi
                 Y_lm_d2_phi_a[1, l, m_abs] = p_theta[index] * m2sinphi
@@ -224,71 +224,104 @@ def SH_deriv_store(
         Y_lm_d2_thetaphi_a = np.zeros(shape_save, dtype=dtype)
         Y_lm_d2_theta_a = np.zeros(shape_save, dtype=dtype)
         y_lm_save = np.zeros(shape_save, dtype=dtype)
-        phi_ar = np.linspace(0, 360, nlon, endpoint=False) * pi / 180.0
-        y_lm = np.zeros((len(phi_ar), 2, index_size))
+        phi_ar = np.linspace(0, 360, nlon, endpoint=False, dtype=dtype) * pi / 180.0
+        y_lm = np.zeros((len(phi_ar), 2, index_size), dtype=dtype)
+        cosmphi_a = np.zeros((lmax + 1, len(phi_ar)), dtype=dtype)
+        sinmphi_a = np.zeros((lmax + 1, len(phi_ar)), dtype=dtype)
+        p_theta_a = np.zeros((index_size, nlat // 2 + 1), dtype=dtype)
+        dp_theta_a = np.zeros((index_size, nlat // 2 + 1), dtype=dtype)
+        theta_range = (
+            np.linspace(0, 180, nlat, endpoint=False, dtype=dtype) * pi / 180.0
+        )
+
+        sint = np.sin(theta_range)
+        cost = np.cos(theta_range)
+        sintt = np.divide(1.0, sint**2, out=np.zeros_like(sint), where=sint != 0)
+        costsint = np.divide(cost, sint, out=np.zeros_like(sint), where=sint != 0)
 
         t_i = -1
-        for theta in np.linspace(0, 180, nlat, endpoint=False) * pi / 180.0:
+        sign_conversion = False
+        for theta in theta_range:
             if quiet is False:
                 print(" colatitude %s of 180" % (int(theta * 180 / pi)), end="\r")
             t_i += 1
-            sint = np.sin(theta)
-            cost = np.cos(theta)
+            idx_sign = nlat // 2 - t_i if nlat % 2 != 0 else nlat // 2 - t_i - 1
             if theta == 0:
                 dp_theta = np.zeros((index_size))
                 p_theta = np.zeros((index_size))
             else:
-                p_theta, dp_theta = pysh.legendre.PlmBar_d1(lmax, cost)
-                dp_theta *= -sint  # Derivative with
-                # respect to theta.
-                costsint = cost / sint
-                sintt = 1.0 / sint ** 2
+                if cost[t_i] >= 0:
+                    p_theta_a[:, t_i], dp_theta_a[:, t_i] = pysh.legendre.PlmBar_d1(
+                        lmax, cost[t_i]
+                    )
+                    if not sign_conversion:
+                        # Given the symmetry of PlmBar_d1 & 'cost', we here get the sign conversions for positive and negative 'cost'.
+                        tmp1, tmp2 = pysh.legendre.PlmBar_d1(lmax, -cost[t_i])
+                        # Degree-0 is always zero
+                        signs_p_theta = np.insert(p_theta_a[1:, t_i] / tmp1[1:], 0, 1)
+                        signs_dp_theta = np.insert(dp_theta_a[1:, t_i] / tmp2[1:], 0, 1)
+                        sign_conversion = True
+                    p_theta = p_theta_a[:, t_i]
+                    # Derivative with respect to theta.
+                    dp_theta = dp_theta_a[:, t_i] * -sint[t_i]
+                else:
+                    # Sign conversion when cost is negative
+                    p_theta = p_theta_a[:, idx_sign] * signs_p_theta
+                    dp_theta = dp_theta_a[:, idx_sign] * signs_dp_theta * -sint[t_i]
 
             for l in range(lmax + 1):
                 lapla = float(-l * (l + 1))
-                for m in range(-l, l + 1):
-                    m_abs = np.abs(m)
-                    index = int(l * (l + 1) / 2 + m_abs)
-                    cosmphi = np.cos(m_abs * phi_ar)
-                    sinmphi = np.sin(m_abs * phi_ar)
-                    if m >= 0:
-                        msinmphi = -m * sinmphi  # First
-                        # cos(m*phi)
-                        # derivative
-                        m2cosphi = -(m ** 2) * cosmphi  # Second
-                        # cos(m*phi)
-                        # derivative
-                        Y_lm_d1_theta_a[t_i, :, 0, index] = dp_theta[index] * cosmphi
-                        Y_lm_d1_phi_a[t_i, :, 0, index] = p_theta[index] * msinmphi
-                        Y_lm_d2_phi_a[t_i, :, 0, index] = p_theta[index] * m2cosphi
-                        Y_lm_d2_thetaphi_a[t_i, :, 0, index] = (
-                            dp_theta[index] * msinmphi
-                        )
-                        y_lm[:, 0, index] = p_theta[index] * cosmphi
-                    else:
-                        mcosmphi = m_abs * cosmphi
-                        m2sinphi = -(m_abs ** 2) * sinmphi
-                        Y_lm_d1_theta_a[t_i, :, 1, index] = dp_theta[index] * sinmphi
-                        Y_lm_d1_phi_a[t_i, :, 1, index] = p_theta[index] * mcosmphi
-                        Y_lm_d2_phi_a[t_i, :, 1, index] = p_theta[index] * m2sinphi
-                        Y_lm_d2_thetaphi_a[t_i, :, 1, index] = (
-                            dp_theta[index] * mcosmphi
-                        )
-                        y_lm[:, 1, index] = p_theta[index] * sinmphi
+                if theta == 0:
+                    cosmphi_a[l] = np.cos(l * phi_ar)
+                    sinmphi_a[l] = np.sin(l * phi_ar)
 
-                    y_lm_save[t_i, :, :, index] = y_lm[:, :, index]
+                m = np.arange(-l, l + 1, dtype=int)
+                m_abs = np.abs(m)
+                index = np.array(l * (l + 1) / 2 + m_abs, dtype=int)
 
-                    if theta == 0:
-                        Y_lm_d2_theta_a[t_i, :, :, index] = 0.0
-                        # Not defined.
-                    else:
-                        # Make use of the Laplacian identity to
-                        # estimate last derivative.
-                        Y_lm_d2_theta_a[t_i, :, :, index] = (
-                            lapla * y_lm[:, :, index]
-                            - Y_lm_d1_theta_a[t_i, :, :, index] * costsint
-                            - sintt * Y_lm_d2_phi_a[t_i, :, :, index]
-                        )
+                ## Positive orders
+                m_i = m >= 0
+                m_abs_i = m_abs[m_i]
+                index_i = index[m_i]
+                dp_t_ind = np.array([dp_theta[index_i]]).T
+                p_t_ind = np.array([p_theta[index_i]]).T
+
+                # First cos(m*phi) derivative
+                msinmphi = sinmphi_a[m_abs_i, :] * np.array([-m[m_i]]).T
+                # Second cos(m*phi) derivative
+                m2cosphi = cosmphi_a[m_abs_i, :] * np.array([-(m[m_i] ** 2)]).T
+                Y_lm_d1_theta_a[t_i, :, 0, index_i] = cosmphi_a[m_abs_i, :] * dp_t_ind
+                Y_lm_d1_phi_a[t_i, :, 0, index_i] = p_t_ind * msinmphi
+                Y_lm_d2_phi_a[t_i, :, 0, index_i] = p_t_ind * m2cosphi
+                Y_lm_d2_thetaphi_a[t_i, :, 0, index_i] = msinmphi * dp_t_ind
+                y_lm_save[t_i, :, 0, index_i] = cosmphi_a[m_abs_i] * p_t_ind
+
+                ## Negative orders
+                m_abs_i = m_abs[~m_i]
+                index_i = index[~m_i]
+                dp_t_ind = np.array([dp_theta[index_i]]).T
+                p_t_ind = np.array([p_theta[index_i]]).T
+
+                mcosmphi = cosmphi_a[m_abs_i] * np.array([m_abs_i]).T
+                m2sinphi = sinmphi_a[m_abs_i] * np.array([-(m_abs_i**2)]).T
+                Y_lm_d1_theta_a[t_i, :, 1, index_i] = sinmphi_a[m_abs_i] * dp_t_ind
+                Y_lm_d1_phi_a[t_i, :, 1, index_i] = mcosmphi * p_t_ind
+                Y_lm_d2_phi_a[t_i, :, 1, index_i] = m2sinphi * p_t_ind
+                Y_lm_d2_thetaphi_a[t_i, :, 1, index_i] = mcosmphi * dp_t_ind
+                y_lm_save[t_i, :, 1, index_i] = sinmphi_a[m_abs_i] * p_t_ind
+
+                if theta == 0:
+                    Y_lm_d2_theta_a[t_i, :, :, index] = 0.0
+                    # Not defined.
+                else:
+                    # Make use of the Laplacian identity to
+                    # estimate the last derivative.
+                    Y_lm_d2_theta_a[t_i, :, :, index] = (
+                        lapla * y_lm_save[t_i, :, :, index]
+                        - Y_lm_d1_theta_a[t_i, :, :, index] * costsint[t_i]
+                        - sintt[t_i] * Y_lm_d2_phi_a[t_i, :, :, index]
+                    )
+
         if save:
             if quiet is False:
                 print("Saving SH derivatives at: %s" % (path))
@@ -384,7 +417,7 @@ def Displacement_strains(
 ):
     """
     Computes the Banerdt (1986) equations to determine strains
-    from displacements with a correction to the theta_phi term.
+    and stresses from the displacements.
 
     Returns
     -------
@@ -405,7 +438,7 @@ def Displacement_strains(
         This is equation A17 from Banerdt (1986).
     omega : array, size(2,lmax+1,lmax+1)
         Array with the shearing deformation.
-        This is equation A18 from Banerdt (1986). Corrected for the prefactor 2.
+        This is equation A18 from Banerdt (1986).
     kappa_theta : array, size(2,lmax+1,lmax+1)
         Array with the bending deformation with respect to colatitude.
         This is equation A19 from Banerdt (1986).
@@ -414,7 +447,14 @@ def Displacement_strains(
         This is equation A20 from Banerdt (1986).
     tau : array, size(2,lmax+1,lmax+1)
         Array with the twisting deformation.
-        This is equation A21 from Banerdt (1986). Corrected for the prefactor 2.
+        This is equation A21 from Banerdt (1986).
+    tot_theta : array, size(2,lmax+1,lmax+1)
+        Array with the total deformation with respect to colatitude.
+    tot_phi : array, size(2,lmax+1,lmax+1)
+        Array with the total deformation with respect to longitude.
+    tot_thetaphi : array, size(2,lmax+1,lmax+1)
+        Array with the total deformation with respect to colatitude
+        and longitude.
 
     Parameters
     ----------
@@ -498,7 +538,7 @@ def Displacement_strains(
         nlon = 2 * nlat
     else:
         raise ValueError(
-            "Grid format non recognized allowed are 'DH' and 'GLQ', input was %s"
+            "Grid format non recognized allowed inputs are 'DH' and 'GLQ', input was %s"
             % (grid)
         )
 
@@ -520,13 +560,13 @@ def Displacement_strains(
         ) = SH_deriv_store(lmax, path, lmaxgrid=lmaxgrid, grid=grid)
 
     # Some constants for the elastic model.
-    Re = R - (0.5 * Te)
-    psi = 12.0 * Re ** 2 / Te ** 2
-    D = (E * (Te * Te * Te)) / ((12.0 * (1.0 - v ** 2)))
-    DpsiTeR = (D * psi) / (Te * R ** 2)
-    R_m1 = 1.0 / R
-    n_Rm2 = -(R_m1 ** 2)
     Te_half = Te / 2.0
+    eps = Te_half / (1 + Te_half / R)
+    psi = 12.0 * R**2 / Te**2
+    D = (E * (Te * Te * Te)) / ((12.0 * (1.0 - v**2)))
+    DpsiTeR = (D * psi) / (Te * R**2)
+    R_m1 = 1.0 / R
+    n_Rm2 = -(R_m1**2)
 
     # Remove reference radius
     A_lm[0, 0, 0] = 0.0
@@ -557,7 +597,7 @@ def Displacement_strains(
         1.0, sin_g_lat_m, out=np.zeros_like(sin_g_lat_m), where=sin_g_lat_m != 0
     )
     csc2 = np.divide(
-        1.0, sin_g_lat_m ** 2, out=np.zeros_like(sin_g_lat_m), where=sin_g_lat_m != 0
+        1.0, sin_g_lat_m**2, out=np.zeros_like(sin_g_lat_m), where=sin_g_lat_m != 0
     )
     cot = np.divide(
         1.0,
@@ -595,9 +635,13 @@ def Displacement_strains(
         )
         + w_deflec_ylm
     )
-    omega[mask] = R_m1 * (
-        np.einsum(ein_sum_mul, Y_lm_d2_tp, A_lm, csc, optimize=path_mul)
-        - np.einsum(ein_sum_mul, Y_lm_d1_p, A_lm, cotcsc, optimize=path_mul)
+    omega[mask] = (
+        2.0
+        * R_m1
+        * (
+            np.einsum(ein_sum_mul, Y_lm_d2_tp, A_lm, csc, optimize=path_mul)
+            - np.einsum(ein_sum_mul, Y_lm_d1_p, A_lm, cotcsc, optimize=path_mul)
+        )
     )
 
     kappa_theta[mask] = (
@@ -612,26 +656,26 @@ def Displacement_strains(
         )
         + (-R_m1) * w_deflec_ylm
     )
-    tau[mask] = n_Rm2 * (
-        np.einsum(ein_sum_mul, Y_lm_d2_tp, w_lm, csc, optimize=path_mul)
-        - np.einsum(ein_sum_mul, Y_lm_d1_p, w_lm, cotcsc, optimize=path_mul)
+    tau[mask] = (
+        2.0
+        * n_Rm2
+        * (
+            np.einsum(ein_sum_mul, Y_lm_d2_tp, w_lm, csc, optimize=path_mul)
+            - np.einsum(ein_sum_mul, Y_lm_d1_p, w_lm, cotcsc, optimize=path_mul)
+        )
     )
 
     stress_theta = (
-        (eps_theta + v * eps_phi + Te_half * (kappa_theta + v * kappa_phi))
-        * DpsiTeR
-        / 1e6
+        (eps_theta + v * eps_phi + eps * (kappa_theta + v * kappa_phi)) * DpsiTeR / 1e6
     )  # MPa
     stress_phi = (
-        (eps_phi + v * eps_theta + Te_half * (kappa_phi + v * kappa_theta))
-        * DpsiTeR
-        / 1e6
+        (eps_phi + v * eps_theta + eps * (kappa_phi + v * kappa_theta)) * DpsiTeR / 1e6
     )  # MPa
-    stress_theta_phi = (omega + Te_half * tau) * 0.5 * DpsiTeR * (1.0 - v) / 1e6  # MPa
+    stress_theta_phi = (omega + eps * tau) * 0.5 * DpsiTeR * (1.0 - v) / 1e6  # MPa
 
-    kappa_theta[mask] *= Te_half  # Strain
-    kappa_phi[mask] *= Te_half  # Strain
-    tau[mask] *= Te_half  # Strain
+    tot_theta = eps_theta + kappa_theta * eps
+    tot_phi = eps_phi + kappa_phi * eps
+    tot_thetaphi = (omega + tau * eps) / 2.0
 
     return (
         stress_theta,
@@ -643,6 +687,9 @@ def Displacement_strains(
         kappa_theta,
         kappa_phi,
         tau,
+        tot_theta,
+        tot_phi,
+        tot_thetaphi,
     )
 
 
@@ -675,10 +722,10 @@ def Principal_strainstress_angle(s_theta, s_phi, s_theta_phi):
         Array of the colatitude and longitude component of the stress or strain field.
     """
     min_strain = 0.5 * (
-        s_theta + s_phi - np.sqrt((s_theta - s_phi) ** 2 + 4 * s_theta_phi ** 2)
+        s_theta + s_phi - np.sqrt((s_theta - s_phi) ** 2 + 4 * s_theta_phi**2)
     )
     max_strain = 0.5 * (
-        s_theta + s_phi + np.sqrt((s_theta - s_phi) ** 2 + 4 * s_theta_phi ** 2)
+        s_theta + s_phi + np.sqrt((s_theta - s_phi) ** 2 + 4 * s_theta_phi**2)
     )
     sum_strain = min_strain + max_strain
 
@@ -727,38 +774,41 @@ def Plt_tecto_Mars(
     legend_loc : string, optional, default = "upper left"
         Determine the legend position.
     """
-    comp_fault_dat = np.loadtxt("%s/Knapmeyer_2006_compdata.txt" % (path))
-    ext_fault_dat = np.loadtxt("%s/Knapmeyer_2006_extedata.txt" % (path))
-    idx_comp = 5143
     idx_ext = 9676
-    ind_comp_fault = np.isin(comp_fault_dat, np.arange(1, idx_comp + 1, dtype=int))
-    ind_comp_fault_2 = np.where(ind_comp_fault)[0]
-    ind_ext_fault = np.isin(ext_fault_dat, np.arange(1, idx_ext + 1, dtype=int))
-    ind_ext_fault_2 = np.where(ind_ext_fault)[0]
+    idx_comp = 5143
+    labels = ["Compressional tectonic features", "Extensional tectonic features"]
+    max_idx = [idx_comp, idx_ext]
+    faults_cols = [compression_col, extension_col]
+
+    if compression:
+        comp_fault_dat = np.loadtxt("%s/Knapmeyer_2006_compdata.txt" % (path))
+        ind_comp_fault = np.isin(comp_fault_dat, np.arange(1, idx_comp + 1, dtype=int))
+        ind_comp_fault_2 = np.where(ind_comp_fault)[0]
+    if extension:
+        ext_fault_dat = np.loadtxt("%s/Knapmeyer_2006_extedata.txt" % (path))
+        ind_ext_fault = np.isin(ext_fault_dat, np.arange(1, idx_ext + 1, dtype=int))
+        ind_ext_fault_2 = np.where(ind_ext_fault)[0]
 
     if ax is None:
         import matplotlib.pyplot as plt
 
         fig, ax = plt.subplots(1, 1)
 
-    faults_inds = [ind_comp_fault_2, ind_ext_fault_2]
-    faults_dats = [comp_fault_dat, ext_fault_dat]
-    faults_cols = [compression_col, extension_col]
-    labels = ["Compressional tectonic features", "Extensional tectonic features"]
-    max_idx = [idx_comp, idx_ext]
-
     if compression and not extension:
-        faults_inds = [faults_inds[0]]
-        faults_dats = [faults_dats[0]]
+        faults_inds = [ind_comp_fault_2]
+        faults_dats = [comp_fault_dat]
         faults_cols = [faults_cols[0]]
         labels = [labels[0]]
         max_idx = [max_idx[0]]
     elif extension and not compression:
-        faults_inds = [faults_inds[1]]
-        faults_dats = [faults_dats[1]]
+        faults_inds = [ind_ext_fault_2]
+        faults_dats = [ext_fault_dat]
         faults_cols = [faults_cols[1]]
         labels = [labels[1]]
         max_idx = [max_idx[1]]
+    else:
+        faults_inds = [ind_comp_fault_2, ind_ext_fault_2]
+        faults_dats = [comp_fault_dat, ext_fault_dat]
 
     for faults, dat, col, label, mx_ix in zip(
         faults_inds, faults_dats, faults_cols, labels, max_idx

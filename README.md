@@ -38,7 +38,7 @@ Strain calculations reproduce results published in the literature (e.g., [Banerd
 
 `SH_deriv_store` Compute and store first and second-order spherical harmonic derivatives with respect to colatitude and longitude.
 
-`Displacement_strains` Calculate the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) equations to determine strains from displacements with a correction to the shearing and twisting deformations.
+`Displacement_strains` Calculate the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) equations to determine strains and stresses from displacements with some corrections following [Beuthe (2008)](https://onlinelibrary.wiley.com/doi/full/10.1111/j.1365-246X.2007.03671.x).
 
 `Principal_strainstress_angle` Calculate principal strains, stresses and their principal angles.
 
@@ -73,8 +73,17 @@ Alternatively, you can install Displacement-strain-planet via pip
 ```
 
 ## Author
-[Adrien Broquet](https://www.oca.eu/fr/adrien-broquet) (adrien.broquet@oca.eu)
+[Adrien Broquet](https://www.lpl.arizona.edu/postdocs/adrien-broquet) (adrienbroquet@email.arizona.edu)
 
 ## Cite
 You can cite the latest release of the package as:
-Adrien Broquet. (2021). AB-Ares/Displacement_strain_planet: 0.3.1 (Version 0.3.1). Zenodo. http://doi.org/10.5281/zenodo.4916799
+Adrien Broquet. (2022). Displacement_strain_planet: 0.3.2 (Version 0.3.2). Zenodo. http://doi.org/10.5281/zenodo.4916799
+
+```bash
+@misc{Broquet2021,
+    author = {Broquet, A.},
+    title = {{Displacement{\_}strain{\_}planet}: Version 0.3.2},
+    url = {https://github.com/AB-Ares/Displacement_strain_planet},
+    doi = {10.5281/zenodo.5498079},
+    year = {2022}}
+```
