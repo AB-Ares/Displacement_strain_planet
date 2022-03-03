@@ -149,8 +149,8 @@ pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
 
 print("Computing strains")  # This may take some time if it is the first time
 # Strains
-lmax = 30  # Lower lmax for faster computations
-lmaxgrid = 60  # Controls the grid output resolution
+lmax = 50  # Lower lmax for faster computations
+lmaxgrid = 150  # Controls the grid output resolution
 Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp, y_lm = SH_deriv_store(
     lmax, path, quiet=quiet, save=False, lmaxgrid=lmaxgrid
 )
@@ -240,7 +240,7 @@ pysh.SHGrid.from_array(principal_angle).plot(
 )
 
 # Plot strain direction
-skip_i = int(lmaxgrid / 10)
+skip_i = int(lmaxgrid / 20)
 skip = (slice(None, None, skip_i), slice(None, None, skip_i))
 grid_long, grid_lat = np.meshgrid(
     np.linspace(0, 360, np.shape(principal_angle)[1]),
@@ -258,6 +258,5 @@ ax4.quiver(
 )
 
 # Add extensional tectonic features from Knapmeyer et al. (2006)
-Plt_tecto_Mars(path, ax=ax3, compression=False, extension=True)
-Plt_tecto_Mars(path, ax=ax4, compression=False, extension=True)
+Plt_tecto_Mars(path, ax=[ax3, ax4], compression=False, extension=True)
 plt.show()

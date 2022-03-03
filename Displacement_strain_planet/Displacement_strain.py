@@ -761,8 +761,8 @@ def Plt_tecto_Mars(
         If True, plot compressive tectonic features.
     extension : bool, optional, default = True
         If True, plot extensive tectonic features.
-    ax : object, optional, default = None
-        Matplotlib axis.
+    ax : array of object, optional, default = None
+        Matplotlib axes.
     compression_col : string, optional, default = "k"
         Color of compressive tectonic features.
     extension_col : string, optional, default = "purple"
@@ -813,7 +813,8 @@ def Plt_tecto_Mars(
     for faults, dat, col, label, mx_ix in zip(
         faults_inds, faults_dats, faults_cols, labels, max_idx
     ):
-        ax.plot(np.nan, np.nan, color=col, lw=lw, label=label)
+        for axes in [ax] if np.size(ax) == 1 else ax:
+            axes.plot(np.nan, np.nan, color=col, lw=lw, label=label)
         for indx in range(1, len(faults) + 1):
             if indx == mx_ix:  # Add last point
                 fault_dat_lon = dat[faults[indx - 1] + 1 :][::2]
@@ -831,9 +832,12 @@ def Plt_tecto_Mars(
                 fault_lon_split = np.split(fault_dat_lon, split)
                 fault_dat_lat = np.split(fault_dat_lat, split)
                 for fault_lon, fault_lat in zip(fault_lon_split, fault_dat_lat):
-                    ax.plot(fault_lon % 360, fault_lat, color=col, lw=lw)
+                    for axes in [ax] if np.size(ax) == 1 else ax:
+                        axes.plot(fault_lon % 360, fault_lat, color=col, lw=lw)
             else:
-                ax.plot(fault_dat_lon % 360, fault_dat_lat, color=col, lw=lw)
+                for axes in [ax] if np.size(ax) == 1 else ax:
+                    axes.plot(fault_dat_lon % 360, fault_dat_lat, color=col, lw=lw)
 
     if legend_show:
-        ax.legend(loc=legend_loc)
+        for axes in [ax] if np.size(ax) == 1 else ax:
+            axes.legend(loc=legend_loc)

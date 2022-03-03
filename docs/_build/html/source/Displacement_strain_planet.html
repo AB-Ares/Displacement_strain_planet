@@ -30,7 +30,7 @@
             <img src="../_static/bender.jpeg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                0.3.2
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -238,14 +238,14 @@ of Legendre polynomials with respect to colatitude and longitude.</p></li>
 (1998).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Value of the filter at degree l</p>
+<dd class="field-odd"><p>Value of the filter at degrees l</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>float</p>
 </dd>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>l</strong> (<em>int</em>) – The spherical harmonic degree.</p></li>
+<li><p><strong>l</strong> (<em>array</em>) – Array of spherical harmonic degrees.</p></li>
 <li><p><strong>half</strong> (<em>int</em>) – The spherical harmonic degree where the filter is equal to 0.5.</p></li>
 <li><p><strong>R_ref</strong> (<em>float</em>) – The reference radius of the gravitational field.</p></li>
 <li><p><strong>D_relief</strong> (<em>float</em>) – The radius of the surface to downward continue to.</p></li>
@@ -267,7 +267,7 @@ on Mars.</p>
 <li><p><strong>path</strong> (<em>string</em>) – path for the location of the Knameyer et al (2006) dataset.</p></li>
 <li><p><strong>compression</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>default = False</em>) – If True, plot compressive tectonic features.</p></li>
 <li><p><strong>extension</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>default = True</em>) – If True, plot extensive tectonic features.</p></li>
-<li><p><strong>ax</strong> (<em>object</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Matplotlib axis.</p></li>
+<li><p><strong>ax</strong> (<em>array of object</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Matplotlib axes.</p></li>
 <li><p><strong>compression_col</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default = &quot;k&quot;</em>) – Color of compressive tectonic features.</p></li>
 <li><p><strong>extension_col</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default = &quot;purple&quot;</em>) – Color of extensive tectonic features.</p></li>
 <li><p><strong>lw</strong> (<em>int</em><em>, </em><em>optional</em><em>, </em><em>default = 1</em>) – Linewidth for the tectonic features</p></li>

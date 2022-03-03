@@ -592,59 +592,65 @@ def Thin_shell_matrix(
             )
         add_equation = parse_expr(add_equation)
 
+    degrees = np.arange(lmax + 1, dtype=float)
+    Lapla = -degrees * (degrees + 1)  # Laplacian identity.
+
+    if first_inv:
+        # Define some arrays
+        # Filters
+
+        DCfilter_mohoD = np.ones_like(degrees)
+        DCfilter_mohoDc, DCfilter_drhomc, DCfilter_drhom = (
+            DCfilter_mohoD,
+            DCfilter_mohoD,
+            DCfilter_mohoD,
+        )
+        if filter_in is not None:
+            if any_dc:
+                DCfilter_mohoD, DCfilter_mohoDc = filter_in, filter_in
+            else:
+                DCfilter_drhom, DCfilter_drhomc = filter_in, filter_in
+        elif filter is not None:
+            if any_dc:
+                DCfilter_mohoD = DownContFilter(
+                    degrees, filter_half, R, R_c, type=filter
+                )
+                DCfilter_mohoDc = DownContFilter(
+                    degrees, filter_half, R_c, R_c, type=filter
+                )
+            else:
+                DCfilter_drhom = DownContFilter(
+                    degrees, filter_half, R, R_base_drho, type=filter
+                )
+                DCfilter_drhomc = DownContFilter(
+                    degrees, filter_half, R_c, R_base_drho, type=filter
+                )
+
+        rhobconst = 3.0 / (rhobar * (2.0 * degrees + 1.0))
+
+        # Continuation arrays
+        Rl3 = R / (degrees + 3.0)
+        RCRl1 = RCR ** (degrees + 1.0)
+        RCRl2 = RCR ** (degrees + 2.0)
+
+        if R_top_drho <= R_c:
+            RtRCl = (R_top_drho / R_c) ** degrees
+        else:
+            RtRCl = (R_c / R_top_drho) ** (degrees + 1.0)
+        if R_base_drho <= R_c:
+            RbRCl = (R_base_drho / R_c) ** degrees
+        else:
+            RbRCl = (R_c / R_base_drho) ** (degrees + 1.0)
+
+        RtRCl *= R_top_drho**3 / (R_c * R**2)
+        RbRCl *= R_base_drho**3 / (R_c * R**2)
+        RtbRl3 = (R_top_drho / R) ** (degrees + 3.0) - (R_base_drho / R) ** (
+            degrees + 3.0
+        )
+
     # Solve matrix over all degrees.
     for l in range(1, lmax + 1):  # Ignore degree 0 from calculations
-        Lapla = float(-l * (l + 1))  # Laplacian identity.
-        Lapla_2 = Lapla + 2.0
-
         if first_inv:
-            # Degree & radius -dependent constants for potential
-            # upward continuation
-            Rl3 = R / float(l + 3)
-            rhobconst = 3.0 / (rhobar * float(2 * l + 1))
-            RCRl = RCR**l
-            RCRl1 = RCR ** (l + 1)
-            RCRl2 = RCR ** (l + 2)
-
-            DCfilter_mohoD = 1.0
-            DCfilter_mohoDc = 1.0
-            DCfilter_drhom = 1.0
-            DCfilter_drhomc = 1.0
-            if filter_in is not None:
-                if any_dc:
-                    DCfilter_mohoD = filter_in[l]
-                    DCfilter_mohoDc = filter_in[l]
-                else:
-                    DCfilter_drhom = filter_in[l]
-                    DCfilter_drhomc = filter_in[l]
-            elif filter is not None:
-                if any_dc:
-                    DCfilter_mohoD = DownContFilter(l, filter_half, R, R_c, type=filter)
-                    DCfilter_mohoDc = DownContFilter(
-                        l, filter_half, R_c, R_c, type=filter
-                    )
-                else:
-                    DCfilter_drhom = DownContFilter(
-                        l, filter_half, R, R_base_drho, type=filter
-                    )
-                    DCfilter_drhomc = DownContFilter(
-                        l, filter_half, R_c, R_base_drho, type=filter
-                    )
-            if R_top_drho <= R_c:
-                RtRCl = (R_top_drho / R_c) ** l
-            else:
-                RtRCl = (R_c / R_top_drho) ** (l + 1)
-            if R_base_drho <= R_c:
-                RbRCl = (R_base_drho / R_c) ** l
-            else:
-                RbRCl = (R_c / R_base_drho) ** (l + 1)
-
-            RtRCl *= R_top_drho**3 / (R_c * R**2)
-            RbRCl *= R_base_drho**3 / (R_c * R**2)
-
-            RtRl3 = (R_top_drho / R) ** (l + 3)
-            RbRl3 = (R_base_drho / R) ** (l + 3)
-
             # Symbolic definition.
             w_lm1, Gc_lm1, q_lm1, omega_lm1, dc_lm1, drhom_lm1, G_lm1, H_lm1 = symbols(
                 " w_lm1 Gc_lm1 q_lm1 omega_lm1 dc_lm1 drhom_lm1 G_lm1 H_lm1 "
@@ -659,16 +665,16 @@ def Thin_shell_matrix(
                 # eq (1) G_lm
                 -G_lm1
                 + (
-                    rhobconst
+                    rhobconst[l]
                     * (
                         rhol * H_lm1
                         + drhol * w_lm1
-                        + drho * (w_lm1 - dc_lm1) * RCRl2 / DCfilter_mohoD
-                        + drhom_lm1 * Rl3 * (RtRl3 - RbRl3) / DCfilter_drhom
+                        + drho * (w_lm1 - dc_lm1) * RCRl2[l] / DCfilter_mohoD[l]
+                        + drhom_lm1 * Rl3[l] * (RtbRl3[l]) / DCfilter_drhom[l]
                     )
                     + rhol * H_corr1
                     + ((drhol * w_corr1) if not w_corr_test else w_corr1)
-                    + drho * wdc_corr1 * RCRl2 / DCfilter_mohoD
+                    + drho * wdc_corr1 * RCRl2[l] / DCfilter_mohoD[l]
                 )
                 * (
                     0.0 if "G_lm" in not_constraint and COM and l == 1 else 1.0
@@ -676,18 +682,21 @@ def Thin_shell_matrix(
                 # eq(2) Gc_lm
                 -Gc_lm1
                 + (
-                    rhobconst
+                    rhobconst[l]
                     * (
-                        (rhol * H_lm1 + drhol * w_lm1) * RCRl1
-                        + drho * (w_lm1 - dc_lm1) * (RCR**3) / DCfilter_mohoDc
-                        + drhom_lm1 * Rl3 * (RtRCl - RbRCl) / DCfilter_drhomc
+                        (rhol * H_lm1 + drhol * w_lm1) * RCRl1[l]
+                        + drho * (w_lm1 - dc_lm1) * (RCR**3) / DCfilter_mohoDc[l]
+                        + drhom_lm1
+                        * Rl3[l]
+                        * (RtRCl[l] - RbRCl[l])
+                        / DCfilter_drhomc[l]
                     )
                     + (
                         rhol * H_corr1
                         + ((drhol * w_corr1) if not w_corr_test else w_corr1)
                     )
-                    * RCRl1
-                    + drho * wdc_corr1 * RCR**3 / DCfilter_mohoDc
+                    * RCRl1[l]
+                    + drho * wdc_corr1 * RCR**3 / DCfilter_mohoDc[l]
                 )
                 * (
                     0.0 if "Gc_lm" in not_constraint and COM and l == 1 else 1.0
@@ -699,10 +708,10 @@ def Thin_shell_matrix(
                 + gdrho * drhom_lm1 * M * mass_correc
                 + drho_q_corr1,
                 # eq (4) w_lm
-                eta_B * D * Lapla * Lapla_2**2 * w_lm1
-                + Re**2 / alph_B * Lapla_2 * w_lm1
-                + Re4 * (Lapla_2 - 1.0 - v) * q_lm1
-                - Re4 * (beta_B * Lapla_2 - 1.0 - v) * Lapla * omega_lm1,
+                eta_B * D * Lapla[l] * (Lapla[l] + 2) ** 2 * w_lm1
+                + Re**2 / alph_B * (Lapla[l] + 2) * w_lm1
+                + Re4 * ((Lapla[l] + 2) - 1.0 - v) * q_lm1
+                - Re4 * (beta_B * (Lapla[l] + 2) - 1.0 - v) * Lapla[l] * omega_lm1,
                 # eq (5) omega_lm
                 -omega_lm1
                 + v1v * rhol * g0 * Te * H_lm1 / R
@@ -887,15 +896,15 @@ def Thin_shell_matrix(
         A_lm[:, l, : l + 1] = (
             beta_B
             * (1.0 / (1.0 - v**2))
-            * (Lapla + 1.0 + v)
-            * Lapla_2
+            * (Lapla[l] + 1.0 + v)
+            * (Lapla[l] + 2)
             * w_lm[:, l, : l + 1]
             + w_lm[:, l, : l + 1]
             + Re**2 * alph_B * q_lm[:, l, : l + 1]
             - Re
             * alph_B
             / (1.0 + eps)
-            * (Lapla - eps * (1.0 + v))
+            * (Lapla[l] - eps * (1.0 + v))
             * Re
             * omega_lm[:, l, : l + 1]
         )
@@ -962,12 +971,12 @@ def DownContFilter(l, half, R_ref, D_relief, type="Mc"):
     Returns
     -------
     float
-        Value of the filter at degree l
+        Value of the filter at degrees l
 
     Parameters
     ----------
-    l : int
-        The spherical harmonic degree.
+    l : array
+        Array of spherical harmonic degrees.
     half : int
         The spherical harmonic degree where the filter is equal to 0.5.
     R_ref : float
@@ -982,20 +991,15 @@ def DownContFilter(l, half, R_ref, D_relief, type="Mc"):
     else:
         if type == "Mc":
             tmp = 1.0 / (
-                float(half * half + half)
-                * (float(2 * half + 1) * (R_ref / D_relief) ** half) ** 2
+                (half * half + half)
+                * ((2 * half + 1) * (R_ref / D_relief) ** half) ** 2
             )
             DownContFilter = (
-                1.0
-                + tmp
-                * float(l * l + l)
-                * (float(2 * l + 1) * (R_ref / D_relief) ** l) ** 2
+                1.0 + tmp * (l * l + l) * ((2 * l + 1) * (R_ref / D_relief) ** l) ** 2
             )
         elif type == "Ma":
-            tmp = 1.0 / (float(2.0 * half + 1.0) * (R_ref / D_relief) ** half) ** 2
-            DownContFilter = (
-                1.0 + tmp * (float(2 * l + 1) * (R_ref / D_relief) ** l) ** 2
-            )
+            tmp = 1.0 / ((2.0 * half + 1.0) * (R_ref / D_relief) ** half) ** 2
+            DownContFilter = 1.0 + tmp * ((2 * l + 1) * (R_ref / D_relief) ** l) ** 2
         else:
             raise ValueError(
                 "Error in DownContFilter, filter type must be either 'Ma' "
