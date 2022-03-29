@@ -42,6 +42,8 @@ Strain calculations reproduce results published in the literature (e.g., [Banerd
 
 `Principal_strainstress_angle` Calculate principal strains, stresses and their principal angles.
 
+`Strainstress_from_principal` Calculate strains or stresses, from their principal values.
+
 `Plt_tecto_Mars` Plot the [Knampeyer et al. (2006)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2006JE002708) dataset of extensional and compressional tectonic features on Mars.
 
 ## Example scripts

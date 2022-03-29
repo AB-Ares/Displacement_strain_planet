@@ -149,6 +149,9 @@ from displacements with a correction to the theta_phi term.</p>
 <dt>Principal_strainstress_angle</dt><dd><p>Calculate principal strains, stresses, and
 their principal angles.</p>
 </dd>
+<dt>Strainstress_from_principal</dt><dd><p>Calculate strains or stresses, from
+their principal values.</p>
+</dd>
 <dt>Plt_tecto_Mars</dt><dd><p>Plot the Knampeyer et al. (2006) dataset of
 extensional and compressional tectonic features
 on Mars.</p>
@@ -289,7 +292,7 @@ their principal angles.</p>
 <li><p><strong>min_strain</strong> (<em>array, size same as input arrays</em>) – Array with the minimum principal horizontal strain or stress.</p></li>
 <li><p><strong>max_strain</strong> (<em>array, size same as input arrays</em>) – Array with the maximum principal horizontal strain or stress.</p></li>
 <li><p><strong>sum_strain</strong> (<em>array, size same as input arrays</em>) – Array with the sum of the principal horizontal strain or stress.</p></li>
-<li><p><strong>principal_angle</strong> (<em>array, size same as input arrays</em>) – Array with the principal strain or stress direction.</p></li>
+<li><p><strong>principal_angle</strong> (<em>array, size same as input arrays</em>) – Array with the principal strain or stress direction in degrees.</p></li>
 </ul>
 </p>
 </dd>
@@ -376,6 +379,31 @@ If None, the grid is set to ‘GLQ’.</p></li>
 npy, which decreases the file size by about a factor 2. This is
 recommended when lmax &gt; 75.</p></li>
 <li><p><strong>quiet</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>default = True</em>) – If True, suppress printing output.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Displacement_strain_planet.Strainstress_from_principal">
+<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.</span></span><span class="sig-name descname"><span class="pre">Strainstress_from_principal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_strain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_strain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sum_strain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">principal_angle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Strainstress_from_principal" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate strains or stresses, from
+their principal values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>s_theta</strong> (<em>array, float, size same as input arrays</em>) – Array of the colatitude component of the stress or strain field.</p></li>
+<li><p><strong>s_phi</strong> (<em>array, float, size same as input arrays</em>) – Array of the longitude component of the stress or strain field.</p></li>
+<li><p><strong>s_theta_phi</strong> (<em>array, float, size same as input arrays</em>) – Array of the colatitude and longitude component of the stress or strain field.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>min_strain</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>nlat</em><em>, </em><em>nlon</em><em>)</em>) – Array with the minimum principal horizontal strain or stress.</p></li>
+<li><p><strong>max_strain</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>nlat</em><em>, </em><em>nlon</em><em>)</em>) – Array with the maximum principal horizontal strain or stress.</p></li>
+<li><p><strong>sum_strain</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>nlat</em><em>, </em><em>nlon</em><em>)</em>) – Array with the sum of the principal horizontal strain or stress.</p></li>
+<li><p><strong>principal_angle</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>nlat</em><em>, </em><em>nlon</em><em>)</em>) – Array with the principal strain or stress direction in degrees.</p></li>
 </ul>
 </dd>
 </dl>

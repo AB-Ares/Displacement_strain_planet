@@ -710,7 +710,7 @@ def Principal_strainstress_angle(s_theta, s_phi, s_theta_phi):
     sum_strain : array, size same as input arrays
         Array with the sum of the principal horizontal strain or stress.
     principal_angle : array, size same as input arrays
-        Array with the principal strain or stress direction.
+        Array with the principal strain or stress direction in degrees.
 
     Parameters
     ----------
@@ -732,6 +732,49 @@ def Principal_strainstress_angle(s_theta, s_phi, s_theta_phi):
     principal_angle = 0.5 * np.arctan2(2 * s_theta_phi, s_theta - s_phi) * 180.0 / np.pi
 
     return min_strain, max_strain, sum_strain, principal_angle
+
+
+# ==== Principal_strainstress_angle ====
+
+
+def Strainstress_from_principal(min_strain, max_strain, sum_strain, principal_angle):
+    """
+    Calculate strains or stresses, from
+    their principal values.
+
+    Returns
+    -------
+    s_theta : array, float, size same as input arrays
+        Array of the colatitude component of the stress or strain field.
+    s_phi : array, float, size same as input arrays
+        Array of the longitude component of the stress or strain field.
+    s_theta_phi : array, float, size same as input arrays
+        Array of the colatitude and longitude component of the stress or strain field.
+
+    Parameters
+    ----------
+    min_strain : array, size(nlat, nlon)
+        Array with the minimum principal horizontal strain or stress.
+    max_strain : array, size(nlat, nlon)
+        Array with the maximum principal horizontal strain or stress.
+    sum_strain : array, size(nlat, nlon)
+        Array with the sum of the principal horizontal strain or stress.
+    principal_angle : array, size(nlat, nlon)
+        Array with the principal strain or stress direction in degrees.
+    """
+
+    deg2rad = np.pi / 180
+    s_theta = (max_strain + min_strain) / 2.0 + (
+        (max_strain - min_strain) / 2.0
+    ) * np.cos(2.0 * principal_angle * deg2rad)
+    s_phi = (max_strain + min_strain) / 2.0 - (
+        (max_strain - min_strain) / 2.0
+    ) * np.cos(2.0 * principal_angle * deg2rad)
+    s_theta_phi = (
+        0.5 * (max_strain - min_strain) * np.sin(2.0 * principal_angle * deg2rad)
+    )
+
+    return s_theta, s_phi, s_theta_phi
 
 
 # ==== Plt_tecto_Mars ====
