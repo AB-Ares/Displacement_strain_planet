@@ -674,7 +674,8 @@ def Thin_shell_matrix(
                     )
                     + rhol * H_corr1
                     + ((drhol * w_corr1) if not w_corr_test else w_corr1)
-                    + drho * wdc_corr1 * RCRl2[l] / DCfilter_mohoD[l]
+                    + drho * wdc_corr1 * RCRl2[l]  # / DCfilter_mohoD[l]
+                    # Still unsure about that filtering part
                 )
                 * (
                     0.0 if "G_lm" in not_constraint and COM and l == 1 else 1.0
@@ -696,7 +697,8 @@ def Thin_shell_matrix(
                         + ((drhol * w_corr1) if not w_corr_test else w_corr1)
                     )
                     * RCRl1[l]
-                    + drho * wdc_corr1 * RCR**3 / DCfilter_mohoDc[l]
+                    + drho * wdc_corr1 * RCR**3  # / DCfilter_mohoDc[l]
+                    # Still unsure about that filtering part
                 )
                 * (
                     0.0 if "Gc_lm" in not_constraint and COM and l == 1 else 1.0
