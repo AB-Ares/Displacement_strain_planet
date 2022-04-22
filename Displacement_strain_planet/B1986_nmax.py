@@ -13,7 +13,6 @@ from sympy.parsing.sympy_parser import parse_expr
 
 def corr_nmax_drho(
     dr_lm,
-    drho_lm,
     shape_grid,
     rho_grid,
     lmax,
@@ -40,9 +39,6 @@ def corr_nmax_drho(
     ----------
     dr_lm : array, size (2,lmax+1,lmax+1)
         Array with spherical harmonic coefficients of the relief.
-    drho_lm : array, size (2,lmax+1,lmax+1)
-        Array with spherical harmonic coefficients of the lateral
-        density contrast.
     shape_grid : array, size (2,2*(lmax+1),2*2(lmax+1))
         Array with a grid of the relief.
     rho_grid : array, size (2,2*(lmax+1),2*2(lmax+1))
@@ -1221,7 +1217,7 @@ def Thin_shell_matrix_nmax(
         nmax == 1
         and (not any_drho or (top_drho != 0 and base_drho != c))
         and any_drho is not None
-        or iterate is False
+        or not iterate
     ):
         (
             w_lm_o,
@@ -1392,7 +1388,7 @@ def Thin_shell_matrix_nmax(
                 first_inv=first_inv,
                 lambdify_func=lambdify_func_o,
             )
-            first_inv = False
+            first_inv, comp_w_grid = False, False
 
             # Precompute some sums that will be used later for checks
             any_dc = np.sum(dc_lm_o[:, 1:, :]) != 0 if any_dc is None else any_dc
@@ -1444,7 +1440,7 @@ def Thin_shell_matrix_nmax(
                         rhoc = drhom_lm_o[0, 0, 0]
                         rhol = drhom_lm_o[0, 0, 0]
                     else:
-                        rhom = drhom_lm[0, 0, 0]
+                        rhom = drhom_lm_o[0, 0, 0]
                     args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax, E, v)
                 else:
                     if base_drho <= c:
@@ -1476,6 +1472,7 @@ def Thin_shell_matrix_nmax(
                     # Anomaly in the mantle
                     wdc_drho_grid = rho_grid - rhoc
             if density_var_w:
+                drho_w = rhoc - rhol if rhoc != rhol else 1
                 w_drho_grid = rhoc - rho_grid
                 if density_var_H or density_var_dc:
                     drho_omega_corr += v1v * drhom_lm_o * g0 * Te * w_lm_o / R
@@ -1485,28 +1482,53 @@ def Thin_shell_matrix_nmax(
                     drho_q_corr = drhom_lm_o * w_lm_o * g0
 
             H_lm_o[0, 0, 0] = R
-            if not precomp_H_grid:
+            if any_drho:
+                if not precomp_H_grid:
+                    H_grid = pysh.expand.MakeGridDH(H_lm_o, **args_grid)
+                delta_H_geoid = corr_nmax_drho(
+                    H_lm_o,
+                    H_grid,
+                    H_drho_grid,
+                    lmax,
+                    mass,
+                    nmax,
+                    drho_H,
+                    R,
+                    density_var=density_var_H,
+                )
+            elif iter == 1 and precomp_H_grid:
+                delta_H_geoid = corr_nmax_drho(
+                    H_lm_o,
+                    H_grid,
+                    H_drho_grid,
+                    lmax,
+                    mass,
+                    nmax,
+                    drho_H,
+                    R,
+                    density_var=density_var_H,
+                )
+            elif not precomp_H_grid:
                 H_grid = pysh.expand.MakeGridDH(H_lm_o, **args_grid)
-            delta_H_geoid = corr_nmax_drho(
-                H_lm_o,
-                drhom_lm_o,
-                H_grid,
-                H_drho_grid,
-                lmax,
-                mass,
-                nmax,
-                drho_H,
-                R,
-                density_var=density_var_H,
-            )
+                delta_H_geoid = corr_nmax_drho(
+                    H_lm_o,
+                    H_grid,
+                    H_drho_grid,
+                    lmax,
+                    mass,
+                    nmax,
+                    drho_H,
+                    R,
+                    density_var=density_var_H,
+                )
 
             w_lm_o[0, 0, 0] = R
-            if not precomp_w_grid:
-                w_grid = pysh.expand.MakeGridDH(w_lm_o, **args_grid)
             if rhoc != rhol or density_var_w:
+                if not precomp_w_grid:
+                    w_grid = pysh.expand.MakeGridDH(w_lm_o, **args_grid)
+                    comp_w_grid = True
                 delta_w_geoid = corr_nmax_drho(
                     w_lm_o,
-                    drhom_lm_o,
                     w_grid,
                     w_drho_grid if density_var_w else ones,
                     lmax,
@@ -1519,24 +1541,27 @@ def Thin_shell_matrix_nmax(
 
             wdc_lm_o = w_lm_o - dc_lm_o
             wdc_lm_o[0, 0, 0] = R_c
-            if not precomp_dc_grid:
-                wdc_grid = pysh.expand.MakeGridDH(wdc_lm_o, **args_grid)
-            delta_wdc_geoid = corr_nmax_drho(
-                wdc_lm_o,
-                drhom_lm_o,
-                wdc_grid,
-                wdc_drho_grid,
-                lmax,
-                mass,
-                nmax,
-                drho_wdc,
-                R,
-                density_var=density_var_dc,
-            )
+            if any_dc or any_w:
+                if not precomp_dc_grid:
+                    wdc_grid = pysh.expand.MakeGridDH(wdc_lm_o, **args_grid)
+                delta_wdc_geoid = corr_nmax_drho(
+                    wdc_lm_o,
+                    wdc_grid,
+                    wdc_drho_grid,
+                    lmax,
+                    mass,
+                    nmax,
+                    drho_wdc,
+                    R,
+                    density_var=density_var_dc,
+                )
 
             if iter != 1:
                 if not any_dc:
                     if any_w:
+                        if not comp_w_grid:
+                            w_grid = pysh.expand.MakeGridDH(w_lm_o, **args_grid)
+                            comp_w_grid = True
                         delta = abs(grid_prev - w_grid).max()
                         if not quiet:
                             print(
@@ -1587,6 +1612,8 @@ def Thin_shell_matrix_nmax(
             if any_dc:
                 grid_prev = R - wdc_grid - c
             else:
+                if not comp_w_grid:
+                    w_grid = pysh.expand.MakeGridDH(w_lm_o, **args_grid)
                 grid_prev = w_grid if any_w else rho_grid
 
             # Error messages if iteration not converging
