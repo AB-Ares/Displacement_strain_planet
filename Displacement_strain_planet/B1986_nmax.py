@@ -4,9 +4,10 @@ Functions for calculating the Banerdt (1986) system of equations.
 
 import re
 import numpy as np
-import pyshtools as pysh
 from sympy import linsolve, lambdify, symbols, Expr, expand, srepr
 from sympy.parsing.sympy_parser import parse_expr
+from pyshtools.backends.ducc0_wrapper import MakeGridDH
+from pyshtools.gravmag import CilmPlusRhoHDH
 
 # ==== corr_nmax_drho ====
 
@@ -32,8 +33,8 @@ def corr_nmax_drho(
     -------
     array, size of input dr_lm
         Array with the spherical harmonic coefficients of the
-        difference between the mass-sheet and finite-ampltiude,
-        with or without lateral density variations.
+        difference between the mass-sheet and finite-ampltiude
+        geoid.
 
     Parameters
     ----------
@@ -67,18 +68,14 @@ def corr_nmax_drho(
 
     if nmax != 1:
         # This is the correct calculation with finite-amplitude
-        FA_lm_nmax, D = pysh.gravmag.CilmPlusRhoHDH(
-            shape_grid, nmax, mass, rho_grid, lmax=lmax
-        )
+        FA_lm_nmax, D = CilmPlusRhoHDH(shape_grid, nmax, mass, rho_grid, lmax=lmax)
         MS_lm_nmax *= D**2
     else:
         FA_lm_nmax = MS_lm_nmax
 
     # Density contrast in the relief correction.
     if density_var and nmax == 1:
-        MS_lm_drho, D = pysh.gravmag.CilmPlusRhoHDH(
-            shape_grid, nmax, mass, rho_grid, lmax=lmax
-        )
+        MS_lm_drho, D = CilmPlusRhoHDH(shape_grid, nmax, mass, rho_grid, lmax=lmax)
         MS_lm_drho_cst = MS_lm_nmax.copy()
         MS_lm_drho_cst *= D**2
 
@@ -156,7 +153,7 @@ def Thin_shell_matrix(
         moho-relief.
     dc_lm : array, size(2,lmax+1,lmax+1)
         Array with the spherical harmonic coefficients of the
-        isostatic crustal root variations.
+        crustal root variations.
     drhom_lm : array, size(2,lmax+1,lmax+1)
         Array with the spherical harmonic coefficients of the
         lateral density variations.
@@ -224,7 +221,7 @@ def Thin_shell_matrix(
         lateral density variations.
     dc_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
-        isostatic crustal root variations.
+        crustal root variations.
     w_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         upward displacement.
@@ -327,7 +324,7 @@ def Thin_shell_matrix(
             single_add_arrays = False
         else:
             raise ValueError(
-                "Add_arrays should be dimensioned as (N, 2, lmax+1, lmax),"
+                "Add_arrays should be dimensioned as (N, 2, lmax+1, lmax+1),"
                 + " where lmax is %s." % (lmax)
                 + "\nInput array is dimensioned as %s." % (str(np.shape(add_arrays)))
             )
@@ -357,8 +354,9 @@ def Thin_shell_matrix(
                     add_muls_cnsts.append(cnsts)
                     if not quiet and first_inv:
                         print(
-                            "! Warning, we will use only the (0,lmax+1,0) coeffs"
-                            + " of %s in the multiplication with %s!" % (add_arr, cnsts)
+                            "! Warning:Thin_shell_matrix, we will use only the (0,lmax+1,0)"
+                            + " coeffs of %s in the multiplication with %s !"
+                            % (add_arr, cnsts)
                         )
                     # If finite-amplitude corrections and multiplications in
                     # add_equation, we will force the corrections to be zero
@@ -371,31 +369,31 @@ def Thin_shell_matrix(
                     if not first_inv:
                         if cnsts == "drhom_lm":
                             drho_omega_corr[drhom_lm == 0] = 0.0
-                            drho_omega_corr *= add_arrays[i]
+                            drho_omega_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
                             drho_q_corr[drhom_lm == 0] = 0.0
-                            drho_q_corr *= add_arrays[i]
+                            drho_q_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
                         elif cnsts == "omega_lm":
                             drho_omega_corr[omega_lm == 0] = 0.0
-                            drho_omega_corr *= add_arrays[i]
+                            drho_omega_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
                         elif cnsts == "q_lm":
                             drho_q_corr[q_lm == 0] = 0.0
-                            drho_q_corr *= add_arrays[i]
+                            drho_q_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
                         elif cnsts == "H_lm":
                             H_corr[H_lm == 0] = 0.0
-                            H_corr *= add_arrays[i]
+                            H_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
                         elif cnsts == "dc_lm":
                             wdc_corr[dc_lm == 0] = 0.0
-                            wdc_corr *= add_arrays[i]
+                            wdc_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
                         elif cnsts == "w_lm":
                             w_corr[w_lm == 0] = 0.0
-                            w_corr *= add_arrays[i]
+                            w_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
                         elif cnsts == "G_lm":
                             H_corr[G_lm == 0] = 0.0
-                            H_corr *= add_arrays[i]
+                            H_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
                             w_corr[G_lm == 0] = 0.0
-                            w_corr *= add_arrays[i]
+                            w_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
                             wdc_corr[G_lm == 0] = 0.0
-                            wdc_corr *= add_arrays[i]
+                            wdc_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
 
     error_msg = "\nNumber of input arrays was {:s}. ".format(
         repr(sum_array_test)
@@ -457,7 +455,7 @@ def Thin_shell_matrix(
             print("Using stored solutions with new inputs")
 
     if dc_lm is not None:
-        # Filtering drhom when there is no isostatic root variations
+        # Filtering drhom when there is no crustal root variations
         any_dc = np.sum(dc_lm[:, 1:, :]) != 0
     else:
         # No filtering for drhom
@@ -498,13 +496,16 @@ def Thin_shell_matrix(
     if Te == 0:  # Avoid numerical problems with infinite values
         Te = 1
         if first_inv:
-            print("Elastic thickness set to 1 m to avoid numerical problems")
+            print(
+                "! Warning:Thin_shell_matrix, elastic thickness set to 1 m "
+                + "to avoid numerical problems !"
+            )
 
     # Precompute some constants.
     M = base_drho - top_drho  # Thickness of the density anomaly
     if M < 0:
         raise ValueError(
-            "Thickness of the density anomaly is negative, "
+            "Thickness of the density anomaly (base_drho - top_drho) is negative. "
             + "base_drho and top_drho are probably inverted with values of "
             + "%.2f and %.2f (km), respectively" % (base_drho / 1e3, top_drho / 1e3)
         )
@@ -536,7 +537,13 @@ def Thin_shell_matrix(
     # planet sphericity, work in progress.
 
     R_drho_mid = (R_top_drho + R_top_drho) / 2.0
+    RTeR = (R - Te) / R
     gmoho = g0 * (1.0 + (RCR**3 - 1.0) * rhoc / rhobar) / RCR**2
+    if Te <= c:
+        gTe = g0 * (1.0 + (RTeR**3 - 1.0) * rhoc / rhobar) / RTeR**2
+    else:
+        gTe = g0 * (1.0 + (RTeR**3 - 1.0) * rhom / rhobar) / RTeR**2
+
     if top_drho <= c:
         gdrho = (
             g0
@@ -570,6 +577,19 @@ def Thin_shell_matrix(
     )
     args_symb = (constraint_test, not_constraint, a_symb_uknwn)
 
+    # Determine how symbols are listed in the outputs because
+    # solutions order depends on the input symbol order,
+    # which depends on the user inputs.
+    a_symbs = np.array(a_symb_uknwn + a_symb_knwn).astype("str")
+    idx_w_lm = int(np.where(a_symbs == "w_lm1")[0])
+    idx_G_lm = int(np.where(a_symbs == "G_lm1")[0])
+    idx_Gc_lm = int(np.where(a_symbs == "Gc_lm1")[0])
+    idx_H_lm = int(np.where(a_symbs == "H_lm1")[0])
+    idx_omega_lm = int(np.where(a_symbs == "omega_lm1")[0])
+    idx_drhom_lm = int(np.where(a_symbs == "drhom_lm1")[0])
+    idx_dc_lm = int(np.where(a_symbs == "dc_lm1")[0])
+    idx_q_lm = int(np.where(a_symbs == "q_lm1")[0])
+
     if remove_equation is not None and not quiet and first_inv:
         print("Removing equation for: %s." % (remove_equation))
     if add_equation is not None:
@@ -579,12 +599,6 @@ def Thin_shell_matrix(
         for string in input_constraints:
             add_equation = re.sub(
                 r"(\b{}\b)".format(string), "%s" % (string) + "1", add_equation
-            )
-        if add_arrays is not None and 0:
-            add_equation = re.sub(
-                r"(\b{}\b)".format("add_array"),
-                "%s" % ("add_array") + "1",
-                add_equation,
             )
         add_equation = parse_expr(add_equation)
 
@@ -609,7 +623,12 @@ def Thin_shell_matrix(
         elif filter is not None:
             if any_dc:
                 DCfilter_mohoD = DownContFilter(
-                    degrees, filter_half, R, R_c, type=filter
+                    degrees,
+                    filter_half,
+                    R,
+                    R_c,
+                    type=filter,
+                    quiet=quiet,
                 )
                 DCfilter_mohoDc = DownContFilter(
                     degrees, filter_half, R_c, R_c, type=filter
@@ -666,7 +685,7 @@ def Thin_shell_matrix(
                         rhol * H_lm1
                         + drhol * w_lm1
                         + drho * (w_lm1 - dc_lm1) * RCRl2[l] / DCfilter_mohoD[l]
-                        + drhom_lm1 * Rl3[l] * (RtbRl3[l]) / DCfilter_drhom[l]
+                        + drhom_lm1 * Rl3[l] * RtbRl3[l] / DCfilter_drhom[l]
                     )
                     + rhol * H_corr1
                     + ((drhol * w_corr1) if not w_corr_test else w_corr1)
@@ -682,7 +701,7 @@ def Thin_shell_matrix(
                     rhobconst[l]
                     * (
                         (rhol * H_lm1 + drhol * w_lm1) * RCRl1[l]
-                        + drho * (w_lm1 - dc_lm1) * (RCR**3) / DCfilter_mohoDc[l]
+                        + drho * (w_lm1 - dc_lm1) * RCR**3 / DCfilter_mohoDc[l]
                         + drhom_lm1
                         * Rl3[l]
                         * (RtRCl[l] - RbRCl[l])
@@ -715,15 +734,14 @@ def Thin_shell_matrix(
                 + v1v * rhol * g0 * Te * H_lm1 / R
                 - (
                     drhol * g0 * v1v * Te
-                    + rhoc * gmoho * (v1v * Te - c)
-                    - rhom * gmoho * (Te - c if c < Te else 0)
-                    # If crustal interface below Te, no tangential load associated
+                    - rhoc * gmoho * (c if c < Te else 0)
+                    # If crust-mantle interface below Te, no tangential load associated
+                    - rhom * gTe * np.max([Te - c, 0])
+                    # If crust-mantle interface below Te, no tangential load associated
                 )
                 * w_lm1
                 / R
-                - v1v * drho * gmoho * (Te - c if c < Te else 0)
-                # If crustal interface below Te, no tangential load associated
-                * dc_lm1 / R
+                + v1v * drho * gmoho * np.max([Te - c, 0]) * (dc_lm1 - w_lm1) / R
                 - 0.5
                 * v1v
                 * drhom_lm1
@@ -807,12 +825,8 @@ def Thin_shell_matrix(
             sol = linsolve(Eqns, a_symb_uknwn + a_symb_knwn)
 
             # Vectorize the linsolve function.
-            linsolve_vector = lambdify(a_symb_uknwn + a_symb_knwn, list(sol))
-            if first_inv:  # Store matrix solution for potential
-                # later reutilisation
-                lambdify_func[l] = linsolve_vector
-        else:
-            linsolve_vector = lambdify_func[l]
+            # Store matrix solution for potential later reutilisation
+            lambdify_func[l] = lambdify(a_symb_uknwn + a_symb_knwn, list(sol))
 
         # Results.
         # Depending on the input arrays, pass a symbol or the
@@ -843,21 +857,7 @@ def Thin_shell_matrix(
                     )
             args_linsolve = dict(args_linsolve, **dict(eval("{%s}" % (add_arr))))
 
-        outs = np.concatenate(np.array(linsolve_vector(**args_linsolve), dtype=object))
-
-        # Determine how symbols are listed in the outputs because
-        # solutions order depends on the input symbol order,
-        # which depends on the user inputs.
-
-        a_symbs = np.array(a_symb_uknwn + a_symb_knwn).astype("str")
-        idx_w_lm = int(np.where(a_symbs == "w_lm1")[0])
-        idx_G_lm = int(np.where(a_symbs == "G_lm1")[0])
-        idx_Gc_lm = int(np.where(a_symbs == "Gc_lm1")[0])
-        idx_H_lm = int(np.where(a_symbs == "H_lm1")[0])
-        idx_omega_lm = int(np.where(a_symbs == "omega_lm1")[0])
-        idx_drhom_lm = int(np.where(a_symbs == "drhom_lm1")[0])
-        idx_dc_lm = int(np.where(a_symbs == "dc_lm1")[0])
-        idx_q_lm = int(np.where(a_symbs == "q_lm1")[0])
+        outs = np.concatenate(np.array(lambdify_func[l](**args_linsolve), dtype=object))
 
         if np.any([isinstance(arrs, Expr) for arrs in outs]):
             raise ValueError(
@@ -960,7 +960,7 @@ def test_symb(str_symb, arr, constraint_test, not_constraint, arr_symb):
 # ==== DownContFilter ====
 
 
-def DownContFilter(l, half, R_ref, D_relief, type="Mc"):
+def DownContFilter(l, half, R_ref, D_relief, type="Mc", quiet=False):
     """
     Compute the downward minimum-amplitude or
     -curvature filter of Wieczorek & Phillips,
@@ -983,7 +983,20 @@ def DownContFilter(l, half, R_ref, D_relief, type="Mc"):
         The radius of the surface to downward continue to.
     type : string, optional, default = "Mc"
         Filter type, minimum amplitude ("Ma") of curvature ("Mc")
+    quiet : bool, optional, default = True
+        if True, prints a warning when D_relief > R_ref.
     """
+
+    if D_relief > R_ref:
+        if not quiet:
+            print(
+                "! Warning:DownContFilter, D_relief > R_ref, cannot "
+                + "use a downward continuation filter. "
+                + "Setting value to 1 ! [D_relief = %s, R_ref = %s km]"
+                % (D_relief / 1e3, R_ref / 1e3)
+            )
+        return np.ones_like(l)
+
     if half == 0:
         DownContFilter = 1.0
     else:
@@ -1027,6 +1040,7 @@ def Thin_shell_matrix_nmax(
     filter=None,
     filter_half=50,
     nmax=5,
+    lmaxgrid=None,
     H_lm=None,
     drhom_lm=None,
     dc_lm=None,
@@ -1067,7 +1081,7 @@ def Thin_shell_matrix_nmax(
         moho-relief.
     dc_lm : array, size(2,lmax+1,lmax+1)
         Array with the spherical harmonic coefficients of the
-        isostatic crustal root variations.
+        crustal root variations.
     drhom_lm : array, size(2,lmax+1,lmax+1)
         Array with the spherical harmonic coefficients of the
         lateral density variations.
@@ -1124,6 +1138,12 @@ def Thin_shell_matrix_nmax(
         Spherical harmonic degree at which the filter equals 0.5.
     nmax : int, optional, default = 5
         Maximum order of the finite-amplitude correction.
+    lmaxgrid : int, optional, default = None
+        If None, this parameter is set to 3*lmax.
+        Resolution of the input grid for the finite-amplitude correction
+        routines. For accurate results, this parameter should be about
+        3 times lmax, though this should be verified for each application.
+        Lowering this parameter significantly increases speed.
     H_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         surface topography.
@@ -1132,7 +1152,7 @@ def Thin_shell_matrix_nmax(
         lateral density variations.
     dc_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
-        isostatic crustal root variations.
+        crustal root variations.
     w_lm : array, size(2,lmax+1,lmax+1), optional, default = None
         Array with the spherical harmonic coefficients of the
         upward displacement.
@@ -1202,8 +1222,14 @@ def Thin_shell_matrix_nmax(
         COM=COM,
     )
 
-    # Increase grid resolution to avoid aliasing in the CilmPlus routines
-    lmaxgrid = 4 * lmax
+    if lmaxgrid is None:
+        # Increase grid resolution to avoid aliasing in the CilmPlus routines
+        lmaxgrid = 3 * lmax
+    elif lmaxgrid < lmax:
+        raise ValueError(
+            "Error in Thin_shell_matrix_nmax, lmaxgrid cannot be lower "
+            + "than lmax. lmaxgrid is %s and lmax is %s" % (lmaxgrid, lmax)
+        )
     args_grid = dict(sampling=2, lmax=lmaxgrid, extend=False, lmax_calc=lmax)
 
     # Precompute some sums that will be used later for checks
@@ -1259,8 +1285,13 @@ def Thin_shell_matrix_nmax(
         # Correct for density contrast in surface or moho
         # relief, and/or finite-amplitude correction
         density_var_H, density_var_dc, density_var_w = False, False, False
-        precomp_drho = False
-        first_drhom, first_nmax = True, True
+        # Precompute grids
+        precomp_drho, precomp_H_grid, precomp_w_grid, precomp_dc_grid = (
+            False,
+            False,
+            False,
+            False,
+        )
         if drhom_lm is None or any_drho:
             if top_drho == 0:
                 # Correct for density variations in the surface
@@ -1276,14 +1307,14 @@ def Thin_shell_matrix_nmax(
                 density_var_w = True
 
         # If only finite-amplitude correction, density
-        # contrast is multipled in the thin-shell code
-        # we set it to 1. This will be changed later if required.
+        # contrast is multipled in the thin-shell code and
+        # we set the density contrast to 1. This will be changed later if required.
         ones = np.ones((2 * (lmaxgrid + 1), 2 * (2 * (lmaxgrid + 1))))
         H_drho_grid, w_drho_grid, wdc_drho_grid = ones, ones, ones
         drho_H, drho_wdc, drho_w = 1.0, 1.0, 1.0
 
         if drhom_lm is not None and any_drho:
-            rho_grid = pysh.expand.MakeGridDH(drhom_lm, **args_grid)
+            rho_grid = MakeGridDH(drhom_lm, **args_grid)
             precomp_drho = True
             if drhom_lm[0, 0, 0] > 500:
                 if base_drho <= c:
@@ -1304,7 +1335,7 @@ def Thin_shell_matrix_nmax(
                 # Update parameters
                 args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax, E, v)
             else:
-                # Density contrast is in the crust
+                # Density variations is in the crust
                 if base_drho <= c:
                     rho_grid += rhoc
                     if not quiet:
@@ -1312,7 +1343,7 @@ def Thin_shell_matrix_nmax(
                             "Add input rhoc (%.2f kg m-3) to density variations"
                             % (rhoc)
                         )
-                # Density contrast is in the mantle
+                # Density variations is in the mantle
                 else:
                     rho_grid += rhom
                     if not quiet:
@@ -1322,9 +1353,9 @@ def Thin_shell_matrix_nmax(
                         )
 
         # Geoid correction due to density variations
-        # and or finite-amplitude corrections.
-        # Moho relief
+        # and or finite-amplitude corrections
         shape = (2, lmax + 1, lmax + 1)
+        # Moho relief
         delta_wdc_geoid = np.zeros(shape)
         # Deflected topography relief
         delta_w_geoid = np.zeros(shape)
@@ -1335,17 +1366,16 @@ def Thin_shell_matrix_nmax(
         drho_omega_corr = np.zeros(shape)
         drho_q_corr = np.zeros(shape)
 
-        precomp_H_grid, precomp_w_grid, precomp_dc_grid = False, False, False
         # Precompute grids
         if H_lm is not None:
             precomp_H_grid = True
             H_lm[0, 0, 0] = R
-            H_grid = pysh.expand.MakeGridDH(H_lm, **args_grid)
+            H_grid = MakeGridDH(H_lm, **args_grid)
         if w_lm is not None and rhoc != rhol:
             precomp_w_grid = True
             if any_w:
                 w_lm[0, 0, 0] = R
-                w_grid = pysh.expand.MakeGridDH(w_lm, **args_grid)
+                w_grid = MakeGridDH(w_lm, **args_grid)
             else:
                 w_grid = ones * R
         if w_lm is not None and dc_lm is not None:
@@ -1353,12 +1383,12 @@ def Thin_shell_matrix_nmax(
             wdc_lm = w_lm - dc_lm
             if any_w and any_dc:
                 wdc_lm[0, 0, 0] = R_c
-                wdc_grid = pysh.expand.MakeGridDH(wdc_lm, **args_grid)
+                wdc_grid = MakeGridDH(wdc_lm, **args_grid)
             else:
                 wdc_grid = ones * R_c
 
         lambdify_func_o = None
-        first_inv = True
+        first_inv, first_drhom, first_nmax = True, True, True
         delta = 1.0e9
         iter = 0
         # Iterate until convergence
@@ -1434,7 +1464,7 @@ def Thin_shell_matrix_nmax(
                 continue
 
             if any_drho and not precomp_drho:
-                rho_grid = pysh.expand.MakeGridDH(drhom_lm_o, **args_grid)
+                rho_grid = MakeGridDH(drhom_lm_o, **args_grid)
                 if drhom_lm_o[0, 0, 0] > 500:
                     if base_drho <= c:
                         rhoc = drhom_lm_o[0, 0, 0]
@@ -1449,15 +1479,13 @@ def Thin_shell_matrix_nmax(
                         rho_grid += rhom
 
             v1v = v / (1.0 - v)
+            gmoho = g0 * (1.0 + ((R_c / R) ** 3 - 1.0) * rhoc / rhobar) / (R_c / R) ** 2
             if density_var_H:
                 drho_H = rhol
                 H_drho_grid = rho_grid
                 drho_omega_corr = v1v * drhom_lm_o * g0 * Te * H_lm_o / R
                 drho_q_corr = drhom_lm_o * (H_lm_o - G_lm_o) * g0
             if density_var_dc:
-                gmoho = (
-                    g0 * (1.0 + ((R_c / R) ** 3 - 1.0) * rhoc / rhobar) / (R_c / R) ** 2
-                )
                 if density_var_H:
                     drho_omega_corr += v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
                     drho_q_corr += drhom_lm_o * dc_lm_o * gmoho
@@ -1472,7 +1500,7 @@ def Thin_shell_matrix_nmax(
                     # Anomaly in the mantle
                     wdc_drho_grid = rho_grid - rhoc
             if density_var_w:
-                drho_w = rhoc - rhol if rhoc != rhol else 1
+                drho_w = (rhoc - rhol) if rhoc != rhol else 1
                 w_drho_grid = rhoc - rho_grid
                 if density_var_H or density_var_dc:
                     drho_omega_corr += v1v * drhom_lm_o * g0 * Te * w_lm_o / R
@@ -1482,34 +1510,9 @@ def Thin_shell_matrix_nmax(
                     drho_q_corr = drhom_lm_o * w_lm_o * g0
 
             H_lm_o[0, 0, 0] = R
-            if any_drho:
+            if any_drho or (iter == 1 and precomp_H_grid) or (not precomp_H_grid):
                 if not precomp_H_grid:
-                    H_grid = pysh.expand.MakeGridDH(H_lm_o, **args_grid)
-                delta_H_geoid = corr_nmax_drho(
-                    H_lm_o,
-                    H_grid,
-                    H_drho_grid,
-                    lmax,
-                    mass,
-                    nmax,
-                    drho_H,
-                    R,
-                    density_var=density_var_H,
-                )
-            elif iter == 1 and precomp_H_grid:
-                delta_H_geoid = corr_nmax_drho(
-                    H_lm_o,
-                    H_grid,
-                    H_drho_grid,
-                    lmax,
-                    mass,
-                    nmax,
-                    drho_H,
-                    R,
-                    density_var=density_var_H,
-                )
-            elif not precomp_H_grid:
-                H_grid = pysh.expand.MakeGridDH(H_lm_o, **args_grid)
+                    H_grid = MakeGridDH(H_lm_o, **args_grid)
                 delta_H_geoid = corr_nmax_drho(
                     H_lm_o,
                     H_grid,
@@ -1525,7 +1528,7 @@ def Thin_shell_matrix_nmax(
             w_lm_o[0, 0, 0] = R
             if rhoc != rhol or density_var_w:
                 if not precomp_w_grid:
-                    w_grid = pysh.expand.MakeGridDH(w_lm_o, **args_grid)
+                    w_grid = MakeGridDH(w_lm_o, **args_grid)
                     comp_w_grid = True
                 delta_w_geoid = corr_nmax_drho(
                     w_lm_o,
@@ -1543,7 +1546,7 @@ def Thin_shell_matrix_nmax(
             wdc_lm_o[0, 0, 0] = R_c
             if any_dc or any_w:
                 if not precomp_dc_grid:
-                    wdc_grid = pysh.expand.MakeGridDH(wdc_lm_o, **args_grid)
+                    wdc_grid = MakeGridDH(wdc_lm_o, **args_grid)
                 delta_wdc_geoid = corr_nmax_drho(
                     wdc_lm_o,
                     wdc_grid,
@@ -1560,7 +1563,7 @@ def Thin_shell_matrix_nmax(
                 if not any_dc:
                     if any_w:
                         if not comp_w_grid:
-                            w_grid = pysh.expand.MakeGridDH(w_lm_o, **args_grid)
+                            w_grid = MakeGridDH(w_lm_o, **args_grid)
                             comp_w_grid = True
                         delta = abs(grid_prev - w_grid).max()
                         if not quiet:
@@ -1613,7 +1616,7 @@ def Thin_shell_matrix_nmax(
                 grid_prev = R - wdc_grid - c
             else:
                 if not comp_w_grid:
-                    w_grid = pysh.expand.MakeGridDH(w_lm_o, **args_grid)
+                    w_grid = MakeGridDH(w_lm_o, **args_grid)
                 grid_prev = w_grid if any_w else rho_grid
 
             # Error messages if iteration not converging

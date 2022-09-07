@@ -10,11 +10,13 @@ from Displacement_strain_planet import (
     Principal_strainstress_angle,
 )
 
+pysh.backends.select_preferred_backend(backend="ducc", nthreads=0)
+
 #################################################################
 # In this example, we solve for the displacement of the surface of
 # Venus by calling the function `Thin_shell_matrix_nmax`, assuming
 # that the gravity and topography of the planet are compensated by
-# a combination of isostatic crustal root variations and flexure.
+# a combination of crustal root variations and flexure.
 # 3 assumptions are required to solve the system, and we here assume
 # that the observed topography and geoid are known, and that there
 # are no density variations in the interior.
@@ -35,7 +37,7 @@ from Displacement_strain_planet import (
 # w_lm flexure,
 # A_lm poloidal term of the tangential displacement,
 # moho_relief_lm` moho relief,
-# dc_lm isostatic crustal root variations,
+# dc_lm crustal root variations,
 # drhom_lm internal density variations,
 # omega_lm tangential load potential,
 # q_lm net load on the lithosphere,
@@ -93,7 +95,7 @@ args_fig = dict(figsize=(12, 10), dpi=100)
 path = "%s/data" % (os.getcwd())
 zeros = pysh.SHCoeffs.from_zeros(lmax=lmax).coeffs
 
-print("Computing displacements and isostatic crustal root variations")
+print("Computing displacements and crustal root variations")
 (
     w_lm,
     A_lm,
@@ -130,7 +132,7 @@ ax1.contour(
 )
 pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
     ax=ax2,
-    cb_label="Isostatic crustal root variations (km)",
+    cb_label="Crustal root variations (km)",
     ticks="wSnE",
     ylabel=None,
     **args_plot

@@ -513,14 +513,15 @@ def Displacement_strains(
     quiet : bool, optional, default = True
         If True, suppress printing output.
     """
+
     if lmax != np.shape(A_lm)[2] - 1:
         if quiet is False:
             print(
                 "Padding A_lm and w_lm from lmax = %s to %s"
                 % (np.shape(A_lm)[2] - 1, lmax)
             )
-        A_lm = pysh.SHCoeffs.from_array(A_lm).pad(lmax=lmax).coeffs
-        w_lm = pysh.SHCoeffs.from_array(w_lm).pad(lmax=lmax).coeffs
+        A_lm = A_lm[:, : lmax + 1, : lmax + 1]
+        w_lm = w_lm[:, : lmax + 1, : lmax + 1]
 
     if lmaxgrid is None:
         lmaxgrid = lmax
