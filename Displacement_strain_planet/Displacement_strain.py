@@ -125,6 +125,8 @@ def SH_deriv_store(
     grid=None,
     save=True,
     compressed=False,
+    colat_min=0,
+    colat_max=180,
     quiet=True,
 ):
     """
@@ -176,6 +178,10 @@ def SH_deriv_store(
         If True, the data is saved in compressed .npz format instead of
         npy, which decreases the file size by about a factor 2. This is
         recommended when lmax > 75.
+    colat_min : float, optional, default = 0
+        Minimum colatitude for grid computation of SH derivatives.
+    colat_max : float, optional, default = 180
+        Maximum colatitude for grid computation of SH derivatives.
     quiet : bool, optional, default = True
         If True, suppress printing output.
     """
@@ -239,18 +245,22 @@ def SH_deriv_store(
         sintt = np.divide(1.0, sint**2, out=np.zeros_like(sint), where=sint != 0)
         costsint = np.divide(cost, sint, out=np.zeros_like(sint), where=sint != 0)
 
-        t_i = -1
         sign_conversion = False
-        for theta in theta_range:
-            if quiet is False:
-                print(" colatitude %s of 180" % (int(theta * 180 / pi)), end="\r")
-            t_i += 1
-            idx_sign = nlat // 2 - t_i if nlat % 2 != 0 else nlat // 2 - t_i - 1
+        for t_i, theta in enumerate(theta_range):
+            theta_180 = int(theta * 180 / pi)
             if theta == 0:
                 dp_theta = np.zeros((index_size))
                 p_theta = np.zeros((index_size))
-            else:
-                if cost[t_i] >= 0:
+            if quiet is False:
+                print(" colatitude %s of %s" % (theta_180, colat_max), end="\r")
+            if theta_180 < colat_min or theta_180 > colat_max:
+                continue
+            elif theta != 0:
+                if colat_min != 0 or colat_max != 180:
+                    # Don't use the symmetry speedup, which requires a whole sphere computation
+                    p_theta, dp_theta = pysh.legendre.PlmBar_d1(lmax, cost[t_i])
+                    dp_theta *= -sint[t_i]
+                elif cost[t_i] >= 0:
                     p_theta_a[:, t_i], dp_theta_a[:, t_i] = pysh.legendre.PlmBar_d1(
                         lmax, cost[t_i]
                     )
@@ -266,12 +276,13 @@ def SH_deriv_store(
                     dp_theta = dp_theta_a[:, t_i] * -sint[t_i]
                 else:
                     # Sign conversion when cost is negative
+                    idx_sign = nlat // 2 - t_i if nlat % 2 != 0 else nlat // 2 - t_i - 1
                     p_theta = p_theta_a[:, idx_sign] * signs_p_theta
                     dp_theta = dp_theta_a[:, idx_sign] * signs_dp_theta * -sint[t_i]
 
             for l in range(lmax + 1):
                 lapla = float(-l * (l + 1))
-                if theta == 0:
+                if (theta == 0) or (theta_180 == colat_min):
                     cosmphi_a[l] = np.cos(l * phi_ar)
                     sinmphi_a[l] = np.sin(l * phi_ar)
 
@@ -311,8 +322,8 @@ def SH_deriv_store(
                 y_lm_save[t_i, :, 1, index_i] = sinmphi_a[m_abs_i] * p_t_ind
 
                 if theta == 0:
-                    Y_lm_d2_theta_a[t_i, :, :, index] = 0.0
                     # Not defined.
+                    Y_lm_d2_theta_a[t_i, :, :, index] = 0.0
                 else:
                     # Make use of the Laplacian identity to
                     # estimate the last derivative.
@@ -513,14 +524,15 @@ def Displacement_strains(
     quiet : bool, optional, default = True
         If True, suppress printing output.
     """
+
     if lmax != np.shape(A_lm)[2] - 1:
         if quiet is False:
             print(
                 "Padding A_lm and w_lm from lmax = %s to %s"
                 % (np.shape(A_lm)[2] - 1, lmax)
             )
-        A_lm = pysh.SHCoeffs.from_array(A_lm).pad(lmax=lmax).coeffs
-        w_lm = pysh.SHCoeffs.from_array(w_lm).pad(lmax=lmax).coeffs
+        A_lm = A_lm[:, : lmax + 1, : lmax + 1]
+        w_lm = w_lm[:, : lmax + 1, : lmax + 1]
 
     if lmaxgrid is None:
         lmaxgrid = lmax
@@ -710,7 +722,7 @@ def Principal_strainstress_angle(s_theta, s_phi, s_theta_phi):
     sum_strain : array, size same as input arrays
         Array with the sum of the principal horizontal strain or stress.
     principal_angle : array, size same as input arrays
-        Array with the principal strain or stress direction.
+        Array with the principal strain or stress direction in degrees.
 
     Parameters
     ----------
@@ -732,6 +744,49 @@ def Principal_strainstress_angle(s_theta, s_phi, s_theta_phi):
     principal_angle = 0.5 * np.arctan2(2 * s_theta_phi, s_theta - s_phi) * 180.0 / np.pi
 
     return min_strain, max_strain, sum_strain, principal_angle
+
+
+# ==== Principal_strainstress_angle ====
+
+
+def Strainstress_from_principal(min_strain, max_strain, sum_strain, principal_angle):
+    """
+    Calculate strains or stresses, from
+    their principal values.
+
+    Returns
+    -------
+    s_theta : array, float, size same as input arrays
+        Array of the colatitude component of the stress or strain field.
+    s_phi : array, float, size same as input arrays
+        Array of the longitude component of the stress or strain field.
+    s_theta_phi : array, float, size same as input arrays
+        Array of the colatitude and longitude component of the stress or strain field.
+
+    Parameters
+    ----------
+    min_strain : array, size(nlat, nlon)
+        Array with the minimum principal horizontal strain or stress.
+    max_strain : array, size(nlat, nlon)
+        Array with the maximum principal horizontal strain or stress.
+    sum_strain : array, size(nlat, nlon)
+        Array with the sum of the principal horizontal strain or stress.
+    principal_angle : array, size(nlat, nlon)
+        Array with the principal strain or stress direction in degrees.
+    """
+
+    deg2rad = np.pi / 180
+    s_theta = (max_strain + min_strain) / 2.0 + (
+        (max_strain - min_strain) / 2.0
+    ) * np.cos(2.0 * principal_angle * deg2rad)
+    s_phi = (max_strain + min_strain) / 2.0 - (
+        (max_strain - min_strain) / 2.0
+    ) * np.cos(2.0 * principal_angle * deg2rad)
+    s_theta_phi = (
+        0.5 * (max_strain - min_strain) * np.sin(2.0 * principal_angle * deg2rad)
+    )
+
+    return s_theta, s_phi, s_theta_phi
 
 
 # ==== Plt_tecto_Mars ====
@@ -761,8 +816,8 @@ def Plt_tecto_Mars(
         If True, plot compressive tectonic features.
     extension : bool, optional, default = True
         If True, plot extensive tectonic features.
-    ax : object, optional, default = None
-        Matplotlib axis.
+    ax : array of object, optional, default = None
+        Matplotlib axes.
     compression_col : string, optional, default = "k"
         Color of compressive tectonic features.
     extension_col : string, optional, default = "purple"
@@ -813,7 +868,8 @@ def Plt_tecto_Mars(
     for faults, dat, col, label, mx_ix in zip(
         faults_inds, faults_dats, faults_cols, labels, max_idx
     ):
-        ax.plot(np.nan, np.nan, color=col, lw=lw, label=label)
+        for axes in [ax] if np.size(ax) == 1 else ax:
+            axes.plot(np.nan, np.nan, color=col, lw=lw, label=label)
         for indx in range(1, len(faults) + 1):
             if indx == mx_ix:  # Add last point
                 fault_dat_lon = dat[faults[indx - 1] + 1 :][::2]
@@ -831,9 +887,12 @@ def Plt_tecto_Mars(
                 fault_lon_split = np.split(fault_dat_lon, split)
                 fault_dat_lat = np.split(fault_dat_lat, split)
                 for fault_lon, fault_lat in zip(fault_lon_split, fault_dat_lat):
-                    ax.plot(fault_lon % 360, fault_lat, color=col, lw=lw)
+                    for axes in [ax] if np.size(ax) == 1 else ax:
+                        axes.plot(fault_lon % 360, fault_lat, color=col, lw=lw)
             else:
-                ax.plot(fault_dat_lon % 360, fault_dat_lat, color=col, lw=lw)
+                for axes in [ax] if np.size(ax) == 1 else ax:
+                    axes.plot(fault_dat_lon % 360, fault_dat_lat, color=col, lw=lw)
 
     if legend_show:
-        ax.legend(loc=legend_loc)
+        for axes in [ax] if np.size(ax) == 1 else ax:
+            axes.legend(loc=legend_loc)

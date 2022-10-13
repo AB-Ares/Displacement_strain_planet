@@ -10,11 +10,13 @@ from Displacement_strain_planet import (
     Principal_strainstress_angle,
 )
 
+pysh.backends.select_preferred_backend(backend="ducc", nthreads=0)
+
 #################################################################
 # In this example, we solve for the displacement of the surface of
 # Venus by calling the function `Thin_shell_matrix_nmax`, assuming
 # that the gravity and topography of the planet are compensated by
-# a combination of isostatic crustal root variations and flexure.
+# a combination of crustal root variations and flexure.
 # 3 assumptions are required to solve the system, and we here assume
 # that the observed topography and geoid are known, and that there
 # are no density variations in the interior.
@@ -35,7 +37,7 @@ from Displacement_strain_planet import (
 # w_lm flexure,
 # A_lm poloidal term of the tangential displacement,
 # moho_relief_lm` moho relief,
-# dc_lm isostatic crustal root variations,
+# dc_lm crustal root variations,
 # drhom_lm internal density variations,
 # omega_lm tangential load potential,
 # q_lm net load on the lithosphere,
@@ -93,7 +95,7 @@ args_fig = dict(figsize=(12, 10), dpi=100)
 path = "%s/data" % (os.getcwd())
 zeros = pysh.SHCoeffs.from_zeros(lmax=lmax).coeffs
 
-print("Computing displacements and isostatic crustal root variations")
+print("Computing displacements and crustal root variations")
 (
     w_lm,
     A_lm,
@@ -122,7 +124,7 @@ fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, **args_fig)
 ax3.set_visible(False)
 
 grid_W = pysh.SHCoeffs.from_array(w_lm / 1e3).expand(**args_expand) - R / 1e3
-grid_W.plot(ax=ax1, cb_label="Upward displacement (km)", **args_plot)
+grid_W.plot(ax=ax1, cb_label="Upward displacement (km)", **args_plot, ticks="Wsne")
 
 # Add zero displacement contour
 ax1.contour(
@@ -130,8 +132,8 @@ ax1.contour(
 )
 pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
     ax=ax2,
-    cb_label="Isostatic crustal root variations (km)",
-    ticks="wSnE",
+    cb_label="Crustal root variations (km)",
+    ticks="wsnE",
     ylabel=None,
     **args_plot
 )
@@ -203,19 +205,19 @@ args_plot = dict(
     tick_interval=[45, 30],
     colorbar="bottom",
     cmap=cm.vik,
-    cb_ylabel="$\\times 10^{-3}$",
 )
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, **args_fig)
 
 pysh.SHGrid.from_array(min_strain * 1e3).plot(
     ax=ax1,
-    cb_label="Minimum principal horizontal strain",
+    ticks="Wsne",
+    cb_label="Minimum principal horizontal strain ($\\times 10^{-3}$)",
     cmap_limits=[-6, 20],
     **args_plot
 )
 pysh.SHGrid.from_array(max_strain * 1e3).plot(
     ax=ax2,
-    cb_label="Maximum principal horizontal strain",
+    cb_label="Maximum principal horizontal strain ($\\times 10^{-3}$)",
     cmap_limits=[-6, 20],
     ticks="wSnE",
     ylabel=None,
@@ -223,8 +225,9 @@ pysh.SHGrid.from_array(max_strain * 1e3).plot(
 )
 pysh.SHGrid.from_array(sum_strain * 1e3).plot(
     ax=ax3,
-    cb_label="Sum of principal horizontal strains",
+    cb_label="Sum of principal horizontal strains ($\\times 10^{-3}$)",
     cmap_limits=[-6, 20],
+    ticks="Wsne",
     **args_plot
 )
 pysh.SHGrid.from_array(principal_angle).plot(

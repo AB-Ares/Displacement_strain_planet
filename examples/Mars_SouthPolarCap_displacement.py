@@ -4,6 +4,8 @@ import pyshtools as pysh
 from cmcrameri import cm
 from Displacement_strain_planet import Thin_shell_matrix_nmax, Thin_shell_matrix
 
+pysh.backends.select_preferred_backend(backend="ducc", nthreads=0)
+
 #################################################################
 # In this example, we solve for the displacement of the surface at
 # the south pole of Mars and for a given elastic thickness and ice
@@ -16,7 +18,7 @@ from Displacement_strain_planet import Thin_shell_matrix_nmax, Thin_shell_matrix
 # w_lm flexure,
 # A_lm poloidal term of the tangential displacement,
 # moho_relief_lm` moho relief,
-# dc_lm isostatic crustal root variations,
+# dc_lm crustal root variations,
 # drhom_lm internal density variations,
 # omega_lm tangential load potential,
 # q_lm net load on the lithosphere,

@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Displacement_strain_planet.Displacement_strain module &mdash; Displacement_strain_planet</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -29,7 +30,7 @@
             <img src="../_static/bender.jpeg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                0.3.2
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -82,7 +83,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="module-Displacement_strain_planet.Displacement_strain">
+  <section id="module-Displacement_strain_planet.Displacement_strain">
 <span id="displacement-strain-planet-displacement-strain-module"></span><h1>Displacement_strain_planet.Displacement_strain module<a class="headerlink" href="#module-Displacement_strain_planet.Displacement_strain" title="Permalink to this headline"></a></h1>
 <p>Functions for calculating Legendre polynomial derivatives, stresses
 and strains and plotting the Knapmeyer et al. (2006) tectonic dataset.</p>
@@ -171,7 +172,7 @@ on Mars.</p>
 <li><p><strong>path</strong> (<em>string</em>) – path for the location of the Knameyer et al (2006) dataset.</p></li>
 <li><p><strong>compression</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>default = False</em>) – If True, plot compressive tectonic features.</p></li>
 <li><p><strong>extension</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>default = True</em>) – If True, plot extensive tectonic features.</p></li>
-<li><p><strong>ax</strong> (<em>object</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Matplotlib axis.</p></li>
+<li><p><strong>ax</strong> (<em>array of object</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Matplotlib axes.</p></li>
 <li><p><strong>compression_col</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default = &quot;k&quot;</em>) – Color of compressive tectonic features.</p></li>
 <li><p><strong>extension_col</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default = &quot;purple&quot;</em>) – Color of extensive tectonic features.</p></li>
 <li><p><strong>lw</strong> (<em>int</em><em>, </em><em>optional</em><em>, </em><em>default = 1</em>) – Linewidth for the tectonic features</p></li>
@@ -193,7 +194,7 @@ their principal angles.</p>
 <li><p><strong>min_strain</strong> (<em>array, size same as input arrays</em>) – Array with the minimum principal horizontal strain or stress.</p></li>
 <li><p><strong>max_strain</strong> (<em>array, size same as input arrays</em>) – Array with the maximum principal horizontal strain or stress.</p></li>
 <li><p><strong>sum_strain</strong> (<em>array, size same as input arrays</em>) – Array with the sum of the principal horizontal strain or stress.</p></li>
-<li><p><strong>principal_angle</strong> (<em>array, size same as input arrays</em>) – Array with the principal strain or stress direction.</p></li>
+<li><p><strong>principal_angle</strong> (<em>array, size same as input arrays</em>) – Array with the principal strain or stress direction in degrees.</p></li>
 </ul>
 </p>
 </dd>
@@ -241,7 +242,7 @@ of Legendre polynomials with respect to colatitude and longitude.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="Displacement_strain_planet.Displacement_strain.SH_deriv_store">
-<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.Displacement_strain.</span></span><span class="sig-name descname"><span class="pre">SH_deriv_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmaxgrid=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compressed=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet=True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strain.SH_deriv_store" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.Displacement_strain.</span></span><span class="sig-name descname"><span class="pre">SH_deriv_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">lmax</span></em>, <em class="sig-param"><span class="pre">path</span></em>, <em class="sig-param"><span class="pre">dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></em>, <em class="sig-param"><span class="pre">lmaxgrid=None</span></em>, <em class="sig-param"><span class="pre">grid=None</span></em>, <em class="sig-param"><span class="pre">save=True</span></em>, <em class="sig-param"><span class="pre">compressed=False</span></em>, <em class="sig-param"><span class="pre">colat_min=0</span></em>, <em class="sig-param"><span class="pre">colat_max=180</span></em>, <em class="sig-param"><span class="pre">quiet=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strain.SH_deriv_store" title="Permalink to this definition"></a></dt>
 <dd><p>Compute and store or load spherical harmonic derivatives
 over the entire sphere (first and second order). The spherical
 harmonic degree and order correspond to the index l*(l+1)/2+m</p>
@@ -279,13 +280,40 @@ If None, the grid is set to ‘GLQ’.</p></li>
 <li><p><strong>compressed</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>default = False</em>) – If True, the data is saved in compressed .npz format instead of
 npy, which decreases the file size by about a factor 2. This is
 recommended when lmax &gt; 75.</p></li>
+<li><p><strong>colat_min</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>default = 0</em>) – Minimum colatitude for grid computation of SH derivatives.</p></li>
+<li><p><strong>colat_max</strong> (<em>float</em><em>, </em><em>optional</em><em>, </em><em>default = 180</em>) – Maximum colatitude for grid computation of SH derivatives.</p></li>
 <li><p><strong>quiet</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>default = True</em>) – If True, suppress printing output.</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="Displacement_strain_planet.Displacement_strain.Strainstress_from_principal">
+<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.Displacement_strain.</span></span><span class="sig-name descname"><span class="pre">Strainstress_from_principal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_strain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_strain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sum_strain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">principal_angle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strain.Strainstress_from_principal" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate strains or stresses, from
+their principal values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>s_theta</strong> (<em>array, float, size same as input arrays</em>) – Array of the colatitude component of the stress or strain field.</p></li>
+<li><p><strong>s_phi</strong> (<em>array, float, size same as input arrays</em>) – Array of the longitude component of the stress or strain field.</p></li>
+<li><p><strong>s_theta_phi</strong> (<em>array, float, size same as input arrays</em>) – Array of the colatitude and longitude component of the stress or strain field.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>min_strain</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>nlat</em><em>, </em><em>nlon</em><em>)</em>) – Array with the minimum principal horizontal strain or stress.</p></li>
+<li><p><strong>max_strain</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>nlat</em><em>, </em><em>nlon</em><em>)</em>) – Array with the maximum principal horizontal strain or stress.</p></li>
+<li><p><strong>sum_strain</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>nlat</em><em>, </em><em>nlon</em><em>)</em>) – Array with the sum of the principal horizontal strain or stress.</p></li>
+<li><p><strong>principal_angle</strong> (<em>array</em><em>, </em><em>size</em><em>(</em><em>nlat</em><em>, </em><em>nlon</em><em>)</em>) – Array with the principal strain or stress direction in degrees.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 
 
            </div>
