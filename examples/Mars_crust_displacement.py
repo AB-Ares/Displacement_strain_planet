@@ -210,7 +210,8 @@ args_plot = dict(
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, **args_fig)
 
 pysh.SHGrid.from_array(min_strain * 1e3).plot(
-    ax=ax1, ticks="Wsne",
+    ax=ax1,
+    ticks="Wsne",
     cb_label="Minimum principal horizontal strain ($\\times 10^{-3}$)",
     cmap_limits=[-4, 4],
     **args_plot,
@@ -226,7 +227,8 @@ pysh.SHGrid.from_array(max_strain * 1e3).plot(
 pysh.SHGrid.from_array(sum_strain * 1e3).plot(
     ax=ax3,
     cb_label="Sum of principal horizontal strains ($\\times 10^{-3}$)",
-    cmap_limits=[-3, 3], ticks="Wsne",
+    cmap_limits=[-3, 3],
+    ticks="Wsne",
     **args_plot,
 )
 pysh.SHGrid.from_array(principal_angle).plot(

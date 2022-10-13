@@ -369,31 +369,51 @@ def Thin_shell_matrix(
                     if not first_inv:
                         if cnsts == "drhom_lm":
                             drho_omega_corr[drhom_lm == 0] = 0.0
-                            drho_omega_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
+                            drho_omega_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
+                                i, :, : lmax + 1, : lmax + 1
+                            ]
                             drho_q_corr[drhom_lm == 0] = 0.0
-                            drho_q_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
+                            drho_q_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
+                                i, :, : lmax + 1, : lmax + 1
+                            ]
                         elif cnsts == "omega_lm":
                             drho_omega_corr[omega_lm == 0] = 0.0
-                            drho_omega_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
+                            drho_omega_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
+                                i, :, : lmax + 1, : lmax + 1
+                            ]
                         elif cnsts == "q_lm":
                             drho_q_corr[q_lm == 0] = 0.0
-                            drho_q_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
+                            drho_q_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
+                                i, :, : lmax + 1, : lmax + 1
+                            ]
                         elif cnsts == "H_lm":
                             H_corr[H_lm == 0] = 0.0
-                            H_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
+                            H_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
+                                i, :, : lmax + 1, : lmax + 1
+                            ]
                         elif cnsts == "dc_lm":
                             wdc_corr[dc_lm == 0] = 0.0
-                            wdc_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
+                            wdc_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
+                                i, :, : lmax + 1, : lmax + 1
+                            ]
                         elif cnsts == "w_lm":
                             w_corr[w_lm == 0] = 0.0
-                            w_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
+                            w_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
+                                i, :, : lmax + 1, : lmax + 1
+                            ]
                         elif cnsts == "G_lm":
                             H_corr[G_lm == 0] = 0.0
-                            H_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
+                            H_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
+                                i, :, : lmax + 1, : lmax + 1
+                            ]
                             w_corr[G_lm == 0] = 0.0
-                            w_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
+                            w_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
+                                i, :, : lmax + 1, : lmax + 1
+                            ]
                             wdc_corr[G_lm == 0] = 0.0
-                            wdc_corr[:,:lmax+1,:lmax+1] *= add_arrays[i,:,:lmax+1,:lmax+1]
+                            wdc_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
+                                i, :, : lmax + 1, : lmax + 1
+                            ]
 
     error_msg = "\nNumber of input arrays was {:s}. ".format(
         repr(sum_array_test)
@@ -872,10 +892,13 @@ def Thin_shell_matrix(
                 + "\nG_lm = %s" % (outs[idx_G_lm])
                 + "\nGc_lm = %s" % (outs[idx_Gc_lm])
                 + "\nH_lm = %s" % (outs[idx_H_lm])
-                + "%s" %(
+                + "%s"
+                % (
                     "Make sure the add_equation doesn't involve w_lm, G_lm,"
                     + " or Gc_lm, which are specifically treated when COM is True (default)"
-                if l == 1 and COM else "")
+                    if l == 1 and COM
+                    else ""
+                )
             )
 
         # Write solutions
