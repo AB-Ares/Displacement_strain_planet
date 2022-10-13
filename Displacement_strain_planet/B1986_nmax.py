@@ -872,12 +872,10 @@ def Thin_shell_matrix(
                 + "\nG_lm = %s" % (outs[idx_G_lm])
                 + "\nGc_lm = %s" % (outs[idx_Gc_lm])
                 + "\nH_lm = %s" % (outs[idx_H_lm])
-                + (
+                + "%s" %(
                     "Make sure the add_equation doesn't involve w_lm, G_lm,"
-                    + "or Gc_lm, which are specifically treated when COM is True (default)"
-                )
-                if l == 1 and COM
-                else ""
+                    + " or Gc_lm, which are specifically treated when COM is True (default)"
+                if l == 1 and COM else "")
             )
 
         # Write solutions

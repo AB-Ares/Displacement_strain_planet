@@ -126,7 +126,7 @@ fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, **args_fig)
 ax3.set_visible(False)
 
 grid_W = pysh.SHCoeffs.from_array(w_lm / 1e3).expand(**args_expand) - R / 1e3
-grid_W.plot(ax=ax1, cb_label="Upward displacement (km)", **args_plot)
+grid_W.plot(ax=ax1, cb_label="Upward displacement (km)", **args_plot, ticks="Wsne")
 # Add zero displacement contour
 ax1.contour(
     grid_W.data > 0, levels=[0.99], extent=(0, 360, -90, 90), colors="k", origin="upper"
@@ -135,7 +135,7 @@ ax1.contour(
 pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
     ax=ax2,
     cb_label="Crustal root variations (km)",
-    ticks="wSnE",
+    ticks="wsnE",
     ylabel=None,
     **args_plot,
 )
@@ -205,20 +205,19 @@ args_plot = dict(
     tick_interval=[45, 30],
     colorbar="bottom",
     cmap=cm.vik,
-    cb_ylabel="$\\times 10^{-3}$",
     cb_tick_interval=1,
 )
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, **args_fig)
 
 pysh.SHGrid.from_array(min_strain * 1e3).plot(
-    ax=ax1,
-    cb_label="Minimum principal horizontal strain",
+    ax=ax1, ticks="Wsne",
+    cb_label="Minimum principal horizontal strain ($\\times 10^{-3}$)",
     cmap_limits=[-4, 4],
     **args_plot,
 )
 pysh.SHGrid.from_array(max_strain * 1e3).plot(
     ax=ax2,
-    cb_label="Maximum principal horizontal strain",
+    cb_label="Maximum principal horizontal strain ($\\times 10^{-3}$)",
     ticks="wSnE",
     ylabel=None,
     cmap_limits=[-4, 4],
@@ -226,8 +225,8 @@ pysh.SHGrid.from_array(max_strain * 1e3).plot(
 )
 pysh.SHGrid.from_array(sum_strain * 1e3).plot(
     ax=ax3,
-    cb_label="Sum of principal horizontal strains",
-    cmap_limits=[-3, 3],
+    cb_label="Sum of principal horizontal strains ($\\times 10^{-3}$)",
+    cmap_limits=[-3, 3], ticks="Wsne",
     **args_plot,
 )
 pysh.SHGrid.from_array(principal_angle).plot(

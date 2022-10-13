@@ -125,6 +125,8 @@ def SH_deriv_store(
     grid=None,
     save=True,
     compressed=False,
+    colat_min=0,
+    colat_max=180,
     quiet=True,
 ):
     """
@@ -176,6 +178,10 @@ def SH_deriv_store(
         If True, the data is saved in compressed .npz format instead of
         npy, which decreases the file size by about a factor 2. This is
         recommended when lmax > 75.
+    colat_min : float, optional, default = 0
+        Minimum colatitude for grid computation of SH derivatives.
+    colat_max : float, optional, default = 180
+        Maximum colatitude for grid computation of SH derivatives.
     quiet : bool, optional, default = True
         If True, suppress printing output.
     """
@@ -239,18 +245,22 @@ def SH_deriv_store(
         sintt = np.divide(1.0, sint**2, out=np.zeros_like(sint), where=sint != 0)
         costsint = np.divide(cost, sint, out=np.zeros_like(sint), where=sint != 0)
 
-        t_i = -1
         sign_conversion = False
-        for theta in theta_range:
-            if quiet is False:
-                print(" colatitude %s of 180" % (int(theta * 180 / pi)), end="\r")
-            t_i += 1
-            idx_sign = nlat // 2 - t_i if nlat % 2 != 0 else nlat // 2 - t_i - 1
+        for t_i, theta in enumerate(theta_range):
+            theta_180 = int(theta * 180 / pi)
             if theta == 0:
                 dp_theta = np.zeros((index_size))
                 p_theta = np.zeros((index_size))
-            else:
-                if cost[t_i] >= 0:
+            if quiet is False:
+                print(" colatitude %s of %s" % (theta_180, colat_max), end="\r")
+            if theta_180 < colat_min or theta_180 > colat_max:
+                continue
+            elif theta != 0:
+                if colat_min != 0 or colat_max != 180:
+                    # Don't use the symmetry speedup, which requires a whole sphere computation
+                    p_theta, dp_theta = pysh.legendre.PlmBar_d1(lmax, cost[t_i])
+                    dp_theta *= -sint[t_i]
+                elif cost[t_i] >= 0:
                     p_theta_a[:, t_i], dp_theta_a[:, t_i] = pysh.legendre.PlmBar_d1(
                         lmax, cost[t_i]
                     )
@@ -266,12 +276,13 @@ def SH_deriv_store(
                     dp_theta = dp_theta_a[:, t_i] * -sint[t_i]
                 else:
                     # Sign conversion when cost is negative
+                    idx_sign = nlat // 2 - t_i if nlat % 2 != 0 else nlat // 2 - t_i - 1
                     p_theta = p_theta_a[:, idx_sign] * signs_p_theta
                     dp_theta = dp_theta_a[:, idx_sign] * signs_dp_theta * -sint[t_i]
 
             for l in range(lmax + 1):
                 lapla = float(-l * (l + 1))
-                if theta == 0:
+                if (theta == 0) or (theta_180 == colat_min):
                     cosmphi_a[l] = np.cos(l * phi_ar)
                     sinmphi_a[l] = np.sin(l * phi_ar)
 
@@ -311,8 +322,8 @@ def SH_deriv_store(
                 y_lm_save[t_i, :, 1, index_i] = sinmphi_a[m_abs_i] * p_t_ind
 
                 if theta == 0:
-                    Y_lm_d2_theta_a[t_i, :, :, index] = 0.0
                     # Not defined.
+                    Y_lm_d2_theta_a[t_i, :, :, index] = 0.0
                 else:
                     # Make use of the Laplacian identity to
                     # estimate the last derivative.
