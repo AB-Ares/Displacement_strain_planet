@@ -230,12 +230,18 @@ def SH_deriv_store(
         Y_lm_d2_thetaphi_a = np.zeros(shape_save, dtype=dtype)
         Y_lm_d2_theta_a = np.zeros(shape_save, dtype=dtype)
         y_lm_save = np.zeros(shape_save, dtype=dtype)
+
         phi_ar = np.linspace(0, 360, nlon, endpoint=False, dtype=dtype) * pi / 180.0
         y_lm = np.zeros((len(phi_ar), 2, index_size), dtype=dtype)
         cosmphi_a = np.zeros((lmax + 1, len(phi_ar)), dtype=dtype)
         sinmphi_a = np.zeros((lmax + 1, len(phi_ar)), dtype=dtype)
+        msinmphi = np.zeros((lmax + 1, len(phi_ar)), dtype=dtype)
+        m2cosphi = np.zeros((lmax + 1, len(phi_ar)), dtype=dtype)
+        mcosmphi = np.zeros((lmax + 1, len(phi_ar)), dtype=dtype)
+        m2sinphi = np.zeros((lmax + 1, len(phi_ar)), dtype=dtype)
         p_theta_a = np.zeros((index_size, nlat // 2 + 1), dtype=dtype)
         dp_theta_a = np.zeros((index_size, nlat // 2 + 1), dtype=dtype)
+        lapla_a = np.zeros((index_size), dtype=dtype)
         theta_range = (
             np.linspace(0, 180, nlat, endpoint=False, dtype=dtype) * pi / 180.0
         )
@@ -281,14 +287,31 @@ def SH_deriv_store(
                     dp_theta = dp_theta_a[:, idx_sign] * signs_dp_theta * -sint[t_i]
 
             for l in range(lmax + 1):
-                lapla = float(-l * (l + 1))
-                if (theta == 0) or (theta_180 == colat_min):
-                    cosmphi_a[l] = np.cos(l * phi_ar)
-                    sinmphi_a[l] = np.sin(l * phi_ar)
-
                 m = np.arange(-l, l + 1, dtype=int)
                 m_abs = np.abs(m)
                 index = np.array(l * (l + 1) / 2 + m_abs, dtype=int)
+
+                if (theta == 0) or (theta_180 == colat_min):
+                    cosmphi_a[l] = np.cos(l * phi_ar)
+                    sinmphi_a[l] = np.sin(l * phi_ar)
+                    lapla_a[index] = float(-l * (l + 1))
+                    ## Positive orders
+                    m_i = m >= 0
+                    m_abs_i = m_abs[m_i]
+                    index_i = index[m_i]
+                    # First cos(m*phi) derivative
+                    msinmphi[m_abs_i] = sinmphi_a[m_abs_i] * np.array([-m[m_i]]).T
+                    # Second cos(m*phi) derivative
+                    m2cosphi[m_abs_i] = (
+                        cosmphi_a[m_abs_i] * np.array([-(m[m_i] ** 2)]).T
+                    )
+                    ## Negative orders
+                    m_abs_i = m_abs[~m_i]
+                    index_i = index[~m_i]
+                    mcosmphi[m_abs_i] = cosmphi_a[m_abs_i] * np.array([m_abs_i]).T
+                    m2sinphi[m_abs_i] = (
+                        sinmphi_a[m_abs_i] * np.array([-(m_abs_i**2)]).T
+                    )
 
                 ## Positive orders
                 m_i = m >= 0
@@ -297,14 +320,10 @@ def SH_deriv_store(
                 dp_t_ind = np.array([dp_theta[index_i]]).T
                 p_t_ind = np.array([p_theta[index_i]]).T
 
-                # First cos(m*phi) derivative
-                msinmphi = sinmphi_a[m_abs_i, :] * np.array([-m[m_i]]).T
-                # Second cos(m*phi) derivative
-                m2cosphi = cosmphi_a[m_abs_i, :] * np.array([-(m[m_i] ** 2)]).T
-                Y_lm_d1_theta_a[t_i, :, 0, index_i] = cosmphi_a[m_abs_i, :] * dp_t_ind
-                Y_lm_d1_phi_a[t_i, :, 0, index_i] = p_t_ind * msinmphi
-                Y_lm_d2_phi_a[t_i, :, 0, index_i] = p_t_ind * m2cosphi
-                Y_lm_d2_thetaphi_a[t_i, :, 0, index_i] = msinmphi * dp_t_ind
+                Y_lm_d1_theta_a[t_i, :, 0, index_i] = cosmphi_a[m_abs_i] * dp_t_ind
+                Y_lm_d1_phi_a[t_i, :, 0, index_i] = p_t_ind * msinmphi[m_abs_i]
+                Y_lm_d2_phi_a[t_i, :, 0, index_i] = p_t_ind * m2cosphi[m_abs_i]
+                Y_lm_d2_thetaphi_a[t_i, :, 0, index_i] = msinmphi[m_abs_i] * dp_t_ind
                 y_lm_save[t_i, :, 0, index_i] = cosmphi_a[m_abs_i] * p_t_ind
 
                 ## Negative orders
@@ -313,25 +332,23 @@ def SH_deriv_store(
                 dp_t_ind = np.array([dp_theta[index_i]]).T
                 p_t_ind = np.array([p_theta[index_i]]).T
 
-                mcosmphi = cosmphi_a[m_abs_i] * np.array([m_abs_i]).T
-                m2sinphi = sinmphi_a[m_abs_i] * np.array([-(m_abs_i**2)]).T
                 Y_lm_d1_theta_a[t_i, :, 1, index_i] = sinmphi_a[m_abs_i] * dp_t_ind
-                Y_lm_d1_phi_a[t_i, :, 1, index_i] = mcosmphi * p_t_ind
-                Y_lm_d2_phi_a[t_i, :, 1, index_i] = m2sinphi * p_t_ind
-                Y_lm_d2_thetaphi_a[t_i, :, 1, index_i] = mcosmphi * dp_t_ind
+                Y_lm_d1_phi_a[t_i, :, 1, index_i] = mcosmphi[m_abs_i] * p_t_ind
+                Y_lm_d2_phi_a[t_i, :, 1, index_i] = m2sinphi[m_abs_i] * p_t_ind
+                Y_lm_d2_thetaphi_a[t_i, :, 1, index_i] = mcosmphi[m_abs_i] * dp_t_ind
                 y_lm_save[t_i, :, 1, index_i] = sinmphi_a[m_abs_i] * p_t_ind
 
-                if theta == 0:
-                    # Not defined.
-                    Y_lm_d2_theta_a[t_i, :, :, index] = 0.0
-                else:
-                    # Make use of the Laplacian identity to
-                    # estimate the last derivative.
-                    Y_lm_d2_theta_a[t_i, :, :, index] = (
-                        lapla * y_lm_save[t_i, :, :, index]
-                        - Y_lm_d1_theta_a[t_i, :, :, index] * costsint[t_i]
-                        - sintt[t_i] * Y_lm_d2_phi_a[t_i, :, :, index]
-                    )
+            if theta == 0:
+                # Not defined.
+                Y_lm_d2_theta_a[t_i] = 0.0
+            else:
+                # Make use of the Laplacian identity to
+                # estimate the last derivative.
+                Y_lm_d2_theta_a[t_i] = (
+                    lapla_a * y_lm_save[t_i]
+                    - Y_lm_d1_theta_a[t_i] * costsint[t_i]
+                    - sintt[t_i] * Y_lm_d2_phi_a[t_i]
+                )
 
         if save:
             if quiet is False:
