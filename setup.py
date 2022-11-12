@@ -21,7 +21,7 @@ install_requires = [
 
 setup(
     name="Displacement_strain_planet",
-    version="0.4.0",
+    version="0.5.0",
     description="Planetary crustal thickness, displacement, "
     + "stress and strain calculations in spherical harmonics.",
     long_description=long_description,

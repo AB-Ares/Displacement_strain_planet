@@ -147,6 +147,10 @@ Phillips (1998).</p>
 <dt>Displacement_strains</dt><dd><p>Computes the Banerdt (1986) equations to determine strains
 from displacements with a correction to the theta_phi term.</p>
 </dd>
+<dt>Displacement_strains_shtools</dt><dd><p>Computes the Banerdt (1986) equations to determine strains
+and stresses from the displacements. This function uses
+SHTOOLS to derive the spherical harmonic gradients.</p>
+</dd>
 <dt>Principal_strainstress_angle</dt><dd><p>Calculate principal strains, stresses, and
 their principal angles.</p>
 </dd>
@@ -228,6 +232,63 @@ of Legendre polynomials with respect to longitude.</p></li>
 of Legendre polynomials with respect to colatitude and longitude.</p></li>
 <li><p><strong>y_lm</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – Array of spherical harmonic functions.</p></li>
 <li><p><strong>path</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – path where to find the stored Legendre polynomials.</p></li>
+<li><p><strong>quiet</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>default = True</em>) – If True, suppress printing output.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Displacement_strain_planet.Displacement_strains_shtools">
+<span class="sig-prename descclassname"><span class="pre">Displacement_strain_planet.</span></span><span class="sig-name descname"><span class="pre">Displacement_strains_shtools</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A_lm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_lm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Te</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmaxgrid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Displacement_strain_planet.Displacement_strains_shtools" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the Banerdt (1986) equations to determine strains
+and stresses from the displacements. This function uses
+SHTOOLS to derive the spherical harmonic gradients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>stress_theta</strong> (<em>array, size(2*lmax+2,2*(2*lmax+2))</em>) – Array with the stress field with respect to colatitude.
+This is equation A12 from Banerdt (1986).</p></li>
+<li><p><strong>stress_phi</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the stress field with respect to longitude.
+This is equation A13 from Banerdt (1986).</p></li>
+<li><p><strong>stress_theta_phi</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the stress field with respect to colatitude and longitude.
+This is equation A14 from Banerdt (1986).</p></li>
+<li><p><strong>eps_theta</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the elongation with respect to colatitude.
+This is equation A16 from Banerdt (1986).</p></li>
+<li><p><strong>eps_phi</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the elongation with respect to longitude.
+This is equation A17 from Banerdt (1986).</p></li>
+<li><p><strong>omega</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the shearing deformation.
+This is equation A18 from Banerdt (1986).</p></li>
+<li><p><strong>kappa_theta</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the bending deformation with respect to colatitude.
+This is equation A19 from Banerdt (1986).</p></li>
+<li><p><strong>kappa_phi</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the bending deformation with respect to longitude.
+This is equation A20 from Banerdt (1986).</p></li>
+<li><p><strong>tau</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the twisting deformation.
+This is equation A21 from Banerdt (1986).</p></li>
+<li><p><strong>tot_theta</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the total deformation with respect to colatitude.</p></li>
+<li><p><strong>tot_phi</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the total deformation with respect to longitude.</p></li>
+<li><p><strong>tot_thetaphi</strong> (<em>array, size(2,lmax+1,lmax+1)</em>) – Array with the total deformation with respect to colatitude
+and longitude.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>A_lm</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em>) – Array with the spherical harmonic coefficients of the
+poloidal term of the tangential displacement.</p></li>
+<li><p><strong>w_lm</strong> (<em>array</em><em>, </em><em>float</em><em>, </em><em>size</em><em>(</em><em>2</em><em>,</em><em>lmax+1</em><em>,</em><em>lmax+1</em><em>)</em>) – Array with the spherical harmonic coefficients of the
+upward displacement.</p></li>
+<li><p><strong>E</strong> (<em>float</em>) – Young’s modulus.</p></li>
+<li><p><strong>v</strong> (<em>float</em>) – Poisson’s ratio.</p></li>
+<li><p><strong>R</strong> (<em>float</em>) – Mean radius of the planet.</p></li>
+<li><p><strong>Te</strong> (<em>float</em>) – Elastic thickness of the lithosphere.</p></li>
+<li><p><strong>lmax</strong> (<em>int</em>) – Maximum spherical harmonic degree for computations.</p></li>
+<li><p><strong>lmaxgrid</strong> (<em>int</em><em>, </em><em>optional</em><em>, </em><em>default = None</em>) – The maximum spherical harmonic degree resolvable by the grid.
+If None, this parameter is set to lmax.
+When grid==’GLQ’, the gridshape is (lmaxgrid+1, 2*lmaxgrid+1) and
+(2*lmaxgrid+2, 2*(2*lmaxgrid+2)) when grid==’DH’.
+Quadrature grids following the convention of SHTOOLs.
+If None, the grid is set to ‘GLQ’.</p></li>
 <li><p><strong>quiet</strong> (<em>bool</em><em>, </em><em>optional</em><em>, </em><em>default = True</em>) – If True, suppress printing output.</p></li>
 </ul>
 </dd>
