@@ -14624,8 +14624,6 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pyshtools</span> <span class="k">as</span> <span class="nn">pysh</span>
 <span class="kn">from</span> <span class="nn">Displacement_strain_planet</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="c1"># Set the preferred backend of Shtools to &#39;ducc&#39;, which is slightly faster</span>
-<span class="n">pysh</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">select_preferred_backend</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s1">&#39;ducc&#39;</span><span class="p">,</span> <span class="n">nthreads</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> 
 </pre></div>
 
      </div>
@@ -15291,7 +15289,7 @@ class="
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>Let's make a funny example where we force the model to compensate the degree-1 loads by crustal density variations and the rest by crustal thickness variations to show an additional possibility in the function. In that case, the additional equation becomes <code>'(w_lm - dc_lm) * add_array1 + drhom_lm * add_array2'</code>, where <code>'add_array1'</code> and <code>'add_array2'</code> contain the necessary spherical harmonic coefficients (see below), which are passed through the argument <code>add_arrays</code>. More arrays can be input as <code>'add_array3'</code>, <code>'add_array4'</code> and so on. All must be with shape equal to the input constraints <code>(2,lmax+1,lmax+1)</code>.</p>
 <p><strong>Important note:</strong> 
-1) For multiplications in <code>add_equation</code>, we only use the <code>(0,lmax+1,0)</code> terms of each <code>add_arrays</code>. All terms <code>(2,lmax+1,lmax+1)</code> are used with additions or substractions.</p>
+1) For multiplications in <code>add_equation</code>, and in order to avoid non-linearities we only use the <code>(0,lmax+1,0)</code> terms of each <code>add_arrays</code>. All terms <code>(2,lmax+1,lmax+1)</code> are used with additions or substractions.</p>
 <p>2) Multiplications in <code>add_equation</code> can generate problems when used with finite-amplitude correction (<code>nmax != 1</code>). For example, this will introduce correction terms beyond degree-1 for drhom_lm, which is not consistent with the input equation.</p>
 
 </div>
@@ -15488,7 +15486,7 @@ class="
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>The <code>Displacement_strains</code> function outputs stresses as a function of colatitude ($\theta$) and longitude ($\phi$) as: $\sigma_{\theta}$ = <code>stress_theta</code>, $\sigma_{\phi}$ = <code>stress_phi</code>, and $\sigma_{\theta\phi}$ = <code>stress_theta_phi</code>. Elongation and sheering deformations of the middle surface of the shell are given by: $\varepsilon_{\theta}$ = <code>eps_theta</code>, $\varepsilon_{\phi}$ = <code>eps_phi</code>, and $\varepsilon_{\theta\phi}$ = <code>omega</code>. Bending and twisting deformation of the shell are given by: $\kappa_{\theta}$ = <code>kappa_theta</code>, $\kappa_{\phi}$ = <code>kappa_phi</code>, $\kappa_{\theta\phi}$ = <code>tau</code>. The total deformation is given by <code>tot_theta</code>, <code>tot_phi</code>, and <code>tot_thetaphi</code>.</p>
+<p>The <code>Displacement_strains_shtools</code> function outputs stresses as a function of colatitude ($\theta$) and longitude ($\phi$) as: $\sigma_{\theta}$ = <code>stress_theta</code>, $\sigma_{\phi}$ = <code>stress_phi</code>, and $\sigma_{\theta\phi}$ = <code>stress_theta_phi</code>. Elongation and sheering deformations of the middle surface of the shell are given by: $\varepsilon_{\theta}$ = <code>eps_theta</code>, $\varepsilon_{\phi}$ = <code>eps_phi</code>, and $\varepsilon_{\theta\phi}$ = <code>omega</code>. Bending and twisting deformation of the shell are given by: $\kappa_{\theta}$ = <code>kappa_theta</code>, $\kappa_{\phi}$ = <code>kappa_phi</code>, $\kappa_{\theta\phi}$ = <code>tau</code>. The total deformation is given by <code>tot_theta</code>, <code>tot_phi</code>, and <code>tot_thetaphi</code>.</p>
 <p><strong>In these scripts, compression is defined to be negative.</strong></p>
 <p>The strains are then rotated into their principal components using the function call <code>Principal_strainstress_angle</code> to output the minimum, maximum, and sum of the principal horizontal strains (min_strain, max_strain, sum_strain). The function also outputs the principal strain angle <code>principal_angle</code>.</p>
 

@@ -10,8 +10,6 @@ from Displacement_strain_planet import (
     Principal_strainstress_angle,
 )
 
-pysh.backends.select_preferred_backend(backend="ducc", nthreads=0)
-
 #################################################################
 # In this example, we solve for the displacement of the surface of
 # Venus by calling the function `Thin_shell_matrix_nmax`, assuming

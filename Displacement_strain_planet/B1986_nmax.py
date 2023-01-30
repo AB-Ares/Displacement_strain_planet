@@ -6,7 +6,7 @@ import re
 import numpy as np
 from sympy import linsolve, lambdify, symbols, Expr, expand, srepr
 from sympy.parsing.sympy_parser import parse_expr
-from pyshtools.backends.ducc0_wrapper import MakeGridDH
+from pyshtools.expand import MakeGridDH
 from pyshtools.gravmag import CilmPlusRhoHDH
 
 # ==== corr_nmax_drho ====

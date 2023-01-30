@@ -3,8 +3,7 @@ import matplotlib.pyplot as plt
 import pyshtools as pysh
 from cmcrameri import cm
 from Displacement_strain_planet import Thin_shell_matrix_nmax, Thin_shell_matrix
-
-pysh.backends.select_preferred_backend(backend="ducc", nthreads=0)
+from pyshtools.expand import MakeGridDH
 
 #################################################################
 # In this example, we solve for the displacement of the surface at
@@ -56,44 +55,56 @@ print("Mean crustal thickness is %.2f km" % (c / 1e3))
 print("Crustal density is %.2f kg m-3" % (rhoc))
 print("Polar cap density is %.2f kg m-3" % (rhol))
 
+# Slightly different inputs between Thin_shell_matrix_nmax and Thin_shell_matrix
 args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, lmax, E, v, mass)
 args_param_m2 = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax, E, v)
-args_expand = dict(lmax=5 * lmax, lmax_calc=lmax)
+args_expand = dict(sampling=2, lmax=lmax, extend=False)
 args_fig = dict(figsize=(12, 10), dpi=100)
 args_plot = dict(tick_interval=[45, 30], colorbar="bottom", cmap=cm.roma_r)
 
 # grid_thickMOLA_lm is the spherical harmonic expansion of the grid_thickMOLA file found at
 # https://zenodo.org/record/4682983
+# This file gives the thickness of the South Polar cap (without flexure) from an interpolation
 topo = pysh.SHCoeffs.from_file("data/grid_thickMOLA_lm.txt", lmax=lmax).coeffs
 zeros = pysh.SHCoeffs.from_zeros(lmax=lmax).coeffs
 
+# The South Polar cap thickness is given without flexure. We thus need to iterate
+# to update the load as a function of flexure. Below, we interate until the
+# maximum flexure difference between subsequent iteration becomes negligible
 iter = 0
 residuals = 1e10
 while residuals > 5:
     iter += 1
     if iter == 1:
+        # We here call Thin_shell_matrix_nmax which is going to build and output the inversion
+        # matrix ('sols') together with the first flexure solution. The 'sols' will be then used
+        # in the faster Thin_shell_matrix below to interate flexure until convergence
         (w_deflec, sols,) = Thin_shell_matrix_nmax(
             *args_param_m,
-            dc_lm=zeros.copy(),
-            drhom_lm=zeros.copy(),
+            dc_lm=zeros.copy(),  # No crustal root variations
+            drhom_lm=zeros.copy(),  # No internal density variations
             H_lm=topo.copy(),
             nmax=1
         )[
             ::10
         ]  # get first and last arrays
-        min1 = R - np.min(
-            pysh.SHCoeffs.from_array(w_deflec).expand(lmax_calc=lmax).data
-        )
+        # In Thin_shell_matrix_nmax, the flexure coefficients are referenced to R (mean pl. rad.), # so we remove R. MakeGridDH is a SHTOOLs routine that expands spherical harmonic
+        # coefficients to a 2D grid.
+        min1 = R - np.min(MakeGridDH(w_deflec, **args_expand))
     else:
+        # We here set first_inv to false given that the inversion matrix has already been built
+        # above and call the 'sols'
         w_deflec = Thin_shell_matrix(
             *args_param_m2,
             first_inv=False,
             lambdify_func=sols,
             dc_lm=zeros.copy(),
             drhom_lm=zeros.copy(),
-            H_lm=(topo - w_deflec).copy()
+            H_lm=(topo - w_deflec).copy()  # Update thickness
         )[0]
-        min2 = -np.min(pysh.SHCoeffs.from_array(w_deflec).expand(lmax_calc=lmax).data)
+        # In Thin_shell_matrix, the flexure coefficients are referenced to 0
+        min2 = -np.min(MakeGridDH(w_deflec, **args_expand))
+        # Criterion for residuals
         residuals = np.abs(min1 - min2)
         print(
             "Iteration %s, maximum flexure %.3f km, residuals %.3f km"
@@ -101,8 +112,10 @@ while residuals > 5:
         )
         min1 = min2
 
+# Set degree-0 flexure SHCoeffs to zero
 w_deflec[0, 0, 0] = 0
-(pysh.SHCoeffs.from_array(w_deflec / 1e3).expand(**args_expand)).plot(
+# Use SHTOOLs to plot
+(pysh.SHCoeffs.from_array(w_deflec / 1e3).expand(lmax=2 * lmax, lmax_calc=lmax)).plot(
     cb_label="Flexure (km)", ticks="wSnE", ylabel=None, show=False, **args_plot
 )
 plt.show()
