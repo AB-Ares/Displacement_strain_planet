@@ -91,4 +91,4 @@ Adrien Broquet. (2022). Displacement_strain_planet: 0.5.0 (Version 0.5.0). Zenod
 ```
 
 ## Acknowledgments
-I would like to thank the SHTools developpers for putting together their great open-source code, and Mark Wieczorek, Jeff Andrews-Hanna, and Antony Trinh for stimulating discussion. 
+I would like to thank the SHTools developers for putting together their great open-source code, and Mark Wieczorek, Jeff Andrews-Hanna, and Antony Trinh for stimulating discussion. 

@@ -426,6 +426,7 @@ def Displacement_strains_shtools(
     R,
     Te,
     lmax,
+    depth=0,
     lmaxgrid=None,
     quiet=True,
 ):
@@ -489,6 +490,8 @@ def Displacement_strains_shtools(
         Elastic thickness of the lithosphere.
     lmax : int
         Maximum spherical harmonic degree for computations.
+    depth : float, optional, default = 0
+        The depth at which stresses are estimated.
     lmaxgrid : int, optional, default = None
         The maximum spherical harmonic degree resolvable by the grid.
         If None, this parameter is set to lmax.
@@ -519,7 +522,7 @@ def Displacement_strains_shtools(
 
     # Some constants for the elastic model.
     Te_half = Te / 2.0
-    eps = Te_half / (1 + Te_half / R)
+    eps = (Te_half - depth) / (1 + (Te_half - depth) / R)
     psi = 12.0 * R**2 / Te**2
     D = (E * (Te * Te * Te)) / ((12.0 * (1.0 - v**2)))
     DpsiTeR = (D * psi) / (Te * R**2)
@@ -634,6 +637,7 @@ def Displacement_strains(
     R,
     Te,
     lmax,
+    depth=0,
     colat_min=0,
     colat_max=180,
     lon_min=0,
@@ -708,6 +712,8 @@ def Displacement_strains(
         Elastic thickness of the lithosphere.
     lmax : int
         Maximum spherical harmonic degree for computations.
+    depth : float, optional, default = 0
+        The depth at which stresses are estimated.
     colat_min : float, optional, default = 0
         Minimum colatitude for grid computation of strains and stresses.
     colat_max : float, optional, default = 180
@@ -796,7 +802,7 @@ def Displacement_strains(
 
     # Some constants for the elastic model.
     Te_half = Te / 2.0
-    eps = Te_half / (1 + Te_half / R)
+    eps = (Te_half - depth) / (1 + (Te_half - depth) / R)
     psi = 12.0 * R**2 / Te**2
     D = (E * (Te * Te * Te)) / ((12.0 * (1.0 - v**2)))
     DpsiTeR = (D * psi) / (Te * R**2)

@@ -267,7 +267,8 @@ def Thin_shell_matrix(
         if True, force the model to be in a center-of-mass frame by setting
         the degree-1 geoid terms to zero.
     lambdify_func : array size(lmax+1), optional, default = None
-        Reuse the lambidfy functions of the first run.
+        Use the lambidfy functions (i.e. design of the inversion matrix,
+        without the specific inputs) of another run.
     first_inv : bool, optional, default = True
         If True, the code assumes that this is the first time doing
         the inversion in this setup, and will store the lambdify results
@@ -787,15 +788,6 @@ def Thin_shell_matrix(
                                 else add_arrays[i, 0, l, 0],
                             )
 
-                if add_equation_subbed != parse_expr("0"):
-                    Eqns.insert(len(Eqns), add_equation_subbed)
-                else:
-                    if np.size(input_constraints) - sum_array_test != 5:
-                        raise ValueError(
-                            "System cannot be determined at degree %s " % (l)
-                            + "where add_equation becomes 0 = 0"
-                        )
-
                 if not quiet and add_equation_subbed != add_eq_prev and first_inv:
                     add_eq_prev = add_equation_subbed
                     print(
@@ -807,6 +799,15 @@ def Thin_shell_matrix(
                             else "0 = 0",
                         )
                     )
+
+                if add_equation_subbed != parse_expr("0"):
+                    Eqns.insert(len(Eqns), add_equation_subbed)
+                else:
+                    if np.size(input_constraints) - sum_array_test != 5:
+                        raise ValueError(
+                            "System cannot be determined at degree %s " % (l)
+                            + "where add_equation becomes 0 = 0"
+                        )
 
             # At degree-1, w_lm vanishes from eq (4), and makes the eq only
             # relate q_lm and omega_lm. w_lm should be zero at degree-1 in
@@ -1122,8 +1123,9 @@ def Thin_shell_matrix_nmax(
         Array with the spherical harmonic coefficients of the
         surface topography.
     lambdify_func : array, size(2,lmax+1,lmax+1)
-        Array with the lambda functions (size lmax+1) of all
-        components. Lambda functions can be used to re-calculate
+        Array with the lambda functions (i.e., the design of the
+        inversion matrix without the inputs) of all components.
+        Lambda functions can be used to re-calculate
         the same problem with different inputs very fast.
 
     Parameters
