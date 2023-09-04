@@ -42,12 +42,14 @@ We note that some of these functions relies heavily on the pyshtools package.
       Phillips (1998).
 
     SH_deriv
-      Compute on the fly spherical harmonic derivatives
-      (first and second order).
+      Compute on the spherical harmonic derivatives
+      (first and second order) at a given single colatiude/longitude 
+      location.
 
     SH_deriv_store
       Compute and store or load spherical harmonic derivatives
-      (first and second order).
+      (first and second order) over the whole sphere or 
+      given a set of colatiudes/longitudes.
 
     Displacement_strains
       Computes the Banerdt (1986) equations to determine strains

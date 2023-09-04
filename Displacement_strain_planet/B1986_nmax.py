@@ -60,11 +60,15 @@ def corr_nmax_drho(
     """
 
     # Finite-amplitude correction.
-    MS_lm_nmax = np.zeros((2, lmax + 1, lmax + 1))
     # This is the computation in Thin_shell_matrix.
-    for l in range(1, lmax + 1):
-        MS_lm_nmax[:, l, : l + 1] = drho * dr_lm[:, l, : l + 1] / (2 * l + 1)
-    MS_lm_nmax *= 4.0 * np.pi / mass
+    MS_lm_nmax = (
+        drho
+        * dr_lm
+        / (2 * np.arange(lmax + 1).reshape(1, -1, 1) + 1)
+        * 4.0
+        * np.pi
+        / mass
+    )
 
     if nmax != 1:
         # This is the correct calculation with finite-amplitude
@@ -368,53 +372,35 @@ def Thin_shell_matrix(
                     # H_corr[H_lm==0] = 0
                     # H_corr *= add_array1
                     if not first_inv:
+                        mask_lmax = slice(None, lmax + 1)
+                        add_array_m = add_arrays[i, :, mask_lmax, mask_lmax]
                         if cnsts == "drhom_lm":
                             drho_omega_corr[drhom_lm == 0] = 0.0
-                            drho_omega_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
-                                i, :, : lmax + 1, : lmax + 1
-                            ]
+                            drho_omega_corr[:, mask_lmax, mask_lmax] *= add_array_m
                             drho_q_corr[drhom_lm == 0] = 0.0
-                            drho_q_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
-                                i, :, : lmax + 1, : lmax + 1
-                            ]
+                            drho_q_corr[:, mask_lmax, mask_lmax] *= add_array_m
                         elif cnsts == "omega_lm":
                             drho_omega_corr[omega_lm == 0] = 0.0
-                            drho_omega_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
-                                i, :, : lmax + 1, : lmax + 1
-                            ]
+                            drho_omega_corr[:, mask_lmax, mask_lmax] *= add_array_m
                         elif cnsts == "q_lm":
                             drho_q_corr[q_lm == 0] = 0.0
-                            drho_q_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
-                                i, :, : lmax + 1, : lmax + 1
-                            ]
+                            drho_q_corr[:, mask_lmax, mask_lmax] *= add_array_m
                         elif cnsts == "H_lm":
                             H_corr[H_lm == 0] = 0.0
-                            H_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
-                                i, :, : lmax + 1, : lmax + 1
-                            ]
+                            H_corr[:, mask_lmax, mask_lmax] *= add_array_m
                         elif cnsts == "dc_lm":
                             wdc_corr[dc_lm == 0] = 0.0
-                            wdc_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
-                                i, :, : lmax + 1, : lmax + 1
-                            ]
+                            wdc_corr[:, mask_lmax, mask_lmax] *= add_array_m
                         elif cnsts == "w_lm":
                             w_corr[w_lm == 0] = 0.0
-                            w_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
-                                i, :, : lmax + 1, : lmax + 1
-                            ]
+                            w_corr[:, mask_lmax, mask_lmax] *= add_array_m
                         elif cnsts == "G_lm":
                             H_corr[G_lm == 0] = 0.0
-                            H_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
-                                i, :, : lmax + 1, : lmax + 1
-                            ]
+                            H_corr[:, mask_lmax, mask_lmax] *= add_array_m
                             w_corr[G_lm == 0] = 0.0
-                            w_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
-                                i, :, : lmax + 1, : lmax + 1
-                            ]
+                            w_corr[:, mask_lmax, mask_lmax] *= add_array_m
                             wdc_corr[G_lm == 0] = 0.0
-                            wdc_corr[:, : lmax + 1, : lmax + 1] *= add_arrays[
-                                i, :, : lmax + 1, : lmax + 1
-                            ]
+                            wdc_corr[:, mask_lmax, mask_lmax] *= add_array_m
 
     error_msg = "\nNumber of input arrays was {:s}. ".format(
         repr(sum_array_test)
@@ -482,36 +468,24 @@ def Thin_shell_matrix(
         # No filtering for drhom
         any_dc = True
 
-    # Allocate arrays to be used for outputs.
-    shape = (2, lmax + 1, lmax + 1)
     if first_inv:
         lambdify_func = np.zeros((lmax + 1), dtype=object)
-    if w_lm is None:
-        w_lm = np.zeros(shape)
-    if Gc_lm is None:
-        Gc_lm = np.zeros(shape)
-    if q_lm is None:
-        q_lm = np.zeros(shape)
-    if omega_lm is None:
-        omega_lm = np.zeros(shape)
-    if drhom_lm is None:
-        drhom_lm = np.zeros(shape)
-    if G_lm is None:
-        G_lm = np.zeros(shape)
-    if H_lm is None:
-        H_lm = np.zeros(shape)
-    if dc_lm is None:
-        dc_lm = np.zeros(shape)
-    if wdc_corr is None:
-        wdc_corr = np.zeros(shape)
-    if H_corr is None:
-        H_corr = np.zeros(shape)
-    if w_corr is None:
-        w_corr = np.zeros(shape)
-    if drho_omega_corr is None:
-        drho_omega_corr = np.zeros(shape)
-    if drho_q_corr is None:
-        drho_q_corr = np.zeros(shape)
+
+    # Allocate arrays to be used for outputs.
+    shape = (2, lmax + 1, lmax + 1)
+    w_lm = np.zeros(shape) if w_lm is None else w_lm
+    Gc_lm = np.zeros(shape) if Gc_lm is None else Gc_lm
+    q_lm = np.zeros(shape) if q_lm is None else q_lm
+    omega_lm = np.zeros(shape) if omega_lm is None else omega_lm
+    drhom_lm = np.zeros(shape) if drhom_lm is None else drhom_lm
+    G_lm = np.zeros(shape) if G_lm is None else G_lm
+    H_lm = np.zeros(shape) if H_lm is None else H_lm
+    dc_lm = np.zeros(shape) if dc_lm is None else dc_lm
+    wdc_corr = np.zeros(shape) if wdc_corr is None else wdc_corr
+    H_corr = np.zeros(shape) if H_corr is None else H_corr
+    w_corr = np.zeros(shape) if w_corr is None else w_corr
+    drho_omega_corr = np.zeros(shape) if drho_omega_corr is None else drho_omega_corr
+    drho_q_corr = np.zeros(shape) if drho_q_corr is None else drho_q_corr
     A_lm = np.zeros(shape)
 
     if Te == 0:  # Avoid numerical problems with infinite values
