@@ -214,7 +214,7 @@ def Thin_shell_matrix(
         Array with the input filter to use.
     filter : string, optional, default = None
         If 'Ma' or 'Mc', apply minimum-amplitude or
-        minimum-curvature filtering.
+        minimum-curvature filtering. If None, no filtering.
     filter_half : int, default = 50
         Spherical harmonic degree at which the filter equals 0.5.
     H_lm : array, size(2,lmax+1,lmax+1), optional, default = None
@@ -1130,7 +1130,7 @@ def Thin_shell_matrix_nmax(
         Array with the input filter to use.
     filter : string, optional, default = None
         If 'Ma' or 'Mc', apply minimum-amplitude or minimum-curvature
-        filtering.
+        filtering. If None, no filtering.
     filter_half : int, optional, default = 50
         Spherical harmonic degree at which the filter equals 0.5.
     nmax : int, optional, default = 5
