@@ -28,7 +28,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/AB-Ares/Displacement_strain_planet",
     author="Adrien Broquet",
-    author_email="adrien.broquet@oca.eu",
+    author_email="adrienbroquet@arizona.edu",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Console",

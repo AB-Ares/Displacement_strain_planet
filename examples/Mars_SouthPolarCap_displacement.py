@@ -158,8 +158,8 @@ w_deflec2[0, 0, 0] = 0
 f, (ax1, ax2) = plt.subplots(1, 2)
 # Use SHTOOLs to plot
 # If cartopy is installed, it is easy to plot this in south polar projection
-# First import cartopy –– from cartopy import crs as ccrs
-# add the argument to the plot function below –– projection = ccrs.Orthographic(central_latitude=-90)
+# First import cartopy –– "from cartopy import crs as ccrs"
+# add the argument to the plot() function below –– projection = ccrs.Orthographic(central_latitude=-90)
 (pysh.SHCoeffs.from_array(w_deflec1 / 1e3).expand(lmax=2 * lmax, lmax_calc=lmax)).plot(
     ax=ax1, cb_label="Flexure (km)", ticks="wSnE", ylabel=None, show=False, **args_plot
 )

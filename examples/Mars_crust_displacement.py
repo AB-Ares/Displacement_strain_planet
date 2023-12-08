@@ -5,7 +5,6 @@ import pyshtools as pysh
 from cmcrameri import cm
 from Displacement_strain_planet import (
     Thin_shell_matrix_nmax,
-    SH_deriv_store,
     Displacement_strains_shtools,
     Principal_strainstress_angle,
     Plt_tecto_Mars,
@@ -216,11 +215,11 @@ pysh.SHGrid.from_array(principal_angle).plot(
 )
 
 # Plot strain direction
-skip_i = int(lmax / 10)
+skip_i = int(lmax / 5)
 skip = (slice(None, None, skip_i), slice(None, None, skip_i))
 grid_long, grid_lat = np.meshgrid(
-    np.linspace(0, 360, np.shape(principal_angle)[1]),
-    np.linspace(90, -90, np.shape(principal_angle)[0]),
+    pysh.SHGrid.from_array(principal_angle).lons(),
+    pysh.SHGrid.from_array(principal_angle).lats(),
 )
 ones = np.ones(np.shape(principal_angle))
 ax4.quiver(

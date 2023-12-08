@@ -640,6 +640,7 @@ def Thin_shell_matrix(
 
         # Continuation arrays
         Rl3 = R / (degrees + 3.0)
+        RCRl = RCR ** degrees
         RCRl1 = RCR ** (degrees + 1.0)
         RCRl2 = RCR ** (degrees + 2.0)
 
@@ -693,10 +694,10 @@ def Thin_shell_matrix(
                 # eq(2) Gc_lm
                 -Gc_lm1
                 + (
-                    rhobconst[l]
+                    rhobconst[l] * (g0/gmoho)
                     * (
-                        (rhol * H_lm1 + drhol * w_lm1) * RCRl1[l]
-                        + drho * (w_lm1 - dc_lm1) * RCR**3 / DCfilter_mohoDc[l]
+                        (rhol * H_lm1 + drhol * w_lm1) * RCRl[l] # RCRl1[l]
+                        + drho * (w_lm1 - dc_lm1) * RCR / DCfilter_mohoDc[l] # RCR**3 / DCfilter_mohoDc[l]
                         + drhom_lm1
                         * Rl3[l]
                         * (RtRCl[l] - RbRCl[l])
@@ -706,8 +707,8 @@ def Thin_shell_matrix(
                         rhol * H_corr1
                         + ((drhol * w_corr1) if not w_corr_test else w_corr1)
                     )
-                    * RCRl1[l]
-                    + drho * wdc_corr1 * RCR**3  # / DCfilter_mohoDc[l]
+                    * RCRl[l] # RCRl1[l]
+                    + drho * wdc_corr1 * RCR # **3  # / DCfilter_mohoDc[l]
                     # Still unsure about that filtering part
                 )
                 * (
@@ -783,11 +784,9 @@ def Thin_shell_matrix(
                             + "where add_equation becomes 0 = 0"
                         )
 
-            # At degree-1, w_lm vanishes from eq (4), and makes the eq only
-            # relate q_lm and omega_lm. w_lm should be zero at degree-1 in
-            # a center of mass-reference frame.
-            # Thus, we replace the degree-1 equation for omega_lm by eq (4)
-            # and eq (4) now becomes w_lm = 0 if:
+            # w_lm should be zero at degree-1 for a static body.
+            # In order for this to be properly handled, we replace 
+            # the w_lm degree-1 equation eq(4) by w_lm = 0 if:
             if (
                 l == 1
                 and COM  # 1) We are in a COM (default = True)
@@ -809,8 +808,7 @@ def Thin_shell_matrix(
                     or ("w_lm" in constraint_test and w_lm[0, 1, 0] == 0)
                 )
             ):
-                Eqns[4] = Eqns[3].copy()
-                Eqns[3] = w_lm1
+                Eqns[4] = w_lm1
 
             if remove_equation is not None and l != 1:
                 for item in [remove_equation]:

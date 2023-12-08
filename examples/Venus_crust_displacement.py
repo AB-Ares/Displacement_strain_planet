@@ -1,11 +1,9 @@
-import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pyshtools as pysh
 from cmcrameri import cm
 from Displacement_strain_planet import (
     Thin_shell_matrix_nmax,
-    SH_deriv_store,
     Displacement_strains_shtools,
     Principal_strainstress_angle,
 )
@@ -91,7 +89,6 @@ args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, lmax, E, v, mass)
 args_expand = dict(lmax=5 * lmax, lmax_calc=lmax)
 args_fig = dict(figsize=(12, 10), dpi=100)
 
-path = "%s/data" % (os.getcwd())
 zeros = pysh.SHCoeffs.from_zeros(lmax=lmax).coeffs
 
 print("Computing displacements and crustal root variations")
@@ -210,11 +207,11 @@ pysh.SHGrid.from_array(principal_angle).plot(
 )
 
 # Plot strain direction
-skip_i = int(lmax / 10)
+skip_i = int(lmax / 5)
 skip = (slice(None, None, skip_i), slice(None, None, skip_i))
 grid_long, grid_lat = np.meshgrid(
-    np.linspace(0, 360, np.shape(principal_angle)[1]),
-    np.linspace(90, -90, np.shape(principal_angle)[0]),
+    pysh.SHGrid.from_array(principal_angle).lons(),
+    pysh.SHGrid.from_array(principal_angle).lats(),
 )
 ones = np.ones(np.shape(principal_angle))
 ax4.quiver(
