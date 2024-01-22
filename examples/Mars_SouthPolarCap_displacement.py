@@ -40,10 +40,10 @@ rhobar = mass * 3.0 / 4.0 / np.pi / R**3
 
 # Parameters
 c = 60e3  # Mean Crustal thickness
-Te = 90e3  # Elastic thickness
+Te = 150e3  # Elastic thickness
 rhom = 3500.0  # Mantle density
 rhoc = 2900.0  # Crustal density
-rhol = 1300.0  # Surface density
+rhol = 1150.0  # Surface density
 E = 100e9  # Young's modulus
 v = 0.25  # Poisson's ratio
 
