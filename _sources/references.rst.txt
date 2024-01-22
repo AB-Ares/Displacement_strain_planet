@@ -9,6 +9,9 @@ Beuthe, M. (2008). Thin elastic shells with variable thickness for lithospheric 
 Broquet, A. and M. A. Wieczorek (2019). The Gravitational signature of Martian volcanoes. *Journal of Geophysical Research: Planets*, 124.8, pp. 2054–2086, 
 doi:\ `10.1029/2019JE005959 <https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019JE005959>`__.
 
+Broquet, A. et al. (2021). The Composition of the South Polar Cap of Mars Derived From Orbital Data. *Journal of Geophysical Research: Planets*, 126.8, e2020JE006730, 
+doi:\ `10.1029/2020JE006730 <https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2020JE006730>`__.
+
 Knapmeyer, M. et al. (2006). Working models for spatial distribution and level of Mars’ seismicity. *Journal of Geophysical Research*, 111.E11006, 
 doi:\ `10.1029/2006JE002708 <https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2006JE002708>`__.
 
