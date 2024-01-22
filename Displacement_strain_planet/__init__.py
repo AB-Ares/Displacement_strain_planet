@@ -42,16 +42,23 @@ We note that some of these functions relies heavily on the pyshtools package.
       Phillips (1998).
 
     SH_deriv
-      Compute on the fly spherical harmonic derivatives
-      (first and second order).
+      Compute on the spherical harmonic derivatives
+      (first and second order) at a given single colatiude/longitude 
+      location.
 
     SH_deriv_store
       Compute and store or load spherical harmonic derivatives
-      (first and second order).
+      (first and second order) over the whole sphere or 
+      given a set of colatiudes/longitudes.
 
     Displacement_strains
       Computes the Banerdt (1986) equations to determine strains
       from displacements with a correction to the theta_phi term.
+
+    Displacement_strains_shtools
+      Computes the Banerdt (1986) equations to determine strains
+      and stresses from the displacements. This function uses 
+      SHTOOLS to derive the spherical harmonic gradients.
 
     Principal_strainstress_angle
       Calculate principal strains, stresses, and
@@ -76,6 +83,7 @@ from .B1986_nmax import corr_nmax_drho
 from .Displacement_strain import SH_deriv
 from .Displacement_strain import SH_deriv_store
 from .Displacement_strain import Displacement_strains
+from .Displacement_strain import Displacement_strains_shtools
 from .Displacement_strain import Principal_strainstress_angle
 from .Displacement_strain import Strainstress_from_principal
 from .Displacement_strain import Plt_tecto_Mars
@@ -96,6 +104,7 @@ __all__ = [
     "SH_deriv",
     "SH_deriv_store",
     "Displacement_strains",
+    "Displacement_strains_shtools",
     "Principal_strainstress_angle",
     "Strainstress_from_principal",
     "Plt_tecto_Mars",

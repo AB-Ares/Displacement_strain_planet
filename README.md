@@ -1,34 +1,40 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4916799.svg)](http://doi.org/10.5281/zenodo.4916799)
 
-# Displacement_strain_planet
+# DSP: Displacement_strain_planet
 
 Planetary gravity, crustal thickness, displacement, stress, and strain calculations in spherical harmonics.
 
 ## Description
 
-**Displacement_strain_planet** provides several functions and example scripts for generating gravity, crustal thickness, displacement, lateral density variations, stress, and strain maps on a planet given a set of input constraints such as from observed gravity and topography data.
+**Displacement_strain_planet** (**DSP**) provides several functions and example scripts for generating, among others, gravity, crustal thickness, displacement, lateral density variations, stress, and strain maps on a planet given a set of input constraints such as from observed gravity and topography data.
 
-These functions solve the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of equations under different assumptions. Various improvements have been made to the model including the possibility to account for finite-amplitude correction and filtering [(Wieczorek & Phillips, 1998)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/97JE03136), lateral density variations at any arbitrary depth and within the surface, flexure, or moho reliefs [(Wieczorek et al., 2013)](https://science.sciencemag.org/content/early/2012/12/04/science.1231530?versioned=true), and density difference between the surface topography and crust [(Broquet & Wieczorek, 2019)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019JE005959). 
+These functions solve the system of equations introduced in [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) under different assumptions. Various improvements have been made to the model including the possibility to account for finite-amplitude correction and filtering [(Wieczorek & Phillips, 1998)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/97JE03136), lateral density variations at any arbitrary depth and within the surface, flexure, or moho reliefs [(Wieczorek et al., 2013)](https://science.sciencemag.org/content/early/2012/12/04/science.1231530?versioned=true), and density difference between the surface topography and crust [(Broquet & Wieczorek, 2019)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019JE005959), or the addition of equations and constraints [(Broquet & Andrews-Hanna, 2024)](https://doi.org/10.1016/j.icarus.2023.115846).
 
-### Comments
-#### Dependencies
+## Documentation
+
+The full documentation can be found at https://ab-ares.github.io/Displacement_strain_planet/.
+
+## Dependencies
+
 Some of these functions rely heavily on the [pyshtools](https://shtools.github.io/SHTOOLS/) package of [Wieczorek & Meschede (2018)](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2018GC007529) that is used to perform the spherical harmonic transforms, Legendre polynomial expansions, and finite-amplitude calculations.
 
-#### Contribute
-This code is still under development and benchmarking. If you find any bugs or errors in the code, please report them in GitHub or to adrien.broquet at oca.eu.
+## Contribute
+
+This code is still under development. If you find any bugs or errors in the code, please report them in GitHub or to adrienbroquet at arizona.edu.
 
 For this code, we work on the develop branch and merge it to the main branch (with a new version number) everytime significant addtions/improvements are made. If you plan on making contributions, please base everything on the develop branch.
 
-### Benchmarks
+## Benchmarks
+
 Moho-relief calculations have been benchmarked to the [ctplanet](https://github.com/MarkWieczorek/ctplanet) package of Mark Wieczorek.  
 Displacement calculations have been benchmarked to the analytical model of [Broquet & Wieczorek (2019)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019JE005959).  
 Strain calculations reproduce results published in the literature (e.g., [Banerdt & Golombek 2000](https://www.lpi.usra.edu/meetings/lpsc2000/pdf/2038.pdf)). 
 
 ## Methods
-`Thin_shell_matrix` Solve the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of 5 equations under the mass-sheet approximation and assuming that potential internal density variations are contained within a spherical shell. The system links 8 parameters expressed in spherical harmonics: the topography, geoid at the surface, geoid at the moho depth, net acting load on the lithosphere, tangential load potential, flexure of the lithosphere, crustal root variations, and internal density variations. Minor corrections have been made in the geoid equations, and to the elastic shell transfer functions following [Beuthe (2008)](https://onlinelibrary.wiley.com/doi/full/10.1111/j.1365-246X.2007.03671.x).
+`Thin_shell_matrix` Solve the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of 5 equations under the mass-sheet approximation and assuming that, if any, internal density variations are contained within a spherical shell. The system links 8 parameters expressed in spherical harmonics: the topography, geoid at the surface, geoid at the moho depth, net acting load on the lithosphere, tangential load potential, flexure of the lithosphere, crustal root variations, and internal density variations. Minor corrections have been made in the geoid equations, and to the elastic shell transfer functions following [Beuthe (2008)](https://onlinelibrary.wiley.com/doi/full/10.1111/j.1365-246X.2007.03671.x).
 
-`Thin_shell_matrix_nmax` Solve the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of 5 equations with finite-amplitude correction and accounting for the potential presence of density variations within the surface or moho reliefs.
+`Thin_shell_matrix_nmax` Solve the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) system of 5 equations with finite-amplitude correction and accounting, if needed, for the presence of density variations within the surface or moho reliefs.
 
 `DownContFilter` Compute the downward minimum-amplitude or -curvature filter of [Wieczorek & Phillips (1998)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/97JE03136).
 
@@ -38,7 +44,9 @@ Strain calculations reproduce results published in the literature (e.g., [Banerd
 
 `SH_deriv_store` Compute and store first and second-order spherical harmonic derivatives with respect to colatitude and longitude.
 
-`Displacement_strains` Calculate the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) equations to determine strains and stresses from displacements with some corrections following [Beuthe (2008)](https://onlinelibrary.wiley.com/doi/full/10.1111/j.1365-246X.2007.03671.x).
+`Displacement_strains_shtools` Calculate the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) equations to determine strains and stresses from displacements with some corrections following [Beuthe (2008)](https://onlinelibrary.wiley.com/doi/full/10.1111/j.1365-246X.2007.03671.x). Spherical harmonic derivates are estimated using shtools.
+
+`Displacement_strains` Calculate the [Banerdt (1986)](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JB091iB01p00403) equations to determine strains and stresses from displacements with some corrections following [Beuthe (2008)](https://onlinelibrary.wiley.com/doi/full/10.1111/j.1365-246X.2007.03671.x). Spherical harmonic derivates are computed using `SH_deriv_store`. This deprecated method is slow and we recommend using `Displacement_strains_shtools`.
 
 `Principal_strainstress_angle` Calculate principal strains, stresses and their principal angles.
 
@@ -75,20 +83,20 @@ Alternatively, you can install Displacement-strain-planet via pip
 ```
 
 ## Author
-[Adrien Broquet](https://www.lpl.arizona.edu/postdocs/adrien-broquet) (adrienbroquet@email.arizona.edu)
+[Adrien Broquet](https://www.lpl.arizona.edu/postdocs/adrien-broquet) (adrienbroquet@arizona.edu)
 
 ## Cite
 You can cite the latest release of the package as:
-Adrien Broquet. (2022). Displacement_strain_planet: 0.4.0 (Version 0.4.0). Zenodo. http://doi.org/10.5281/zenodo.4916799
+Adrien Broquet. (2024). Displacement_strain_planet: 0.5.0 (Version 0.5.0). Zenodo. http://doi.org/10.5281/zenodo.4916799
 
 ```bash
-@misc{Broquet2022,
+@misc{Broquet2024,
     author = {Broquet, A.},
-    title = {{Displacement{\_}strain{\_}planet}: Version 0.4.0},
+    title = {{Displacement{\_}strain{\_}planet}: Version 0.5.0},
     url = {https://github.com/AB-Ares/Displacement_strain_planet},
     doi = {10.5281/zenodo.4916799},
-    year = {2022}}
+    year = {2024}}
 ```
 
 ## Acknowledgments
-I would like to thank the SHTools developpers for putting together their great open-source code, and Mark Wieczorek & Jeff Andrews-Hanna for stimulating discussion. 
+I would like to thank the SHTools developers for putting together their great open-source code, and Mark Wieczorek, Jeff Andrews-Hanna, and Antony Trinh for stimulating discussion. 

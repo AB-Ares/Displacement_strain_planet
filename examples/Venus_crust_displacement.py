@@ -1,16 +1,12 @@
-import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pyshtools as pysh
 from cmcrameri import cm
 from Displacement_strain_planet import (
     Thin_shell_matrix_nmax,
-    SH_deriv_store,
-    Displacement_strains,
+    Displacement_strains_shtools,
     Principal_strainstress_angle,
 )
-
-pysh.backends.select_preferred_backend(backend="ducc", nthreads=0)
 
 #################################################################
 # In this example, we solve for the displacement of the surface of
@@ -50,6 +46,7 @@ pysh.backends.select_preferred_backend(backend="ducc", nthreads=0)
 # the same problem with different inputs very fast.
 #################################################################
 
+quiet = False
 lmax = 40  # Maximum spherical harmonic degree to perform all
 # calculations
 pot_clm = pysh.datasets.Venus.MGNP180U(lmax=lmax)
@@ -92,7 +89,6 @@ args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, lmax, E, v, mass)
 args_expand = dict(lmax=5 * lmax, lmax_calc=lmax)
 args_fig = dict(figsize=(12, 10), dpi=100)
 
-path = "%s/data" % (os.getcwd())
 zeros = pysh.SHCoeffs.from_zeros(lmax=lmax).coeffs
 
 print("Computing displacements and crustal root variations")
@@ -115,7 +111,7 @@ print("Computing displacements and crustal root variations")
     drhom_lm=zeros.copy(),
     filter="Ma",
     filter_half=30,
-    quiet=False
+    quiet=quiet
 )
 
 # Plotting
@@ -124,7 +120,7 @@ fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, **args_fig)
 ax3.set_visible(False)
 
 grid_W = pysh.SHCoeffs.from_array(w_lm / 1e3).expand(**args_expand) - R / 1e3
-grid_W.plot(ax=ax1, cb_label="Upward displacement (km)", **args_plot, ticks="Wsne")
+grid_W.plot(ax=ax1, cb_label="Upward displacement (km)", **args_plot, ticks="WSne")
 
 # Add zero displacement contour
 ax1.contour(
@@ -133,49 +129,17 @@ ax1.contour(
 pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
     ax=ax2,
     cb_label="Crustal root variations (km)",
-    ticks="wsnE",
+    ticks="wSnE",
     ylabel=None,
     **args_plot
 )
 
 (pysh.SHCoeffs.from_array((H_lm - moho_relief_lm) / 1e3).expand(**args_expand)).plot(
-    ax=ax4,
-    cb_label="Crustal thickness (km)",
-    ticks="wSnE",
-    ylabel=None,
-    show=False,
-    **args_plot
+    ax=ax4, cb_label="Crustal thickness (km)", ticks="WSne", show=False, **args_plot
 )
 
-print("Computing strains")  # This may take some time if it is the first time
-# Strains
-lmaxgrid = 80
-Y_lm_d1_t, Y_lm_d1_p, Y_lm_d2_t, Y_lm_d2_p, Y_lm_d2_tp, y_lm = SH_deriv_store(
-    lmax,
-    path,
-    save=False,
-    lmaxgrid=lmaxgrid,
-)
-
-colat_min = 0  # Minimum colatitude at which strain calculations are performed
-colat_max = 180  # Maximum colatitude
-lon_min = 0  # Minimum longitude
-lon_max = 360  # Maximum longitude
-
+print("Computing strains")
 args_param_s = (E, v, R, Te, lmax)
-kwargs_param_s = dict(
-    colat_min=colat_min,
-    colat_max=colat_max,
-    lon_min=lon_min,
-    lon_max=lon_max,
-    Y_lm_d1_t=Y_lm_d1_t,
-    Y_lm_d1_p=Y_lm_d1_p,
-    Y_lm_d2_t=Y_lm_d2_t,
-    Y_lm_d2_p=Y_lm_d2_p,
-    Y_lm_d2_tp=Y_lm_d2_tp,
-    y_lm=y_lm,
-    lmaxgrid=lmaxgrid,
-)
 
 # Strain
 (
@@ -191,7 +155,7 @@ kwargs_param_s = dict(
     tot_theta,
     tot_phi,
     tot_thetaphi,
-) = Displacement_strains(A_lm, w_lm, *args_param_s, **kwargs_param_s, quiet=False)
+) = Displacement_strains_shtools(A_lm, w_lm, *args_param_s, quiet=quiet)
 
 # Principal strains
 (
@@ -201,6 +165,7 @@ kwargs_param_s = dict(
     principal_angle,
 ) = Principal_strainstress_angle(-tot_theta, -tot_phi, -tot_thetaphi)
 
+print("Plotting")
 args_plot = dict(
     tick_interval=[45, 30],
     colorbar="bottom",
@@ -210,7 +175,7 @@ fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, **args_fig)
 
 pysh.SHGrid.from_array(min_strain * 1e3).plot(
     ax=ax1,
-    ticks="Wsne",
+    ticks="WSne",
     cb_label="Minimum principal horizontal strain ($\\times 10^{-3}$)",
     cmap_limits=[-6, 20],
     **args_plot
@@ -227,7 +192,7 @@ pysh.SHGrid.from_array(sum_strain * 1e3).plot(
     ax=ax3,
     cb_label="Sum of principal horizontal strains ($\\times 10^{-3}$)",
     cmap_limits=[-6, 20],
-    ticks="Wsne",
+    ticks="WSne",
     **args_plot
 )
 pysh.SHGrid.from_array(principal_angle).plot(
@@ -242,11 +207,11 @@ pysh.SHGrid.from_array(principal_angle).plot(
 )
 
 # Plot strain direction
-skip_i = int(lmax / 10)
+skip_i = int(lmax / 5)
 skip = (slice(None, None, skip_i), slice(None, None, skip_i))
 grid_long, grid_lat = np.meshgrid(
-    np.linspace(0, 360, np.shape(principal_angle)[1]),
-    np.linspace(90, -90, np.shape(principal_angle)[0]),
+    pysh.SHGrid.from_array(principal_angle).lons(),
+    pysh.SHGrid.from_array(principal_angle).lats(),
 )
 ones = np.ones(np.shape(principal_angle))
 ax4.quiver(

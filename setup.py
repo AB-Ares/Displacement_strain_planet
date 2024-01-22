@@ -11,24 +11,24 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 install_requires = [
-    "pyshtools>=4.7.1",
-    "sympy",
-    "matplotlib>=3.3",
     "numpy",
-    "cmcrameri",
+    "matplotlib>=3.3",
+    "sympy",
     "jupyter",
+    "pyshtools>=4.9",
+    "cmcrameri",
 ]
 
 setup(
     name="Displacement_strain_planet",
-    version="0.4.0",
+    version="0.5.0",
     description="Planetary crustal thickness, displacement, "
     + "stress and strain calculations in spherical harmonics.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/AB-Ares/Displacement_strain_planet",
     author="Adrien Broquet",
-    author_email="adrien.broquet@oca.eu",
+    author_email="adrienbroquet@arizona.edu",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Console",
