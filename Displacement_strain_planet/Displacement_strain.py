@@ -56,7 +56,7 @@ def SH_deriv(theta, phi, lmax):
 
     cost = np.cos(theta)
     sint = np.sin(theta)
-    if theta == 0 or theta == pi:
+    if theta in (0, pi):
         dp_theta = np.zeros((int((lmax + 1) * (lmax + 2) / 2)))
         p_theta = np.zeros((int((lmax + 1) * (lmax + 2) / 2)))
         costsint = 0.0
@@ -93,7 +93,7 @@ def SH_deriv(theta, phi, lmax):
                 Y_lm_d2_thetaphi_a[1, l, m_abs] = dp_theta[index] * mcosmphi
                 y_lm[1, l, m_abs] = p_theta[index] * sinmphi
 
-        if theta == 0 or theta == pi:
+        if theta in (0, pi):
             Y_lm_d2_theta_a[:, l, : l + 1] = 0.0  # Not defined.
         else:
             # Make use of the Laplacian identity to estimate
@@ -256,7 +256,6 @@ def SH_deriv_store(
         y_lm_save = np.zeros(shape_save, dtype=dtype)
 
         phi_ar = np.linspace(0, 2.0 * pi, nlon, endpoint=False, dtype=dtype)
-        y_lm = np.zeros((len(phi_ar), 2, index_size), dtype=dtype)
         msinmphi = np.zeros((lmax + 1, len(phi_ar)), dtype=dtype)
         m2cosphi = np.zeros((lmax + 1, len(phi_ar)), dtype=dtype)
         mcosmphi = np.zeros((lmax + 1, len(phi_ar)), dtype=dtype)
@@ -414,7 +413,7 @@ def SH_deriv_store(
                     )
                 if theta_180 < colat_min or theta_180 > colat_max:
                     continue
-                elif theta != 0:
+                if theta != 0:
                     if colat_min != 0 or colat_max != 180:
                         # Don't use the symmetry speedup, which requires a whole sphere computation
                         p_theta, dp_theta = pysh.legendre.PlmBar_d1(lmax, cost[t_i])
@@ -1008,23 +1007,23 @@ def Displacement_strains(
 
     if grid == "GLQ":
         zeros, _ = pysh.expand.SHGLQ(lmax)
-        _, grid_colat = np.meshgrid(
+        grid_long, grid_colat = np.meshgrid(
             np.linspace(0, 2 * pi, nlon, endpoint=False),
             np.arccos(zeros),
         )
     else:
-        _, grid_colat = np.meshgrid(
+        grid_long, grid_colat = np.meshgrid(
             np.linspace(0, 2 * pi, nlon, endpoint=False),
             np.linspace(0, pi, nlat, endpoint=False),
         )
 
     mask = (
-        (grid_lat > (colat_min - 1) * deg2rad)
-        & (grid_lat < (colat_max + 1) * deg2rad)
+        (grid_colat > (colat_min - 1) * deg2rad)
+        & (grid_colat < (colat_max + 1) * deg2rad)
         & (grid_long > (lon_min - 1) * deg2rad)
         & (grid_long < (lon_max + 1) * deg2rad)
     )
-    sin_g_lat_m = np.sin(grid_lat[mask])
+    sin_g_lat_m = np.sin(grid_colat[mask])
     csc = np.divide(
         1.0, sin_g_lat_m, out=np.zeros_like(sin_g_lat_m), where=sin_g_lat_m != 0
     )
@@ -1033,7 +1032,7 @@ def Displacement_strains(
     )
     cot = np.divide(
         1.0,
-        np.tan(grid_lat[mask]),
+        np.tan(grid_colat[mask]),
         out=np.zeros_like(sin_g_lat_m),
         where=sin_g_lat_m != 0,
     )
@@ -1169,7 +1168,7 @@ def Principal_strainstress_angle(s_theta, s_phi, s_theta_phi):
 # ==== Principal_strainstress_angle ====
 
 
-def Strainstress_from_principal(min_strain, max_strain, sum_strain, principal_angle):
+def Strainstress_from_principal(min_strain, max_strain, principal_angle):
     """
     Calculate strains or stresses, from
     their principal values.
@@ -1189,8 +1188,6 @@ def Strainstress_from_principal(min_strain, max_strain, sum_strain, principal_an
         Array with the minimum principal horizontal strain or stress.
     max_strain : array, size(nlat, nlon)
         Array with the maximum principal horizontal strain or stress.
-    sum_strain : array, size(nlat, nlon)
-        Array with the sum of the principal horizontal strain or stress.
     principal_angle : array, size(nlat, nlon)
         Array with the principal strain or stress direction in degrees.
     """
@@ -1267,7 +1264,7 @@ def Plt_tecto_Mars(
     if ax is None:
         import matplotlib.pyplot as plt
 
-        fig, ax = plt.subplots(1, 1)
+        _, ax = plt.subplots(1, 1)
 
     if compression and not extension:
         faults_inds = [ind_comp_fault_2]

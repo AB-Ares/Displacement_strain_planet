@@ -344,7 +344,7 @@ def Thin_shell_matrix(
             + "\nInput equation was %s" % (add_equation)
         )
 
-    elif add_arrays is not None and add_equation is not None:
+    if add_arrays is not None and add_equation is not None:
         add_muls = []
         add_muls_cnsts = []
         # Determine what parameters are input in add_equation and whether
@@ -640,7 +640,7 @@ def Thin_shell_matrix(
 
         # Continuation arrays
         Rl3 = R / (degrees + 3.0)
-        RCRl = RCR ** degrees
+        RCRl = RCR**degrees
         RCRl1 = RCR ** (degrees + 1.0)
         RCRl2 = RCR ** (degrees + 2.0)
 
@@ -694,10 +694,14 @@ def Thin_shell_matrix(
                 # eq(2) Gc_lm
                 -Gc_lm1
                 + (
-                    rhobconst[l] * (g0/gmoho)
+                    rhobconst[l]
+                    * (g0 / gmoho)
                     * (
-                        (rhol * H_lm1 + drhol * w_lm1) * RCRl[l] # RCRl1[l]
-                        + drho * (w_lm1 - dc_lm1) * RCR / DCfilter_mohoDc[l] # RCR**3 / DCfilter_mohoDc[l]
+                        (rhol * H_lm1 + drhol * w_lm1) * RCRl[l]  # RCRl1[l]
+                        + drho
+                        * (w_lm1 - dc_lm1)
+                        * RCR
+                        / DCfilter_mohoDc[l]  # RCR**3 / DCfilter_mohoDc[l]
                         + drhom_lm1
                         * Rl3[l]
                         * (RtRCl[l] - RbRCl[l])
@@ -707,8 +711,8 @@ def Thin_shell_matrix(
                         rhol * H_corr1
                         + ((drhol * w_corr1) if not w_corr_test else w_corr1)
                     )
-                    * RCRl[l] # RCRl1[l]
-                    + drho * wdc_corr1 * RCR # **3  # / DCfilter_mohoDc[l]
+                    * RCRl[l]  # RCRl1[l]
+                    + drho * wdc_corr1 * RCR  # **3  # / DCfilter_mohoDc[l]
                     # Still unsure about that filtering part
                 )
                 * (
@@ -785,7 +789,7 @@ def Thin_shell_matrix(
                         )
 
             # w_lm should be zero at degree-1 for a static body.
-            # In order for this to be properly handled, we replace 
+            # In order for this to be properly handled, we replace
             # the w_lm degree-1 equation eq(4) by w_lm = 0 if:
             if (
                 l == 1
@@ -1043,7 +1047,6 @@ def Thin_shell_matrix_nmax(
     q_lm=None,
     G_lm=None,
     Gc_lm=None,
-    C_lm=None,
     add_equation=None,
     add_arrays=None,
     quiet=True,
@@ -1276,379 +1279,358 @@ def Thin_shell_matrix_nmax(
             lambdify_func_o,
         )
 
-    else:
-        # Correct for density contrast in surface or moho
-        # relief, and/or finite-amplitude correction
-        density_var_H, density_var_dc, density_var_w = False, False, False
-        # Precompute grids
-        precomp_drho, precomp_H_grid, precomp_w_grid, precomp_dc_grid = (
-            False,
-            False,
-            False,
-            False,
-        )
-        if drhom_lm is None or any_drho:
-            if top_drho == 0:
-                # Correct for density variations in the surface
-                # relief
-                density_var_H = True
-            if base_drho == c or top_drho == c:
-                # Correct for density variations in the moho
-                # relief
-                density_var_dc = True
-            if base_drho < c and top_drho == 0 and rhol == rhoc:
-                # Correct for density variations in the flexure relief
-                # within the crust
-                density_var_w = True
+    # Correct for density contrast in surface or moho
+    # relief, and/or finite-amplitude correction
+    density_var_H, density_var_dc, density_var_w = False, False, False
+    # Precompute grids
+    precomp_drho, precomp_H_grid, precomp_w_grid, precomp_dc_grid = (
+        False,
+        False,
+        False,
+        False,
+    )
+    if drhom_lm is None or any_drho:
+        if top_drho == 0:
+            # Correct for density variations in the surface
+            # relief
+            density_var_H = True
+        if c in (base_drho, top_drho):
+            # Correct for density variations in the moho
+            # relief
+            density_var_dc = True
+        if base_drho < c and top_drho == 0 and rhol == rhoc:
+            # Correct for density variations in the flexure relief
+            # within the crust
+            density_var_w = True
 
-        # If only finite-amplitude correction, density
-        # contrast is multipled in the thin-shell code and
-        # we set the density contrast to 1. This will be changed later if required.
-        ones = np.ones((2 * (lmaxgrid + 1), 2 * (2 * (lmaxgrid + 1))))
-        H_drho_grid, w_drho_grid, wdc_drho_grid = ones, ones, ones
-        drho_H, drho_wdc, drho_w = 1.0, 1.0, 1.0
+    # If only finite-amplitude correction, density
+    # contrast is multipled in the thin-shell code and
+    # we set the density contrast to 1. This will be changed later if required.
+    ones = np.ones((2 * (lmaxgrid + 1), 2 * (2 * (lmaxgrid + 1))))
+    H_drho_grid, w_drho_grid, wdc_drho_grid = ones, ones, ones
+    drho_H, drho_wdc, drho_w = 1.0, 1.0, 1.0
 
-        if drhom_lm is not None and any_drho:
-            rho_grid = MakeGridDH(drhom_lm, **args_grid)
-            precomp_drho = True
-            if drhom_lm[0, 0, 0] > 500:
-                if base_drho <= c:
-                    rhoc = drhom_lm[0, 0, 0]
-                    rhol = drhom_lm[0, 0, 0]
-                    if not quiet:
-                        print(
-                            "rhol and rhoc are set to the mean input density variations (%.2f kg m-3)"
-                            % (rhoc)
-                        )
-                else:
-                    rhom = drhom_lm[0, 0, 0]
-                    if not quiet:
-                        print(
-                            "rhom is set to the mean input density variations (%.2f kg m-3)"
-                            % (rhom)
-                        )
-                # Update parameters
-                args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax, E, v)
-            else:
-                # Density variations is in the crust
-                if base_drho <= c:
-                    rho_grid += rhoc
-                    if not quiet:
-                        print(
-                            "Add input rhoc (%.2f kg m-3) to density variations"
-                            % (rhoc)
-                        )
-                # Density variations is in the mantle
-                else:
-                    rho_grid += rhom
-                    if not quiet:
-                        print(
-                            "Add input rhom (%.2f kg m-3) to density variations"
-                            % (rhom)
-                        )
-
-        # Geoid correction due to density variations
-        # and or finite-amplitude corrections
-        shape = (2, lmax + 1, lmax + 1)
-        # Moho relief
-        delta_wdc_geoid = np.zeros(shape)
-        # Deflected topography relief
-        delta_w_geoid = np.zeros(shape)
-        # Surface topography relief
-        delta_H_geoid = np.zeros(shape)
-        # Tangential load potential corrections due to density
-        # variations at the reliefs
-        drho_omega_corr = np.zeros(shape)
-        drho_q_corr = np.zeros(shape)
-
-        # Precompute grids
-        if H_lm is not None:
-            precomp_H_grid = True
-            H_lm[0, 0, 0] = R
-            H_grid = MakeGridDH(H_lm, **args_grid)
-        if w_lm is not None and rhoc != rhol:
-            precomp_w_grid = True
-            if any_w:
-                w_lm[0, 0, 0] = R
-                w_grid = MakeGridDH(w_lm, **args_grid)
-            else:
-                w_grid = ones * R
-        if w_lm is not None and dc_lm is not None:
-            precomp_dc_grid = True
-            wdc_lm = w_lm - dc_lm
-            if any_w and any_dc:
-                wdc_lm[0, 0, 0] = R_c
-                wdc_grid = MakeGridDH(wdc_lm, **args_grid)
-            else:
-                wdc_grid = ones * R_c
-
-        lambdify_func_o = None
-        first_inv, first_drhom, first_nmax = True, True, True
-        delta = 1.0e9
-        iter = 0
-        # Iterate until convergence
-        # First guess is using the mass-sheet case
-        while delta > delta_max:
-            iter += 1
-            (
-                w_lm_o,
-                A_lm_o,
-                moho_relief_lm_o,
-                dc_lm_o,
-                drhom_lm_o,
-                omega_lm_o,
-                q_lm_o,
-                Gc_lm_o,
-                G_lm_o,
-                H_lm_o,
-                lambdify_func_o,
-            ) = Thin_shell_matrix(
-                *args_param_m,
-                **args_param_lm,
-                wdc_corr=delta_wdc_geoid,
-                w_corr=delta_w_geoid,
-                H_corr=delta_H_geoid,
-                drho_omega_corr=drho_omega_corr,
-                drho_q_corr=drho_q_corr,
-                first_inv=first_inv,
-                lambdify_func=lambdify_func_o,
-            )
-            first_inv, comp_w_grid = False, False
-
-            # Precompute some sums that will be used later for checks
-            any_dc = np.sum(dc_lm_o[:, 1:, :]) != 0 if any_dc is None else any_dc
-            any_w = np.sum(w_lm_o[:, 1:, :]) != 0 if any_w is None else any_w
-            any_drho = (
-                np.sum(drhom_lm_o[:, 1:, :]) != 0 if any_drho is None else any_drho
-            )
-
-            # Correct for density contrast in surface or moho
-            # relief, and/or finite-amplitude correction
-            if drhom_lm is None or any_drho:
-                if not quiet and first_drhom:
-                    first_drhom = False
-                    print(
-                        "Iterate to account for density"
-                        + " variations %s"
-                        % (
-                            "and finite-amplitude correction, nmax is %i" % (nmax)
-                            if nmax > 1
-                            else ""
-                        )
-                    )
-            else:
-                if not quiet and first_nmax:
-                    first_nmax = False
-                    print(
-                        "Iterate for finite-amplitude correction, nmax is %i" % (nmax)
-                    )
-
-            # Scheme proposed in Wieczorek+(2013) SOM eq 21, 22
-            # to speed up convergence delta(i+3) = (delta(i+2) +
-            # delta(i+1))/2.
-            if iter % 3 == 0:
-                delta_wdc_geoid = (delta_wdc_geoid_2 + delta_wdc_geoid_1) / 2.0
-                delta_H_geoid = (delta_H_geoid_2 + delta_H_geoid_1) / 2.0
-                delta_w_geoid = (delta_w_geoid_2 + delta_w_geoid_1) / 2.0
-                drho_omega_corr = (delta_drho_omega_2 + delta_drho_omega_1) / 2.0
-                drho_q_corr = (delta_drho_q_2 + delta_drho_q_1) / 2.0
+    if drhom_lm is not None and any_drho:
+        rho_grid = MakeGridDH(drhom_lm, **args_grid)
+        precomp_drho = True
+        if drhom_lm[0, 0, 0] > 500:
+            if base_drho <= c:
+                rhoc = drhom_lm[0, 0, 0]
+                rhol = drhom_lm[0, 0, 0]
                 if not quiet:
                     print(
-                        "Skipping iteration %s, with convergence" % (iter) + " scheme"
+                        "rhol and rhoc are set to the mean input density variations (%.2f kg m-3)"
+                        % (rhoc)
                     )
-                continue
+            else:
+                rhom = drhom_lm[0, 0, 0]
+                if not quiet:
+                    print(
+                        "rhom is set to the mean input density variations (%.2f kg m-3)"
+                        % (rhom)
+                    )
+            # Update parameters
+            args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax, E, v)
+        else:
+            # Density variations is in the crust
+            if base_drho <= c:
+                rho_grid += rhoc
+                if not quiet:
+                    print("Add input rhoc (%.2f kg m-3) to density variations" % (rhoc))
+            # Density variations is in the mantle
+            else:
+                rho_grid += rhom
+                if not quiet:
+                    print("Add input rhom (%.2f kg m-3) to density variations" % (rhom))
 
-            if any_drho and not precomp_drho:
-                rho_grid = MakeGridDH(drhom_lm_o, **args_grid)
-                if drhom_lm_o[0, 0, 0] > 500:
-                    if base_drho <= c:
-                        rhoc = drhom_lm_o[0, 0, 0]
-                        rhol = drhom_lm_o[0, 0, 0]
-                    else:
-                        rhom = drhom_lm_o[0, 0, 0]
-                    args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax, E, v)
-                else:
-                    if base_drho <= c:
-                        rho_grid += rhoc
-                    else:
-                        rho_grid += rhom
+    # Geoid correction due to density variations
+    # and or finite-amplitude corrections
+    shape = (2, lmax + 1, lmax + 1)
+    # Moho relief
+    delta_wdc_geoid = np.zeros(shape)
+    # Deflected topography relief
+    delta_w_geoid = np.zeros(shape)
+    # Surface topography relief
+    delta_H_geoid = np.zeros(shape)
+    # Tangential load potential corrections due to density
+    # variations at the reliefs
+    drho_omega_corr = np.zeros(shape)
+    drho_q_corr = np.zeros(shape)
 
-            v1v = v / (1.0 - v)
-            gmoho = g0 * (1.0 + ((R_c / R) ** 3 - 1.0) * rhoc / rhobar) / (R_c / R) ** 2
-            if density_var_H:
-                drho_H = rhol
-                H_drho_grid = rho_grid
-                drho_omega_corr = v1v * drhom_lm_o * g0 * Te * H_lm_o / R
-                drho_q_corr = drhom_lm_o * (H_lm_o - G_lm_o) * g0
-            if density_var_dc:
-                if density_var_H:
-                    drho_omega_corr += v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
-                    drho_q_corr += drhom_lm_o * dc_lm_o * gmoho
-                else:
-                    drho_omega_corr = v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
-                    drho_q_corr = drhom_lm_o * dc_lm_o * gmoho
-                drho_wdc = rhom - rhoc
+    # Precompute grids
+    if H_lm is not None:
+        precomp_H_grid = True
+        H_lm[0, 0, 0] = R
+        H_grid = MakeGridDH(H_lm, **args_grid)
+    if w_lm is not None and rhoc != rhol:
+        precomp_w_grid = True
+        if any_w:
+            w_lm[0, 0, 0] = R
+            w_grid = MakeGridDH(w_lm, **args_grid)
+        else:
+            w_grid = ones * R
+    if w_lm is not None and dc_lm is not None:
+        precomp_dc_grid = True
+        wdc_lm = w_lm - dc_lm
+        if any_w and any_dc:
+            wdc_lm[0, 0, 0] = R_c
+            wdc_grid = MakeGridDH(wdc_lm, **args_grid)
+        else:
+            wdc_grid = ones * R_c
+
+    lambdify_func_o = None
+    first_inv, first_drhom, first_nmax = True, True, True
+    delta = 1.0e9
+    iter = 0
+    # Iterate until convergence
+    # First guess is using the mass-sheet case
+    while delta > delta_max:
+        iter += 1
+        (
+            w_lm_o,
+            A_lm_o,
+            moho_relief_lm_o,
+            dc_lm_o,
+            drhom_lm_o,
+            omega_lm_o,
+            q_lm_o,
+            Gc_lm_o,
+            G_lm_o,
+            H_lm_o,
+            lambdify_func_o,
+        ) = Thin_shell_matrix(
+            *args_param_m,
+            **args_param_lm,
+            wdc_corr=delta_wdc_geoid,
+            w_corr=delta_w_geoid,
+            H_corr=delta_H_geoid,
+            drho_omega_corr=drho_omega_corr,
+            drho_q_corr=drho_q_corr,
+            first_inv=first_inv,
+            lambdify_func=lambdify_func_o,
+        )
+        first_inv, comp_w_grid = False, False
+
+        # Precompute some sums that will be used later for checks
+        any_dc = np.sum(dc_lm_o[:, 1:, :]) != 0 if any_dc is None else any_dc
+        any_w = np.sum(w_lm_o[:, 1:, :]) != 0 if any_w is None else any_w
+        any_drho = np.sum(drhom_lm_o[:, 1:, :]) != 0 if any_drho is None else any_drho
+
+        # Correct for density contrast in surface or moho
+        # relief, and/or finite-amplitude correction
+        if drhom_lm is None or any_drho:
+            if not quiet and first_drhom:
+                first_drhom = False
+                print(
+                    "Iterate to account for density"
+                    + " variations %s"
+                    % (
+                        "and finite-amplitude correction, nmax is %i" % (nmax)
+                        if nmax > 1
+                        else ""
+                    )
+                )
+        else:
+            if not quiet and first_nmax:
+                first_nmax = False
+                print("Iterate for finite-amplitude correction, nmax is %i" % (nmax))
+
+        # Scheme proposed in Wieczorek+(2013) SOM eq 21, 22
+        # to speed up convergence delta(i+3) = (delta(i+2) +
+        # delta(i+1))/2.
+        if iter % 3 == 0:
+            delta_wdc_geoid = (delta_wdc_geoid_2 + delta_wdc_geoid_1) / 2.0
+            delta_H_geoid = (delta_H_geoid_2 + delta_H_geoid_1) / 2.0
+            delta_w_geoid = (delta_w_geoid_2 + delta_w_geoid_1) / 2.0
+            drho_omega_corr = (delta_drho_omega_2 + delta_drho_omega_1) / 2.0
+            drho_q_corr = (delta_drho_q_2 + delta_drho_q_1) / 2.0
+            if not quiet:
+                print("Skipping iteration %s, with convergence" % (iter) + " scheme")
+            continue
+
+        if any_drho and not precomp_drho:
+            rho_grid = MakeGridDH(drhom_lm_o, **args_grid)
+            if drhom_lm_o[0, 0, 0] > 500:
                 if base_drho <= c:
-                    # Anomaly in the crust
-                    wdc_drho_grid = rhom - rho_grid
+                    rhoc = drhom_lm_o[0, 0, 0]
+                    rhol = drhom_lm_o[0, 0, 0]
                 else:
-                    # Anomaly in the mantle
-                    wdc_drho_grid = rho_grid - rhoc
-            if density_var_w:
-                drho_w = (rhoc - rhol) if rhoc != rhol else 1
-                w_drho_grid = rhoc - rho_grid
-                if density_var_H or density_var_dc:
-                    drho_omega_corr += v1v * drhom_lm_o * g0 * Te * w_lm_o / R
-                    drho_q_corr += drhom_lm_o * w_lm_o * g0
+                    rhom = drhom_lm_o[0, 0, 0]
+                args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax, E, v)
+            else:
+                if base_drho <= c:
+                    rho_grid += rhoc
                 else:
-                    drho_omega_corr = v1v * drhom_lm_o * g0 * Te * w_lm_o / R
-                    drho_q_corr = drhom_lm_o * w_lm_o * g0
+                    rho_grid += rhom
 
-            H_lm_o[0, 0, 0] = R
-            if any_drho or (iter == 1 and precomp_H_grid) or (not precomp_H_grid):
-                if not precomp_H_grid:
-                    H_grid = MakeGridDH(H_lm_o, **args_grid)
-                delta_H_geoid = corr_nmax_drho(
-                    H_lm_o,
-                    H_grid,
-                    H_drho_grid,
-                    lmax,
-                    mass,
-                    nmax,
-                    drho_H,
-                    R,
-                    density_var=density_var_H,
-                )
+        v1v = v / (1.0 - v)
+        gmoho = g0 * (1.0 + ((R_c / R) ** 3 - 1.0) * rhoc / rhobar) / (R_c / R) ** 2
+        if density_var_H:
+            drho_H = rhol
+            H_drho_grid = rho_grid
+            drho_omega_corr = v1v * drhom_lm_o * g0 * Te * H_lm_o / R
+            drho_q_corr = drhom_lm_o * (H_lm_o - G_lm_o) * g0
+        if density_var_dc:
+            if density_var_H:
+                drho_omega_corr += v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
+                drho_q_corr += drhom_lm_o * dc_lm_o * gmoho
+            else:
+                drho_omega_corr = v1v * drhom_lm_o * gmoho * (Te - c) * dc_lm_o / R
+                drho_q_corr = drhom_lm_o * dc_lm_o * gmoho
+            drho_wdc = rhom - rhoc
+            if base_drho <= c:
+                # Anomaly in the crust
+                wdc_drho_grid = rhom - rho_grid
+            else:
+                # Anomaly in the mantle
+                wdc_drho_grid = rho_grid - rhoc
+        if density_var_w:
+            drho_w = (rhoc - rhol) if rhoc != rhol else 1
+            w_drho_grid = rhoc - rho_grid
+            if density_var_H or density_var_dc:
+                drho_omega_corr += v1v * drhom_lm_o * g0 * Te * w_lm_o / R
+                drho_q_corr += drhom_lm_o * w_lm_o * g0
+            else:
+                drho_omega_corr = v1v * drhom_lm_o * g0 * Te * w_lm_o / R
+                drho_q_corr = drhom_lm_o * w_lm_o * g0
 
-            w_lm_o[0, 0, 0] = R
-            if rhoc != rhol or density_var_w:
-                if not precomp_w_grid:
-                    w_grid = MakeGridDH(w_lm_o, **args_grid)
-                    comp_w_grid = True
-                delta_w_geoid = corr_nmax_drho(
-                    w_lm_o,
-                    w_grid,
-                    w_drho_grid if density_var_w else ones,
-                    lmax,
-                    mass,
-                    nmax,
-                    drho_w,
-                    R,
-                    density_var=density_var_w,
-                )
+        H_lm_o[0, 0, 0] = R
+        if any_drho or (iter == 1 and precomp_H_grid) or (not precomp_H_grid):
+            if not precomp_H_grid:
+                H_grid = MakeGridDH(H_lm_o, **args_grid)
+            delta_H_geoid = corr_nmax_drho(
+                H_lm_o,
+                H_grid,
+                H_drho_grid,
+                lmax,
+                mass,
+                nmax,
+                drho_H,
+                R,
+                density_var=density_var_H,
+            )
 
-            wdc_lm_o = w_lm_o - dc_lm_o
-            wdc_lm_o[0, 0, 0] = R_c
-            if any_dc or any_w:
-                if not precomp_dc_grid:
-                    wdc_grid = MakeGridDH(wdc_lm_o, **args_grid)
-                delta_wdc_geoid = corr_nmax_drho(
-                    wdc_lm_o,
-                    wdc_grid,
-                    wdc_drho_grid,
-                    lmax,
-                    mass,
-                    nmax,
-                    drho_wdc,
-                    R,
-                    density_var=density_var_dc,
-                )
+        w_lm_o[0, 0, 0] = R
+        if rhoc != rhol or density_var_w:
+            if not precomp_w_grid:
+                w_grid = MakeGridDH(w_lm_o, **args_grid)
+                comp_w_grid = True
+            delta_w_geoid = corr_nmax_drho(
+                w_lm_o,
+                w_grid,
+                w_drho_grid if density_var_w else ones,
+                lmax,
+                mass,
+                nmax,
+                drho_w,
+                R,
+                density_var=density_var_w,
+            )
 
-            if iter != 1:
-                if not any_dc:
-                    if any_w:
-                        if not comp_w_grid:
-                            w_grid = MakeGridDH(w_lm_o, **args_grid)
-                            comp_w_grid = True
-                        delta = abs(grid_prev - w_grid).max()
-                        if not quiet:
-                            print(
-                                "Iteration %i, Delta (km) = %.3f" % (iter, delta / 1e3)
-                            )
-                            print(
-                                "Maximum displacement (km) = %.2f"
-                                % (((w_grid - R) / 1e3).max())
-                            )
-                            print(
-                                "Minimum displacement (km) = %.2f"
-                                % (((w_grid - R) / 1e3).min())
-                            )
-                    else:
-                        delta = abs(grid_prev - rho_grid).max()
-                        if not quiet:
-                            print("Iteration %i, Delta (kg m-3) = %.3f" % (iter, delta))
-                            print("Maximum density (kg m-3) = %.2f" % (rho_grid.max()))
-                            print("Minimum density (kg m-3) = %.2f" % (rho_grid.min()))
-                else:
-                    delta = abs(grid_prev - (R - wdc_grid - c)).max()
+        wdc_lm_o = w_lm_o - dc_lm_o
+        wdc_lm_o[0, 0, 0] = R_c
+        if any_dc or any_w:
+            if not precomp_dc_grid:
+                wdc_grid = MakeGridDH(wdc_lm_o, **args_grid)
+            delta_wdc_geoid = corr_nmax_drho(
+                wdc_lm_o,
+                wdc_grid,
+                wdc_drho_grid,
+                lmax,
+                mass,
+                nmax,
+                drho_wdc,
+                R,
+                density_var=density_var_dc,
+            )
+
+        if iter != 1:
+            if not any_dc:
+                if any_w:
+                    if not comp_w_grid:
+                        w_grid = MakeGridDH(w_lm_o, **args_grid)
+                        comp_w_grid = True
+                    delta = abs(grid_prev - w_grid).max()
                     if not quiet:
                         print("Iteration %i, Delta (km) = %.3f" % (iter, delta / 1e3))
-                        crust_thick = (H_grid - wdc_grid) / 1e3
                         print(
-                            "Maximum Crustal thickness (km) = %.2f"
-                            % (crust_thick.max())
+                            "Maximum displacement (km) = %.2f"
+                            % (((w_grid - R) / 1e3).max())
                         )
                         print(
-                            "Minimum Crustal thickness (km) = %.2f"
-                            % (crust_thick.min())
+                            "Minimum displacement (km) = %.2f"
+                            % (((w_grid - R) / 1e3).min())
                         )
-
-            # Speed up convergence scheme
-            if iter % 2 == 0:
-                delta_wdc_geoid_2 = delta_wdc_geoid
-                delta_H_geoid_2 = delta_H_geoid
-                delta_w_geoid_2 = delta_w_geoid
-                delta_drho_omega_2 = drho_omega_corr
-                delta_drho_q_2 = drho_q_corr
+                else:
+                    delta = abs(grid_prev - rho_grid).max()
+                    if not quiet:
+                        print("Iteration %i, Delta (kg m-3) = %.3f" % (iter, delta))
+                        print("Maximum density (kg m-3) = %.2f" % (rho_grid.max()))
+                        print("Minimum density (kg m-3) = %.2f" % (rho_grid.min()))
             else:
-                delta_wdc_geoid_1 = delta_wdc_geoid
-                delta_H_geoid_1 = delta_H_geoid
-                delta_w_geoid_1 = delta_w_geoid
-                delta_drho_omega_1 = drho_omega_corr
-                delta_drho_q_1 = drho_q_corr
+                delta = abs(grid_prev - (R - wdc_grid - c)).max()
+                if not quiet:
+                    print("Iteration %i, Delta (km) = %.3f" % (iter, delta / 1e3))
+                    crust_thick = (H_grid - wdc_grid) / 1e3
+                    print("Maximum Crustal thickness (km) = %.2f" % (crust_thick.max()))
+                    print("Minimum Crustal thickness (km) = %.2f" % (crust_thick.min()))
 
-            if any_dc:
-                grid_prev = R - wdc_grid - c
-            else:
-                if not comp_w_grid:
-                    w_grid = MakeGridDH(w_lm_o, **args_grid)
-                grid_prev = w_grid if any_w else rho_grid
+        # Speed up convergence scheme
+        if iter % 2 == 0:
+            delta_wdc_geoid_2 = delta_wdc_geoid
+            delta_H_geoid_2 = delta_H_geoid
+            delta_w_geoid_2 = delta_w_geoid
+            delta_drho_omega_2 = drho_omega_corr
+            delta_drho_q_2 = drho_q_corr
+        else:
+            delta_wdc_geoid_1 = delta_wdc_geoid
+            delta_H_geoid_1 = delta_H_geoid
+            delta_w_geoid_1 = delta_w_geoid
+            delta_drho_omega_1 = drho_omega_corr
+            delta_drho_q_1 = drho_q_corr
 
-            # Error messages if iteration not converging
-            var_unit = "km"
-            var_relief = "Moho relief"
-            if not any_dc and not any_w:
-                var_relief = "Grid density"
-                var_unit = "kg m-3"
-            elif not any_dc:
-                var_relief = "Flexure relief"
+        if any_dc:
+            grid_prev = R - wdc_grid - c
+        else:
+            if not comp_w_grid:
+                w_grid = MakeGridDH(w_lm_o, **args_grid)
+            grid_prev = w_grid if any_w else rho_grid
 
-            if iter > iter_max:
-                raise ValueError(
-                    "%s not converging, maximum iteration reached at %i, "
-                    % (var_relief, iter)
-                    + "delta was %s (%s) and delta_max is %s (%s)."
-                    % (
-                        "%.4f" % (delta / 1e3 if var_unit == "km" else delta),
-                        var_unit,
-                        "%.4f" % (delta_max / 1e3 if var_unit == "km" else delta_max),
-                        var_unit,
-                    )
+        # Error messages if iteration not converging
+        var_unit = "km"
+        var_relief = "Moho relief"
+        if not any_dc and not any_w:
+            var_relief = "Grid density"
+            var_unit = "kg m-3"
+        elif not any_dc:
+            var_relief = "Flexure relief"
+
+        if iter > iter_max:
+            raise ValueError(
+                "%s not converging, maximum iteration reached at %i, "
+                % (var_relief, iter)
+                + "delta was %s (%s) and delta_max is %s (%s)."
+                % (
+                    "%.4f" % (delta / 1e3 if var_unit == "km" else delta),
+                    var_unit,
+                    "%.4f" % (delta_max / 1e3 if var_unit == "km" else delta_max),
+                    var_unit,
                 )
-            if delta > delta_out and iter != 1:
-                raise ValueError(
-                    "%s not converging, stopped at iteration %i, " % (var_relief, iter)
-                    + "delta was %s (%s) and delta_out is %s (%s). Try modifying nmax%s"
-                    % (
-                        "%.4f" % (delta / 1e3 if var_unit == "km" else delta),
-                        var_unit,
-                        "%.4f" % (delta_out / 1e3 if var_unit == "km" else delta_out),
-                        var_unit,
-                        " or try filtering."
-                        if (filter is None and filter_in is None)
-                        else ".",
-                    )
+            )
+        if delta > delta_out and iter != 1:
+            raise ValueError(
+                "%s not converging, stopped at iteration %i, " % (var_relief, iter)
+                + "delta was %s (%s) and delta_out is %s (%s). Try modifying nmax%s"
+                % (
+                    "%.4f" % (delta / 1e3 if var_unit == "km" else delta),
+                    var_unit,
+                    "%.4f" % (delta_out / 1e3 if var_unit == "km" else delta_out),
+                    var_unit,
+                    " or try filtering."
+                    if (filter is None and filter_in is None)
+                    else ".",
                 )
+            )
 
     if not quiet:
         print("Set the interfaces degree-0 coefficients")
