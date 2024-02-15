@@ -40,7 +40,7 @@ You can also run the detailed jupyter notebook with ::
 
 If jupyter notebook is not installed, you can install it with ::
 
-    pip install notebook
+    pip install jupyter
 
 .. note::
     Depending on how your system is set up, it might be necessary to use

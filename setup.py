@@ -14,14 +14,13 @@ install_requires = [
     "numpy",
     "matplotlib>=3.3",
     "sympy",
-    "jupyter",
     "pyshtools>=4.9",
     "cmcrameri",
 ]
 
 setup(
     name="Displacement_strain_planet",
-    version="0.5.0",
+    version="0.6.0",
     description="Planetary crustal thickness, displacement, "
     + "stress and strain calculations in spherical harmonics.",
     long_description=long_description,

@@ -2,7 +2,7 @@ Examples
 ========
 
 .. note::
-    In order to access these example files, it will be necessary to either download or clone the entire Displacement_strain_planet repo from `GitHub <https://github.com/AB-Ares/Displacement_strain_planet>`_. The files will be located in the directory `examples`. To run the jupyter notebook, you must install jupyter notebooks with pip (see Installation).
+    In order to access these example files, it will be necessary to either download or clone the entire Displacement_strain_planet repo from `GitHub <https://github.com/AB-Ares/Displacement_strain_planet>`_. The files will be located in the directory `examples`. To run the jupyter notebook, you must install jupyter notebook with pip (see Installation).
 
 Mars
 ----
