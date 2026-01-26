@@ -1,13 +1,277 @@
 """
-Functions for calculating Legendre polynomial derivatives, stresses
-and strains and plotting the Knapmeyer et al. (2006) tectonic dataset.
+Utility functions for calculating the Banerdt (1986) system of equations.
 """
 
-import numpy as np
-import pyshtools as pysh
 from pathlib import Path
+import numpy as np
+from pyshtools.gravmag import CilmPlusRhoHDH
+from pyshtools.legendre import PlmBar_d1
+from pyshtools.expand import SHGLQ, MakeGridPoint
+from pyshtools.shclasses.shgrid import SHGrid
 
-pi = np.pi
+# ==== spectral_degrad ====
+
+
+def spectral_degrad(
+    clm, deg_str_grd, lmax_calc=None, smoothing=False, smoothing_m=None, quiet=False
+):
+    """
+    Perform a spectral degradation to the input spherical harmonic
+    coefficient given an input degree-strength map.
+
+    Returns
+    -------
+    array, size(2*lmax+2,2*(2*lmax+2))
+        Grid of the spectrally degraded clm coefficients.
+
+    Parameters
+    ----------
+    clm : array, size (2,lmax+1,lmax+1)
+        Array with spherical harmonic coefficients to be degraded.
+    deg_str_grd : array, size (2*lmax+2,2*(2*lmax+2))
+        Grid with the degree-strength map.
+    lmax_calc : int, optional, default = None
+        Sets the maximum expansion degree. If None, this is defined by the
+        degree-strength.
+    smoothing : bool, optional, default = False
+        If True, perform a smoothing operation using the smoothing matrix
+    smoothing_m : array, optional, default = None
+        Smoothing matrix. If None, the matrix is [[-2, -1, 0, 1, 2], [0.5, 1, 1.5, 1, 0.5]].
+        This translates into averaging 5 values at each lat/lon cell taking
+        degree-strengths of [d-2, d-1, d, d+1, d+2] with weights of
+        [0.5, 1, 1.5, 1, 0.5].
+    quiet : bool, optional, default = True
+        If True, prints the function progress.
+    """
+
+    clm_deg0 = clm[0, 0, 0].copy()
+    clm[0, 0, 0] = 0.0
+    arr_deg_str = range(
+        int(np.floor(np.min(deg_str_grd)) + 1),
+        int(np.max(deg_str_grd)) + 2 if lmax_calc is None else lmax_calc - 1,
+    )
+    degraded_grd = SHGrid.from_array(deg_str_grd) * 0.0
+    grid_lon, grid_lat = np.meshgrid(degraded_grd.lons(), degraded_grd.lats())
+
+    if smoothing_m is None:
+        smoothing_m = [[-2, -1, 0, 1, 2], [0.75, 1, 1.5, 1, 0.75]]
+    elif not quiet and smoothing:
+        print(f"Changing smoothing matrix to {smoothing_m}")
+
+    if smoothing:
+        weight_sum = np.sum(smoothing_m[1])
+
+    lmax_array = np.shape(clm)[2] - 1
+    lmax_degstr = arr_deg_str[-1] + np.max(smoothing_m[0])
+    if lmax_degstr != lmax_array:
+        if not quiet:
+            print(f"Padding clm from lmax = {lmax_array} to {lmax_degstr}")
+        if lmax_degstr < lmax_array:
+            clm = clm[:, : lmax_degstr + 1, : lmax_degstr + 1]
+        else:
+            clm = np.pad(
+                clm,
+                ((0, 0), (0, lmax_degstr - lmax_array), (0, lmax_degstr - lmax_array)),
+                "constant",
+            )
+
+    for d_strength in arr_deg_str:
+        if not quiet:
+            print(f"Degree {d_strength:5d} / {arr_deg_str[-1]:5d}", end="\r")
+
+        # Get lat/lon mask where the degree-strength is a specific value
+        if d_strength == arr_deg_str[0]:
+            mask = deg_str_grd <= d_strength
+        else:
+            mask = (deg_str_grd > d_strength_prev) * (deg_str_grd <= d_strength)
+
+        if np.sum(mask) != 0:
+            if smoothing:
+                for deg, weight in zip(smoothing_m[0], smoothing_m[1]):
+                    degraded_grd.data[mask] += (
+                        MakeGridPoint(
+                            clm,
+                            lat=grid_lat[mask],
+                            lon=grid_lon[mask],
+                            lmax=d_strength + deg,
+                        )
+                        * weight
+                        / weight_sum
+                    )
+            else:
+                degraded_grd.data[mask] = MakeGridPoint(
+                    clm, lat=grid_lat[mask], lon=grid_lon[mask], lmax=d_strength
+                )
+
+        d_strength_prev = d_strength
+
+    return degraded_grd.data + clm_deg0
+
+
+# ==== corr_nmax_drho ====
+
+
+def corr_nmax_drho(
+    dr_lm,
+    drho,
+    shape_grid,
+    rho_grid,
+    lmax,
+    mass,
+    nmax,
+    R,
+    degrees=None,
+    drho_Thinshell=None,
+    density_var=False,
+):
+    """
+    Calculate the gravitational difference (with or
+    without laterally varying density) between the
+    mass-sheet case in the ThinShell system of equations
+    and when using the finite amplitude algorithm of Wieczorek &
+    Phillips (1998).
+
+    Returns
+    -------
+    array, size of input dr_lm
+        Array with the spherical harmonic coefficients of the
+        difference between the mass-sheet and finite-ampltiude
+        geoid.
+
+    Parameters
+    ----------
+    dr_lm : array, size (2,lmax+1,lmax+1)
+        Array with spherical harmonic coefficients of the relief.
+    drho : float or array(2, lmax+1, lmax+1)
+        Mean density contrast or spherical harmonic coefficients
+        for the mean density contrast.
+    shape_grid : array, size (2,2*(lmax+1),2*2(lmax+1))
+        Array with a grid of the relief.
+    rho_grid : array, size (2,2*(lmax+1),2*2(lmax+1))
+        Array with a grid of the lateral density contrast.
+    lmax : int
+        Maximum spherical harmonic degree to compute for the
+        derivatives.
+    mass : float
+        Mass of the planet.
+    nmax : int
+        Order of the finite-amplitude correction.
+    R : float
+        Mean radius of the planet.
+    degrees : array, optional, default = None
+        Array with spherical harmonic degrees. size (lmax+1)
+    drho_Thinshell : float, optional, default = None
+        Mean density contrast used in Thinshell. Should be left
+        to None in most cases. If None drho_Thinshell = drho
+    density_var : bool, optional, default = False
+        If True, correct for density variations.
+    """
+
+    if degrees is None:
+        degrees = np.arange(lmax + 1, dtype=float)
+
+    if drho_Thinshell is None:
+        drho_Thinshell = drho
+
+    # Finite-amplitude correction.
+    # This is the computation in Thin_shell_matrix.
+    MS_lm_nmax = drho * dr_lm / (2 * degrees.reshape(1, -1, 1) + 1) * 4.0 * np.pi / mass
+
+    if nmax != 1:
+        # This is the correct calculation with finite-amplitude
+        FA_lm_nmax, D = CilmPlusRhoHDH(shape_grid, nmax, mass, rho_grid, lmax=lmax)
+        MS_lm_nmax *= D**2
+    else:
+        FA_lm_nmax = MS_lm_nmax
+
+    # Density contrast in the relief correction.
+    if density_var and nmax == 1:
+        MS_lm_drho, D = CilmPlusRhoHDH(shape_grid, nmax, mass, rho_grid, lmax=lmax)
+        # MS_lm_drho_cst = MS_lm_nmax.copy()
+        # MS_lm_drho_cst *= D**2
+        MS_lm_nmax *= D**2
+
+        # Divide because the thin-shell code multiplies by
+        # density contrast to correct for finite-amplitude.
+        # Here we also correct for density variations, so the
+        # correction is already scaled by the density contrast.
+        delta_MS_FA = R * (MS_lm_drho - MS_lm_nmax) / drho_Thinshell
+    else:
+        if density_var and nmax != 1:
+            delta_MS_FA = R * (FA_lm_nmax - MS_lm_nmax) / drho_Thinshell
+        else:
+            delta_MS_FA = R * (FA_lm_nmax - MS_lm_nmax)
+
+    return delta_MS_FA
+
+
+# ==== DownContFilter ====
+
+
+def DownContFilter(l, half, R_ref, D_relief, filter_type="Mc", quiet=False):
+    """
+    Compute the downward minimum-amplitude or
+    -curvature filter of Wieczorek & Phillips,
+    (1998).
+
+    Returns
+    -------
+    float
+        Value of the filter at degrees l
+
+    Parameters
+    ----------
+    l : array
+        Array of spherical harmonic degrees.
+    half : int
+        The spherical harmonic degree where the filter is equal to 0.5.
+    R_ref : float
+        The reference radius of the gravitational field.
+    D_relief : float
+        The radius of the surface to downward continue to.
+    filter_type : string, optional, default = "Mc"
+        Filter type, minimum amplitude ("Ma") of curvature ("Mc").
+        If None, returns an array of ones
+    quiet : bool, optional, default = True
+        If True, prints a warning when D_relief > R_ref.
+    """
+
+    if filter_type is None:
+        return np.ones_like(l)
+
+    if D_relief > R_ref:
+        if not quiet:
+            print(
+                "! Warning:DownContFilter, D_relief > R_ref, cannot "
+                + "use a downward continuation filter. "
+                + f"Setting value to 1 ! [D_relief = {int(D_relief / 1e3)}"
+                + f", R_ref = {int(R_ref / 1e3)} km]"
+            )
+        return np.ones_like(l)
+
+    if half == 0:
+        DCFilter = 1.0
+    else:
+        if filter_type == "Mc":
+            tmp = 1.0 / (
+                (half * half + half)
+                * ((2 * half + 1) * (R_ref / D_relief) ** half) ** 2
+            )
+            DCFilter = (
+                1.0 + tmp * (l * l + l) * ((2 * l + 1) * (R_ref / D_relief) ** l) ** 2
+            )
+        elif filter_type == "Ma":
+            tmp = 1.0 / ((2.0 * half + 1.0) * (R_ref / D_relief) ** half) ** 2
+            DCFilter = 1.0 + tmp * ((2 * l + 1) * (R_ref / D_relief) ** l) ** 2
+        else:
+            raise ValueError(
+                "Error in DownContFilter, filter_type must be either 'Ma' "
+                + f", 'Mc', or None. Input value was {filter_type}."
+            )
+    DCFilter = 1.0 / DCFilter
+
+    return DCFilter
+
 
 # ==== SH_deriv ====
 
@@ -56,13 +320,13 @@ def SH_deriv(theta, phi, lmax):
 
     cost = np.cos(theta)
     sint = np.sin(theta)
-    if theta in (0, pi):
+    if theta in (0, np.pi):
         dp_theta = np.zeros((int((lmax + 1) * (lmax + 2) / 2)))
         p_theta = np.zeros((int((lmax + 1) * (lmax + 2) / 2)))
         costsint = 0.0
         sintt = 0.0
     else:
-        p_theta, dp_theta = pysh.legendre.PlmBar_d1(lmax, cost)
+        p_theta, dp_theta = PlmBar_d1(lmax, cost)
         dp_theta *= -sint  # Derivative with respect to
         # theta.
         costsint = cost / sint
@@ -93,7 +357,7 @@ def SH_deriv(theta, phi, lmax):
                 Y_lm_d2_thetaphi_a[1, l, m_abs] = dp_theta[index] * mcosmphi
                 y_lm[1, l, m_abs] = p_theta[index] * sinmphi
 
-        if theta in (0, pi):
+        if theta in (0, np.pi):
             Y_lm_d2_theta_a[:, l, : l + 1] = 0.0  # Not defined.
         else:
             # Make use of the Laplacian identity to estimate
@@ -198,8 +462,8 @@ def SH_deriv_store(
         lmaxgrid = lmax
     elif lmaxgrid < lmax:
         raise ValueError(
-            "lmaxgrid should be higher or equal than lmax, input is %s" % (lmaxgrid)
-            + " with lmax = %s." % (lmax)
+            f"lmaxgrid should be higher or equal than lmax, input is {lmaxgrid}"
+            + f" with lmax = {lmax}."
         )
 
     if (
@@ -211,18 +475,15 @@ def SH_deriv_store(
         or (lon_max < lon_min)
     ):
         raise ValueError(
-            "colat_min, colat_max, lon_min, lon_max are not correctly defined"
-            + "the min/max colatitudes and longitudes should range from 0–180 and 0–360"
-            + "Inputs are %s, %s, %s, %s" % (colat_min, colat_max, lon_min, lon_max)
+            "colat_min, colat_max, lon_min, lon_max are not correctly "
+            + "defined the min/max colatitudes and longitudes should "
+            + "range from 0–180 and 0–360. "
+            + f"Inputs are {colat_min}, {colat_max}, {lon_min}, {lon_max}"
         )
 
-    poly_file = "%s/Y_lmsd1d2_%slmax%s_lmaxgrid%s_f%s.%s" % (
-        path,
-        grid,
-        lmax,
-        lmaxgrid,
-        str(dtype)[-4:-2],
-        "npz" if compressed else "npy",
+    poly_file = (
+        f"{path}/Y_lmsd1d2_{grid}lmax{lmax}"
+        + f"_lmaxgrid{lmaxgrid}_f{str(dtype)[-4:-2]}.{ 'npz' if compressed else 'npy'}"
     )
 
     if grid == "GLQ":
@@ -233,18 +494,16 @@ def SH_deriv_store(
         nlon = 2 * nlat
     else:
         raise ValueError(
-            "Grid format non recognized allowed are 'DH' and 'GLQ', input was %s"
-            % (grid)
+            f"Grid format non recognized allowed are 'DH' and 'GLQ', input was {grid}"
         )
 
     if Path(poly_file).exists() == 0:
         if quiet is False:
             print(
                 "Pre-compute SH derivatives, may take some"
-                + " time depending on lmax and lmaxgrid, which are %s and %s."
-                % (lmax, lmaxgrid)
+                + f" time depending on lmax and lmaxgrid, which are {lmax} and {lmaxgrid}."
             )
-            print("dtype is %s." % (dtype))
+            print(f"dtype is {dtype}.")
 
         index_size = int((lmax + 1) * (lmax + 2) / 2)
         shape_save = (nlat, nlon, 2, index_size)
@@ -255,7 +514,7 @@ def SH_deriv_store(
         Y_lm_d2_theta_a = np.zeros(shape_save, dtype=dtype)
         y_lm_save = np.zeros(shape_save, dtype=dtype)
 
-        phi_ar = np.linspace(0, 2.0 * pi, nlon, endpoint=False, dtype=dtype)
+        phi_ar = np.linspace(0, 2.0 * np.pi, nlon, endpoint=False, dtype=dtype)
         msinmphi = np.zeros((lmax + 1, len(phi_ar)), dtype=dtype)
         m2cosphi = np.zeros((lmax + 1, len(phi_ar)), dtype=dtype)
         mcosmphi = np.zeros((lmax + 1, len(phi_ar)), dtype=dtype)
@@ -275,7 +534,7 @@ def SH_deriv_store(
 
             nlat_half = nlat // 2
             theta_range = np.linspace(
-                0, pi / 2.0, nlat_half, endpoint=False, dtype=dtype
+                0, np.pi / 2.0, nlat_half, endpoint=False, dtype=dtype
             )
             sint = np.sin(theta_range)
             cost = np.cos(theta_range)
@@ -285,15 +544,17 @@ def SH_deriv_store(
             for t_i, theta in enumerate(theta_range):
                 t_i_s = nlat - t_i
                 if quiet is False:
-                    print(" colatitude %s of 90" % (int(theta * 180 / pi)), end="\r")
+                    print(f" colatitude {int(theta * 180 / np.pi)} of 90", end="\r")
                 if theta == 0:
                     dp_theta = np.zeros((index_size))
                     p_theta = np.zeros((index_size))
                 elif theta != 0:
-                    p_theta, dp_theta = pysh.legendre.PlmBar_d1(lmax, cost[t_i])
+                    p_theta, dp_theta = PlmBar_d1(lmax, cost[t_i])
                     if not sign_conversion:
-                        # Given the symmetry of PlmBar_d1 & 'cost', we here get the sign conversions for positive and negative 'cost'.
-                        tmp1, tmp2 = pysh.legendre.PlmBar_d1(lmax, -cost[t_i])
+                        # Given the symmetry of PlmBar_d1 & 'cost',
+                        # we here get the sign conversions for positive and
+                        # negative 'cost'.
+                        tmp1, tmp2 = PlmBar_d1(lmax, -cost[t_i])
                         # Degree-0 is always zero
                         signs_p_theta = np.insert(p_theta[1:] / tmp1[1:], 0, 1)
                         signs_dp_theta = np.insert(dp_theta[1:] / tmp2[1:], 0, 1)
@@ -376,8 +637,8 @@ def SH_deriv_store(
                     y_lm_save[t_i_s] = y_lm_save[t_i] * signs_p_theta
 
         else:
-            phi_ind_1 = int(nlon / (phi_ar.max() * 180 / pi) * lon_min)
-            phi_ind_2 = int(nlon / (phi_ar.max() * 180 / pi) * lon_max)
+            phi_ind_1 = int(nlon / (phi_ar.max() * 180 / np.pi) * lon_min)
+            phi_ind_2 = int(nlon / (phi_ar.max() * 180 / np.pi) * lon_max)
             phi_ind = slice(phi_ind_1, phi_ind_2)
             phi_ar_s = phi_ar[phi_ind]
 
@@ -387,12 +648,12 @@ def SH_deriv_store(
                 dp_theta_a = np.zeros((index_size, nlat // 2 + 1), dtype=dtype)
 
             if grid == "GLQ":
-                zeros, _ = pysh.expand.SHGLQ(lmax)
+                zeros, _ = SHGLQ(lmax)
                 theta_range = np.arccos(zeros)
                 step_theta = theta_range[-1] - theta_range[-2]
             else:
                 theta_range, step_theta = np.linspace(
-                    0, pi, nlat, endpoint=False, dtype=dtype, retstep=True
+                    0, np.pi, nlat, endpoint=False, dtype=dtype, retstep=True
                 )
 
             sint = np.sin(theta_range)
@@ -402,13 +663,13 @@ def SH_deriv_store(
 
             sign_conversion = False
             for t_i, theta in enumerate(theta_range):
-                theta_180 = theta * 180.0 / pi
+                theta_180 = theta * 180.0 / np.pi
                 if theta == 0:
                     dp_theta = np.zeros((index_size))
                     p_theta = np.zeros((index_size))
                 if quiet is False:
                     print(
-                        " colatitude %s of %s" % (int(theta_180), colat_max),
+                        f" colatitude {int(theta_180)} of {colat_max}",
                         end="\r",
                     )
                 if theta_180 < colat_min or theta_180 > colat_max:
@@ -416,16 +677,18 @@ def SH_deriv_store(
                 if theta != 0:
                     if colat_min != 0 or colat_max != 180:
                         # Don't use the symmetry speedup, which requires a whole sphere computation
-                        p_theta, dp_theta = pysh.legendre.PlmBar_d1(lmax, cost[t_i])
+                        p_theta, dp_theta = PlmBar_d1(lmax, cost[t_i])
                         dp_theta *= -sint[t_i]
                     elif cost[t_i] >= 0:
                         (
                             p_theta_a[:, t_i],
                             dp_theta_a[:, t_i],
-                        ) = pysh.legendre.PlmBar_d1(lmax, cost[t_i])
+                        ) = PlmBar_d1(lmax, cost[t_i])
                         if not sign_conversion:
-                            # Given the symmetry of PlmBar_d1 & 'cost', we here get the sign conversions for positive and negative 'cost'.
-                            tmp1, tmp2 = pysh.legendre.PlmBar_d1(lmax, -cost[t_i])
+                            # Given the symmetry of PlmBar_d1 & 'cost',
+                            # we here get the sign conversions for positive
+                            # and negative 'cost'.
+                            tmp1, tmp2 = PlmBar_d1(lmax, -cost[t_i])
                             # Degree-0 is always zero
                             signs_p_theta = np.insert(
                                 p_theta_a[1:, t_i] / tmp1[1:], 0, 1
@@ -451,7 +714,7 @@ def SH_deriv_store(
                     index = np.array(l * (l + 1) / 2 + m_abs, dtype=int)
                     # Do only once for a given theta
                     if (theta == theta_range[0]) or (
-                        theta_180 <= (colat_min + step_theta * 180.0 / pi)
+                        theta_180 <= (colat_min + step_theta * 180.0 / np.pi)
                     ):
                         cosmphi_a[l, phi_ind] = np.cos(l * phi_ar_s)
                         sinmphi_a[l, phi_ind] = np.sin(l * phi_ar_s)
@@ -533,7 +796,7 @@ def SH_deriv_store(
 
         if save:
             if quiet is False:
-                print("Saving SH derivatives at: %s" % (path))
+                print(f"Saving SH derivatives at: {path}")
             if compressed:
                 np.savez_compressed(
                     poly_file,
@@ -598,613 +861,6 @@ def SH_deriv_store(
     )
 
 
-# ==== Displacement_strains_shtools ====
-
-
-def Displacement_strains_shtools(
-    A_lm,
-    w_lm,
-    E,
-    v,
-    R,
-    Te,
-    lmax,
-    depth=0,
-    lmaxgrid=None,
-    quiet=True,
-):
-    """
-    Computes the Banerdt (1986) equations to determine strains
-    and stresses from the displacements. This function uses
-    SHTOOLS to derive the spherical harmonic gradients. This
-    does not support GLQ grids.
-
-    Returns
-    -------
-    stress_theta : array, size(2*lmax+2,2*(2*lmax+2))
-        Array with the stress field with respect to colatitude.
-        This is equation A12 from Banerdt (1986).
-    stress_phi : array, size(2,lmax+1,lmax+1)
-        Array with the stress field with respect to longitude.
-        This is equation A13 from Banerdt (1986).
-    stress_theta_phi : array, size(2,lmax+1,lmax+1)
-        Array with the stress field with respect to colatitude and longitude.
-        This is equation A14 from Banerdt (1986).
-    eps_theta : array, size(2,lmax+1,lmax+1)
-        Array with the elongation with respect to colatitude.
-        This is equation A16 from Banerdt (1986).
-    eps_phi : array, size(2,lmax+1,lmax+1)
-        Array with the elongation with respect to longitude.
-        This is equation A17 from Banerdt (1986).
-    omega : array, size(2,lmax+1,lmax+1)
-        Array with the shearing deformation.
-        This is equation A18 from Banerdt (1986).
-    kappa_theta : array, size(2,lmax+1,lmax+1)
-        Array with the bending deformation with respect to colatitude.
-        This is equation A19 from Banerdt (1986).
-    kappa_phi : array, size(2,lmax+1,lmax+1)
-        Array with the bending deformation with respect to longitude.
-        This is equation A20 from Banerdt (1986).
-    tau : array, size(2,lmax+1,lmax+1)
-        Array with the twisting deformation.
-        This is equation A21 from Banerdt (1986).
-    tot_theta : array, size(2,lmax+1,lmax+1)
-        Array with the total deformation with respect to colatitude.
-    tot_phi : array, size(2,lmax+1,lmax+1)
-        Array with the total deformation with respect to longitude.
-    tot_thetaphi : array, size(2,lmax+1,lmax+1)
-        Array with the total deformation with respect to colatitude
-        and longitude.
-
-    Parameters
-    ----------
-    A_lm : array, float, size(2,lmax+1,lmax+1)
-        Array with the spherical harmonic coefficients of the
-        poloidal term of the tangential displacement.
-    w_lm : array, float, size(2,lmax+1,lmax+1)
-        Array with the spherical harmonic coefficients of the
-        upward displacement.
-    E : float
-        Young's modulus.
-    v : float
-        Poisson's ratio.
-    R : float
-        Mean radius of the planet.
-    Te : float
-        Elastic thickness of the lithosphere.
-    lmax : int
-        Maximum spherical harmonic degree for computations.
-    depth : float, optional, default = 0
-        The depth at which stresses are estimated.
-    lmaxgrid : int, optional, default = None
-        The maximum spherical harmonic degree resolvable by the grid.
-        If None, this parameter is set to lmax.
-        When grid=='GLQ', the gridshape is (lmaxgrid+1, 2*lmaxgrid+1) and
-        (2*lmaxgrid+2, 2*(2*lmaxgrid+2)) when grid=='DH'.
-        Quadrature grids following the convention of SHTOOLs.
-        If None, the grid is set to 'GLQ'.
-    quiet : bool, optional, default = True
-        If True, suppress printing output.
-    """
-
-    if lmax != np.shape(A_lm)[2] - 1:
-        if quiet is False:
-            print(
-                "Padding A_lm and w_lm from lmax = %s to %s"
-                % (np.shape(A_lm)[2] - 1, lmax)
-            )
-        A_lm = A_lm[:, : lmax + 1, : lmax + 1]
-        w_lm = w_lm[:, : lmax + 1, : lmax + 1]
-
-    if lmaxgrid is None:
-        lmaxgrid = lmax
-    elif lmaxgrid < lmax:
-        raise ValueError(
-            "lmaxgrid should be higher or equal than lmax, input is %s" % (lmaxgrid)
-            + " with lmax = %s." % (lmax)
-        )
-
-    # Some constants for the elastic model.
-    Te_half = Te / 2.0
-    eps = (Te_half - depth) / (1 + (Te_half - depth) / R)
-    psi = 12.0 * R**2 / Te**2
-    D = (E * (Te * Te * Te)) / ((12.0 * (1.0 - v**2)))
-    DpsiTeR = (D * psi) / (Te * R**2)
-    R_m1 = 1.0 / R
-    n_Rm2 = -(R_m1**2)
-
-    # Remove reference radius
-    A_lm[0, 0, 0] = 0.0
-    w_lm[0, 0, 0] = 0.0
-
-    nlat = 2 * lmaxgrid + 2
-    nlon = 2 * nlat
-
-    _, grid_colat = np.meshgrid(
-        np.linspace(0, 2 * pi, nlon, endpoint=False),
-        np.linspace(0, pi, nlat, endpoint=False),
-    )
-
-    sin_g_colat = np.sin(grid_colat)
-    csc = np.divide(
-        1.0, sin_g_colat, out=np.zeros_like(sin_g_colat), where=sin_g_colat != 0
-    )
-    cot = np.divide(
-        1.0,
-        np.tan(grid_colat),
-        out=np.zeros_like(sin_g_colat),
-        where=sin_g_colat != 0,
-    )
-    cotcsc = csc * cot
-
-    kw_exp = dict(extend=False, lmax_calc=lmax, lmax=lmaxgrid, grid="DH2")
-    w_lm = pysh.SHCoeffs.from_array(w_lm)
-    A_lm = pysh.SHCoeffs.from_array(A_lm)
-    w_deflec_ylm = R_m1 * w_lm.expand(**kw_exp).data
-
-    w_lm_grad = w_lm.gradient(**kw_exp)
-    A_lm_grad = A_lm.gradient(**kw_exp)
-
-    # First order derivative
-    A_lm_d1_t_cot = A_lm_grad.theta.data * cot  # cot pre-multiplication
-    w_lm_d1_t_cot = w_lm_grad.theta.data * cot
-    A_lm_d1_p = A_lm_grad.phi
-    w_lm_d1_p = w_lm_grad.phi
-    A_lm_d1_p.data *= sin_g_colat  # Remove the sin(theta) component of the gradient
-    w_lm_d1_p.data *= sin_g_colat
-
-    # Second order derivative
-    A_lm_d1_grad = A_lm_d1_p.expand(lmax_calc=lmax).gradient(**kw_exp)
-    w_lm_d1_grad = w_lm_d1_p.expand(lmax_calc=lmax).gradient(**kw_exp)
-    A_lmd2_p_csc2 = A_lm_d1_grad.phi.data
-    w_lmd2_p_csc2 = w_lm_d1_grad.phi.data
-    A_lmd2_p_csc2 *= csc  # Remove the sin(theta) component of the gradient
-    # and multiply by csc2 results in only * csc
-    w_lmd2_p_csc2 *= csc
-    A_lmd2_tp = A_lm_d1_grad.theta.data
-    w_lmd2_tp = w_lm_d1_grad.theta.data
-
-    # Laplacian identity for d2_theta
-    lapla_a = pysh.SHCoeffs.from_zeros(A_lm.lmax)
-    for l in range(lmax + 1):
-        lapla_a.coeffs[:, l, : l + 1] = l * (l + 1)
-    A_lmd2_t = -((A_lm * lapla_a).expand(**kw_exp).data + A_lm_d1_t_cot + A_lmd2_p_csc2)
-    w_lmd2_t = -((w_lm * lapla_a).expand(**kw_exp).data + w_lm_d1_t_cot + w_lmd2_p_csc2)
-
-    eps_theta = R_m1 * A_lmd2_t + w_deflec_ylm
-    eps_phi = R_m1 * (A_lmd2_p_csc2 + A_lm_d1_t_cot) + w_deflec_ylm
-    omega = 2.0 * R_m1 * (A_lmd2_tp * csc - A_lm_d1_p.data * cotcsc)
-
-    kappa_theta = n_Rm2 * w_lmd2_t + (-R_m1) * w_deflec_ylm
-    kappa_phi = n_Rm2 * (w_lmd2_p_csc2 + w_lm_d1_t_cot) + (-R_m1) * w_deflec_ylm
-    tau = 2.0 * n_Rm2 * (w_lmd2_tp * csc - w_lm_d1_p.data * cotcsc)
-
-    stress_theta = (
-        (eps_theta + v * eps_phi + eps * (kappa_theta + v * kappa_phi)) * DpsiTeR / 1e6
-    )  # MPa
-    stress_phi = (
-        (eps_phi + v * eps_theta + eps * (kappa_phi + v * kappa_theta)) * DpsiTeR / 1e6
-    )  # MPa
-    stress_theta_phi = (omega + eps * tau) * 0.5 * DpsiTeR * (1.0 - v) / 1e6  # MPa
-
-    tot_theta = eps_theta + kappa_theta * eps
-    tot_phi = eps_phi + kappa_phi * eps
-    tot_thetaphi = (omega + tau * eps) / 2.0
-
-    return (
-        stress_theta,
-        stress_phi,
-        stress_theta_phi,
-        eps_theta,
-        eps_phi,
-        omega,
-        kappa_theta,
-        kappa_phi,
-        tau,
-        tot_theta,
-        tot_phi,
-        tot_thetaphi,
-    )
-
-
-# ==== Displacement_strains ====
-
-
-def Displacement_strains(
-    A_lm,
-    w_lm,
-    E,
-    v,
-    R,
-    Te,
-    lmax,
-    depth=0,
-    colat_min=0,
-    colat_max=180,
-    lon_min=0,
-    lon_max=360,
-    grid="DH",
-    lmaxgrid=None,
-    Y_lm_d1_t=None,
-    Y_lm_d1_p=None,
-    Y_lm_d2_t=None,
-    Y_lm_d2_p=None,
-    Y_lm_d2_tp=None,
-    y_lm=None,
-    path=None,
-    quiet=True,
-):
-    """
-    Computes the Banerdt (1986) equations to determine strains
-    and stresses from the displacements.
-
-    Returns
-    -------
-    stress_theta : array, size(2*lmax+2,2*(2*lmax+2))
-        Array with the stress field with respect to colatitude.
-        This is equation A12 from Banerdt (1986).
-    stress_phi : array, size(2,lmax+1,lmax+1)
-        Array with the stress field with respect to longitude.
-        This is equation A13 from Banerdt (1986).
-    stress_theta_phi : array, size(2,lmax+1,lmax+1)
-        Array with the stress field with respect to colatitude and longitude.
-        This is equation A14 from Banerdt (1986).
-    eps_theta : array, size(2,lmax+1,lmax+1)
-        Array with the elongation with respect to colatitude.
-        This is equation A16 from Banerdt (1986).
-    eps_phi : array, size(2,lmax+1,lmax+1)
-        Array with the elongation with respect to longitude.
-        This is equation A17 from Banerdt (1986).
-    omega : array, size(2,lmax+1,lmax+1)
-        Array with the shearing deformation.
-        This is equation A18 from Banerdt (1986).
-    kappa_theta : array, size(2,lmax+1,lmax+1)
-        Array with the bending deformation with respect to colatitude.
-        This is equation A19 from Banerdt (1986).
-    kappa_phi : array, size(2,lmax+1,lmax+1)
-        Array with the bending deformation with respect to longitude.
-        This is equation A20 from Banerdt (1986).
-    tau : array, size(2,lmax+1,lmax+1)
-        Array with the twisting deformation.
-        This is equation A21 from Banerdt (1986).
-    tot_theta : array, size(2,lmax+1,lmax+1)
-        Array with the total deformation with respect to colatitude.
-    tot_phi : array, size(2,lmax+1,lmax+1)
-        Array with the total deformation with respect to longitude.
-    tot_thetaphi : array, size(2,lmax+1,lmax+1)
-        Array with the total deformation with respect to colatitude
-        and longitude.
-
-    Parameters
-    ----------
-    A_lm : array, float, size(2,lmax+1,lmax+1)
-        Array with the spherical harmonic coefficients of the
-        poloidal term of the tangential displacement.
-    w_lm : array, float, size(2,lmax+1,lmax+1)
-        Array with the spherical harmonic coefficients of the
-        upward displacement.
-    E : float
-        Young's modulus.
-    v : float
-        Poisson's ratio.
-    R : float
-        Mean radius of the planet.
-    Te : float
-        Elastic thickness of the lithosphere.
-    lmax : int
-        Maximum spherical harmonic degree for computations.
-    depth : float, optional, default = 0
-        The depth at which stresses are estimated.
-    colat_min : float, optional, default = 0
-        Minimum colatitude for grid computation of strains and stresses.
-    colat_max : float, optional, default = 180
-        Maximum colatitude for grid computation of strains and stresses.
-    lon_min : float, optional, default = 0
-        Minimum longitude for grid computation of strains and stresses.
-    lon_max : float, optional, default = 360
-        Maximum longitude for grid computation of strains and stresses.
-    grid: string, optional, default = 'DH'
-        Either 'DH' or 'GLQ' for Driscoll and Healy grids or Gauss-Legendre
-        Quadrature grids following the convention of SHTOOLs.
-    lmaxgrid : int, optional, default = None
-        The maximum spherical harmonic degree resolvable by the grid.
-        If None, this parameter is set to lmax.
-        When grid=='GLQ', the gridshape is (lmaxgrid+1, 2*lmaxgrid+1) and
-        (2*lmaxgrid+2, 2*(2*lmaxgrid+2)) when grid=='DH'.
-    Y_lm_d1_t : array, float, size(2,lmax+1,lmax+1), optional, default = None
-        Array with the first derivative
-        of Legendre polynomials with respect to colatitude.
-    Y_lm_d1_p : array, float, size(2,lmax+1,lmax+1), optional, default = None
-        Array with the first derivative
-        of Legendre polynomials with respect to longitude.
-    Y_lm_d2_t : array, float, size(2,lmax+1,lmax+1), optional, default = None
-        Array with the second derivative
-        of Legendre polynomials with respect to colatitude.
-    Y_lm_d2_p : array, float, size(2,lmax+1,lmax+1), optional, default = None
-        Array with the second derivative
-        of Legendre polynomials with respect to longitude.
-    Y_lm_d2_tp : array, float, size(2,lmax+1,lmax+1), optional, default = None
-        Array with the first derivative
-        of Legendre polynomials with respect to colatitude and longitude.
-    y_lm : array, float, size(2,lmax+1,lmax+1), optional, default = None
-        Array of spherical harmonic functions.
-    path : string, optional, default = None
-        path where to find the stored Legendre polynomials.
-    quiet : bool, optional, default = True
-        If True, suppress printing output.
-    """
-
-    if lmax != np.shape(A_lm)[2] - 1:
-        if quiet is False:
-            print(
-                "Padding A_lm and w_lm from lmax = %s to %s"
-                % (np.shape(A_lm)[2] - 1, lmax)
-            )
-        A_lm = A_lm[:, : lmax + 1, : lmax + 1]
-        w_lm = w_lm[:, : lmax + 1, : lmax + 1]
-
-    if lmaxgrid is None:
-        lmaxgrid = lmax
-    elif lmaxgrid < lmax:
-        raise ValueError(
-            "lmaxgrid should be higher or equal than lmax, input is %s" % (lmaxgrid)
-            + " with lmax = %s." % (lmax)
-        )
-
-    if grid == "GLQ":
-        nlat = lmaxgrid + 1
-        nlon = 2 * nlat - 1
-    elif grid == "DH":
-        nlat = 2 * lmaxgrid + 2
-        nlon = 2 * nlat
-    else:
-        raise ValueError(
-            "Grid format non recognized allowed inputs are 'DH' and 'GLQ', input was %s"
-            % (grid)
-        )
-
-    if Y_lm_d1_p is not None:
-        if quiet is False:
-            print("Using input precomputed SH derivatives")
-    else:
-        if path is None:
-            raise ValueError(
-                "Need to speficify the path, here the path is {:s}.".format(repr(path))
-            )
-        (
-            Y_lm_d1_t,
-            Y_lm_d1_p,
-            Y_lm_d2_t,
-            Y_lm_d2_p,
-            Y_lm_d2_tp,
-            y_lm,
-        ) = SH_deriv_store(lmax, path, lmaxgrid=lmaxgrid, grid=grid)
-
-    # Some constants for the elastic model.
-    Te_half = Te / 2.0
-    eps = (Te_half - depth) / (1 + (Te_half - depth) / R)
-    psi = 12.0 * R**2 / Te**2
-    D = (E * (Te * Te * Te)) / ((12.0 * (1.0 - v**2)))
-    DpsiTeR = (D * psi) / (Te * R**2)
-    R_m1 = 1.0 / R
-    n_Rm2 = -(R_m1**2)
-
-    # Remove reference radius
-    A_lm[0, 0, 0] = 0.0
-    w_lm[0, 0, 0] = 0.0
-
-    # Allocate arrays.
-    shape = (nlat, nlon)
-    omega = np.zeros(shape)
-    kappa_theta = np.zeros(shape)
-    kappa_phi = np.zeros(shape)
-    tau = np.zeros(shape)
-    eps_theta = np.zeros(shape)
-    eps_phi = np.zeros(shape)
-
-    deg2rad = pi / 180
-
-    if grid == "GLQ":
-        zeros, _ = pysh.expand.SHGLQ(lmax)
-        grid_long, grid_colat = np.meshgrid(
-            np.linspace(0, 2 * pi, nlon, endpoint=False),
-            np.arccos(zeros),
-        )
-    else:
-        grid_long, grid_colat = np.meshgrid(
-            np.linspace(0, 2 * pi, nlon, endpoint=False),
-            np.linspace(0, pi, nlat, endpoint=False),
-        )
-
-    mask = (
-        (grid_colat > (colat_min - 1) * deg2rad)
-        & (grid_colat < (colat_max + 1) * deg2rad)
-        & (grid_long > (lon_min - 1) * deg2rad)
-        & (grid_long < (lon_max + 1) * deg2rad)
-    )
-    sin_g_lat_m = np.sin(grid_colat[mask])
-    csc = np.divide(
-        1.0, sin_g_lat_m, out=np.zeros_like(sin_g_lat_m), where=sin_g_lat_m != 0
-    )
-    csc2 = np.divide(
-        1.0, sin_g_lat_m**2, out=np.zeros_like(sin_g_lat_m), where=sin_g_lat_m != 0
-    )
-    cot = np.divide(
-        1.0,
-        np.tan(grid_colat[mask]),
-        out=np.zeros_like(sin_g_lat_m),
-        where=sin_g_lat_m != 0,
-    )
-    cotcsc = csc * cot
-
-    # Convert 3-D of SH to 2-D indexed array
-    w_lm = pysh.shio.SHCilmToCindex(w_lm, lmax)
-    A_lm = pysh.shio.SHCilmToCindex(A_lm, lmax)
-
-    y_lm = y_lm[mask]
-    Y_lm_d2_t = Y_lm_d2_t[mask]
-    Y_lm_d2_p = Y_lm_d2_p[mask]
-    Y_lm_d1_t = Y_lm_d1_t[mask]
-    Y_lm_d1_p = Y_lm_d1_p[mask]
-    Y_lm_d2_tp = Y_lm_d2_tp[mask]
-
-    ein_sum = "mij,ij->m"
-    ein_sum_mul = "mik,ik,m->m"
-    path_sum = ["einsum_path", (0, 1)]  # Generated from np.einsum_path
-    path_mul = ["einsum_path", (0, 1), (0, 1)]  # Generated from np.einsum_path
-
-    w_deflec_ylm = R_m1 * np.einsum(ein_sum, y_lm, w_lm, optimize=path_sum)
-    eps_theta[mask] = (
-        R_m1 * np.einsum(ein_sum, Y_lm_d2_t, A_lm, optimize=path_sum) + w_deflec_ylm
-    )
-    eps_phi[mask] = (
-        R_m1
-        * (
-            np.einsum(ein_sum_mul, Y_lm_d2_p, A_lm, csc2, optimize=path_mul)
-            + np.einsum(ein_sum_mul, Y_lm_d1_t, A_lm, cot, optimize=path_mul)
-        )
-        + w_deflec_ylm
-    )
-    omega[mask] = (
-        2.0
-        * R_m1
-        * (
-            np.einsum(ein_sum_mul, Y_lm_d2_tp, A_lm, csc, optimize=path_mul)
-            - np.einsum(ein_sum_mul, Y_lm_d1_p, A_lm, cotcsc, optimize=path_mul)
-        )
-    )
-
-    kappa_theta[mask] = (
-        n_Rm2 * np.einsum(ein_sum, Y_lm_d2_t, w_lm, optimize=path_sum)
-        + (-R_m1) * w_deflec_ylm
-    )
-    kappa_phi[mask] = (
-        n_Rm2
-        * (
-            np.einsum(ein_sum_mul, Y_lm_d2_p, w_lm, csc2, optimize=path_mul)
-            + np.einsum(ein_sum_mul, Y_lm_d1_t, w_lm, cot, optimize=path_mul)
-        )
-        + (-R_m1) * w_deflec_ylm
-    )
-    tau[mask] = (
-        2.0
-        * n_Rm2
-        * (
-            np.einsum(ein_sum_mul, Y_lm_d2_tp, w_lm, csc, optimize=path_mul)
-            - np.einsum(ein_sum_mul, Y_lm_d1_p, w_lm, cotcsc, optimize=path_mul)
-        )
-    )
-
-    stress_theta = (
-        (eps_theta + v * eps_phi + eps * (kappa_theta + v * kappa_phi)) * DpsiTeR / 1e6
-    )  # MPa
-    stress_phi = (
-        (eps_phi + v * eps_theta + eps * (kappa_phi + v * kappa_theta)) * DpsiTeR / 1e6
-    )  # MPa
-    stress_theta_phi = (omega + eps * tau) * 0.5 * DpsiTeR * (1.0 - v) / 1e6  # MPa
-
-    tot_theta = eps_theta + kappa_theta * eps
-    tot_phi = eps_phi + kappa_phi * eps
-    tot_thetaphi = (omega + tau * eps) / 2.0
-
-    return (
-        stress_theta,
-        stress_phi,
-        stress_theta_phi,
-        eps_theta,
-        eps_phi,
-        omega,
-        kappa_theta,
-        kappa_phi,
-        tau,
-        tot_theta,
-        tot_phi,
-        tot_thetaphi,
-    )
-
-
-# ==== Principal_strainstress_angle ====
-
-
-def Principal_strainstress_angle(s_theta, s_phi, s_theta_phi):
-    """
-    Calculate principal strains, stresses, and
-    their principal angles.
-
-    Returns
-    -------
-    min_strain : array, size same as input arrays
-        Array with the minimum principal horizontal strain or stress.
-    max_strain : array, size same as input arrays
-        Array with the maximum principal horizontal strain or stress.
-    sum_strain : array, size same as input arrays
-        Array with the sum of the principal horizontal strain or stress.
-    principal_angle : array, size same as input arrays
-        Array with the principal strain or stress direction in degrees.
-
-    Parameters
-    ----------
-    s_theta : array, float, size(nlat, nlon)
-        Array of the colatitude component of the stress or strain field.
-    s_phi : array, float, size(nlat, nlon)
-        Array of the longitude component of the stress or strain field.
-    s_theta_phi : array, float, size(nlat, nlon)
-        Array of the colatitude and longitude component of the stress or strain field.
-    """
-    min_strain = 0.5 * (
-        s_theta + s_phi - np.sqrt((s_theta - s_phi) ** 2 + 4 * s_theta_phi**2)
-    )
-    max_strain = 0.5 * (
-        s_theta + s_phi + np.sqrt((s_theta - s_phi) ** 2 + 4 * s_theta_phi**2)
-    )
-    sum_strain = min_strain + max_strain
-
-    principal_angle = 0.5 * np.arctan2(2 * s_theta_phi, s_theta - s_phi) * 180.0 / pi
-
-    return min_strain, max_strain, sum_strain, principal_angle
-
-
-# ==== Principal_strainstress_angle ====
-
-
-def Strainstress_from_principal(min_strain, max_strain, principal_angle):
-    """
-    Calculate strains or stresses, from
-    their principal values.
-
-    Returns
-    -------
-    s_theta : array, float, size same as input arrays
-        Array of the colatitude component of the stress or strain field.
-    s_phi : array, float, size same as input arrays
-        Array of the longitude component of the stress or strain field.
-    s_theta_phi : array, float, size same as input arrays
-        Array of the colatitude and longitude component of the stress or strain field.
-
-    Parameters
-    ----------
-    min_strain : array, size(nlat, nlon)
-        Array with the minimum principal horizontal strain or stress.
-    max_strain : array, size(nlat, nlon)
-        Array with the maximum principal horizontal strain or stress.
-    principal_angle : array, size(nlat, nlon)
-        Array with the principal strain or stress direction in degrees.
-    """
-
-    deg2rad = pi / 180
-    s_theta = (max_strain + min_strain) / 2.0 + (
-        (max_strain - min_strain) / 2.0
-    ) * np.cos(2.0 * principal_angle * deg2rad)
-    s_phi = (max_strain + min_strain) / 2.0 - (
-        (max_strain - min_strain) / 2.0
-    ) * np.cos(2.0 * principal_angle * deg2rad)
-    s_theta_phi = (
-        0.5 * (max_strain - min_strain) * np.sin(2.0 * principal_angle * deg2rad)
-    )
-
-    return s_theta, s_phi, s_theta_phi
-
-
 # ==== Plt_tecto_Mars ====
 
 
@@ -1245,6 +901,8 @@ def Plt_tecto_Mars(
     legend_loc : string, optional, default = "upper left"
         Determine the legend position.
     """
+
+    # Number of idx in the file
     idx_ext = 9676
     idx_comp = 5143
     labels = ["Compressional tectonic features", "Extensional tectonic features"]
@@ -1252,11 +910,11 @@ def Plt_tecto_Mars(
     faults_cols = [compression_col, extension_col]
 
     if compression:
-        comp_fault_dat = np.loadtxt("%s/Knapmeyer_2006_compdata.txt" % (path))
+        comp_fault_dat = np.loadtxt(f"{path}/Knapmeyer_2006_compdata.txt")
         ind_comp_fault = np.isin(comp_fault_dat, np.arange(1, idx_comp + 1, dtype=int))
         ind_comp_fault_2 = np.where(ind_comp_fault)[0]
     if extension:
-        ext_fault_dat = np.loadtxt("%s/Knapmeyer_2006_extedata.txt" % (path))
+        ext_fault_dat = np.loadtxt(f"{path}/Knapmeyer_2006_extedata.txt")
         ind_ext_fault = np.isin(ext_fault_dat, np.arange(1, idx_ext + 1, dtype=int))
         ind_ext_fault_2 = np.where(ind_ext_fault)[0]
 
@@ -1312,3 +970,85 @@ def Plt_tecto_Mars(
     if legend_show:
         for axes in [ax] if np.size(ax) == 1 else ax:
             axes.legend(loc=legend_loc)
+
+
+# ==== Principal_strainstress_angle ====
+
+
+def Principal_strainstress_angle(s_theta, s_phi, s_theta_phi):
+    """
+    Calculate principal strains, stresses, and
+    their principal angles.
+
+    Returns
+    -------
+    min_strain : array, size same as input arrays
+        Array with the minimum principal horizontal strain or stress.
+    max_strain : array, size same as input arrays
+        Array with the maximum principal horizontal strain or stress.
+    sum_strain : array, size same as input arrays
+        Array with the sum of the principal horizontal strain or stress.
+    principal_angle : array, size same as input arrays
+        Array with the principal strain or stress direction in degrees.
+
+    Parameters
+    ----------
+    s_theta : array, float, size(nlat, nlon)
+        Array of the colatitude component of the stress or strain field.
+    s_phi : array, float, size(nlat, nlon)
+        Array of the longitude component of the stress or strain field.
+    s_theta_phi : array, float, size(nlat, nlon)
+        Array of the colatitude and longitude component of the stress or strain field.
+    """
+
+    min_strain = 0.5 * (
+        (s_theta + s_phi) - np.sqrt((s_theta - s_phi) ** 2 + 4 * s_theta_phi**2)
+    )
+    max_strain = 0.5 * (
+        (s_theta + s_phi) - np.sqrt((s_theta - s_phi) ** 2 + 4 * s_theta_phi**2)
+    )
+    sum_strain = min_strain + max_strain
+    principal_angle = 0.5 * np.arctan2(2 * s_theta_phi, s_theta - s_phi) * 180.0 / np.pi
+
+    return min_strain, max_strain, sum_strain, principal_angle
+
+
+# ==== Principal_strainstress_angle ====
+
+
+def Strainstress_from_principal(min_strain, max_strain, principal_angle):
+    """
+    Calculate strains or stresses, from
+    their principal values.
+
+    Returns
+    -------
+    s_theta : array, float, size same as input arrays
+        Array of the colatitude component of the stress or strain field.
+    s_phi : array, float, size same as input arrays
+        Array of the longitude component of the stress or strain field.
+    s_theta_phi : array, float, size same as input arrays
+        Array of the colatitude and longitude component of the stress or strain field.
+
+    Parameters
+    ----------
+    min_strain : array, size(nlat, nlon)
+        Array with the minimum principal horizontal strain or stress.
+    max_strain : array, size(nlat, nlon)
+        Array with the maximum principal horizontal strain or stress.
+    principal_angle : array, size(nlat, nlon)
+        Array with the principal strain or stress direction in degrees.
+    """
+
+    deg2rad = np.pi / 180
+    s_theta = (max_strain + min_strain) / 2.0 + (
+        (max_strain - min_strain) / 2.0
+    ) * np.cos(2.0 * principal_angle * deg2rad)
+    s_phi = (max_strain + min_strain) / 2.0 - (
+        (max_strain - min_strain) / 2.0
+    ) * np.cos(2.0 * principal_angle * deg2rad)
+    s_theta_phi = (
+        0.5 * (max_strain - min_strain) * np.sin(2.0 * principal_angle * deg2rad)
+    )
+
+    return s_theta, s_phi, s_theta_phi

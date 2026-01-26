@@ -16,18 +16,24 @@ arbitrary depth and within the surface or moho relief (Wieczorek et al.,
 
 We note that some of these functions relies heavily on the pyshtools package.
 
-   Thin_shell_matrix
+  thinshell class:
+    invert_matrix
       Solve for the Banerdt et al. (1986) system of 5 equations with
       the possibility to account for finite-amplitude corrections
       and lateral density variations with the surface topography or
       moho relief.
 
-   Thin_shell_matrix_nmax
+    invert_matrix_nmax
       Solve the Banerdt (1986) system of 5 equations
       with finite-amplitude correction and accounting
       for the potential presence of density variations
       within the surface or moho reliefs.
 
+    compute_strains
+      Computes the Banerdt (1986) equations to determine strains
+      from displacements with a correction to the theta_phi term.
+
+  utils:
     DownContFilter
       Compute the downward minimum-amplitude or
       -curvature filter of Wieczorek & Phillips,
@@ -41,25 +47,21 @@ We note that some of these functions relies heavily on the pyshtools package.
       finite amplitude algorithm of Wieczorek &
       Phillips (1998).
 
-    SH_deriv
-      Compute on the spherical harmonic derivatives
-      (first and second order) at a given single colatiude/longitude 
-      location.
-
     SH_deriv_store
       Compute and store or load spherical harmonic derivatives
       (first and second order) over the whole sphere or 
       given a set of colatiudes/longitudes.
 
-    Displacement_strains
-      Computes the Banerdt (1986) equations to determine strains
-      from displacements with a correction to the theta_phi term.
+    SH_deriv
+      Compute on the spherical harmonic derivatives
+      (first and second order) at a given single colatiude/longitude 
+      location.
 
-    Displacement_strains_shtools
-      Computes the Banerdt (1986) equations to determine strains
-      and stresses from the displacements. This function uses 
-      SHTOOLS to derive the spherical harmonic gradients.
-
+    Plt_tecto_Mars
+      Plot the Knampeyer et al. (2006) dataset of
+      extensional and compressional tectonic features
+      on Mars.
+  
     Principal_strainstress_angle
       Calculate principal strains, stresses, and
       their principal angles.
@@ -67,29 +69,23 @@ We note that some of these functions relies heavily on the pyshtools package.
     Strainstress_from_principal
       Calculate strains or stresses, from
       their principal values.
-
-    Plt_tecto_Mars
-      Plot the Knampeyer et al. (2006) dataset of
-      extensional and compressional tectonic features
-      on Mars.
 """
+
 from ._version import get_versions
 
-from .B1986_nmax import Thin_shell_matrix
-from .B1986_nmax import Thin_shell_matrix_nmax
-from .B1986_nmax import DownContFilter
-from .B1986_nmax import corr_nmax_drho
+from .thinshell import ThinShell
 
-from .Displacement_strain import SH_deriv
-from .Displacement_strain import SH_deriv_store
-from .Displacement_strain import Displacement_strains
-from .Displacement_strain import Displacement_strains_shtools
-from .Displacement_strain import Principal_strainstress_angle
-from .Displacement_strain import Strainstress_from_principal
-from .Displacement_strain import Plt_tecto_Mars
+from .utils import spectral_degrad
+from .utils import DownContFilter
+from .utils import corr_nmax_drho
+from .utils import SH_deriv
+from .utils import SH_deriv_store
+from .utils import Plt_tecto_Mars
+from .utils import Principal_strainstress_angle
+from .utils import Strainstress_from_principal
 
-del B1986_nmax
-del Displacement_strain
+del utils
+del thinshell
 
 __version__ = get_versions()["version"]
 del get_versions
@@ -97,14 +93,12 @@ del get_versions
 __author__ = "Adrien Broquet"
 
 __all__ = [
-    "Thin_shell_matrix",
-    "Thin_shell_matrix_nmax",
+    "ThinShell",
+    "spectral_degrad",
     "DownContFilter",
     "corr_nmax_drho",
     "SH_deriv",
     "SH_deriv_store",
-    "Displacement_strains",
-    "Displacement_strains_shtools",
     "Principal_strainstress_angle",
     "Strainstress_from_principal",
     "Plt_tecto_Mars",

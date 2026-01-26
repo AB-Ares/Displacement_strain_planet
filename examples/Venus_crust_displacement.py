@@ -3,14 +3,13 @@ import matplotlib.pyplot as plt
 import pyshtools as pysh
 from cmcrameri import cm
 from Displacement_strain_planet import (
-    Thin_shell_matrix_nmax,
-    Displacement_strains_shtools,
+    ThinShell,
     Principal_strainstress_angle,
 )
 
 #################################################################
 # In this example, we solve for the displacement of the surface of
-# Venus by calling the function `Thin_shell_matrix_nmax`, assuming
+# Venus by calling the function `ThinShell.invert_matrix_nmax`, assuming
 # that the gravity and topography of the planet are compensated by
 # a combination of crustal root variations and flexure.
 # 3 assumptions are required to solve the system, and we here assume
@@ -27,7 +26,7 @@ from Displacement_strain_planet import (
 # minimum-amplitude filter to damp unrealistic oscilations of the
 # moho-relief. For this, we call the optional argument filter, set
 # it to "Ma", and set the degree at which the filter equals 0.5 to
-# 50 with a call to filter_half.
+# 30 with a call to filter_half.
 #
 # The function ouputs the following spherical harmonic coefficients:
 # w_lm flexure,
@@ -67,11 +66,6 @@ mass = gm / G  # Mass of the planet
 g0 = gm / R**2  # Mean gravitational
 # attraction of the planet
 
-# Remove 100% of C20
-percent_C20 = 0.0
-topo_clm.coeffs[0, 2, 0] = (percent_C20 / 100.0) * topo_clm.coeffs[0, 2, 0]
-geoid_clm.coeffs[0, 2, 0] = (percent_C20 / 100.0) * geoid_clm.coeffs[0, 2, 0]
-
 # Parameters
 c = 20e3  # Mean Crustal thickness
 Te = 100e3  # Elastic thickness
@@ -81,37 +75,36 @@ rhol = 2800.0  # Surface density
 E = 100e9  # Young's modulus
 v = 0.25  # Poisson's ratio
 
-print("Elastic thickness is %.2f km" % (Te / 1e3))
-print("Mean crustal thickness is %.2f km" % (c / 1e3))
-print("Crustal density is %.2f kg m-3" % (rhoc))
+# Initialize the ThinShell inversion
+ThinShell_init = ThinShell(
+    g0,
+    R,
+    c,
+    Te,
+    rhom,
+    rhoc,
+    rhol,
+    lmax,
+    E,
+    v,
+    mass,
+    filter_type="Ma",
+    filter_half=30,
+    quiet=quiet,
+)
 
-args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, lmax, E, v, mass)
+print(f"Elastic thickness is {Te / 1e3:.2f} km")
+print(f"Mean crustal thickness is {c / 1e3:.2f} km")
+print(f"Crustal density is {rhoc:.2f} kg m-3")
+
 args_expand = dict(lmax=5 * lmax, lmax_calc=lmax)
 args_fig = dict(figsize=(12, 10), dpi=100)
 
 zeros = pysh.SHCoeffs.from_zeros(lmax=lmax).coeffs
 
 print("Computing displacements and crustal root variations")
-(
-    w_lm,
-    A_lm,
-    moho_relief_lm,
-    dc_lm,
-    drhom_lm,
-    omega_lm,
-    q_lm,
-    Gc_lm,
-    G_lm,
-    H_lm,
-    sols,
-) = Thin_shell_matrix_nmax(
-    *args_param_m,
-    G_lm=geoid_clm.coeffs,
-    H_lm=topo_clm.coeffs,
-    drhom_lm=zeros.copy(),
-    filter="Ma",
-    filter_half=30,
-    quiet=quiet
+ThinShell_init.invert_matrix_nmax(
+    G_lm=geoid_clm.coeffs, H_lm=topo_clm.coeffs, drhom_lm=zeros.copy()
 )
 
 # Plotting
@@ -119,28 +112,30 @@ args_plot = dict(tick_interval=[45, 30], colorbar="bottom", cmap=cm.roma_r)
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, **args_fig)
 ax3.set_visible(False)
 
-grid_W = pysh.SHCoeffs.from_array(w_lm / 1e3).expand(**args_expand) - R / 1e3
+grid_W = ThinShell_init.w_lm.expand(**args_expand) / 1e3 - R / 1e3
 grid_W.plot(ax=ax1, cb_label="Upward displacement (km)", **args_plot, ticks="WSne")
 
 # Add zero displacement contour
 ax1.contour(
     grid_W.data > 0, levels=[0.99], extent=(0, 360, -90, 90), colors="k", origin="upper"
 )
-pysh.SHCoeffs.from_array(dc_lm / 1e3).expand(**args_expand).plot(
+(ThinShell_init.dc_lm / 1e3).expand(**args_expand).plot(
     ax=ax2,
     cb_label="Crustal root variations (km)",
     ticks="wSnE",
     ylabel=None,
-    **args_plot
+    **args_plot,
 )
 
-(pysh.SHCoeffs.from_array((H_lm - moho_relief_lm) / 1e3).expand(**args_expand)).plot(
-    ax=ax4, cb_label="Crustal thickness (km)", ticks="WSne", show=False, **args_plot
+((ThinShell_init.crust_lm) / 1e3).expand(**args_expand).plot(
+    ax=ax4,
+    cb_label="Crustal thickness (km)",
+    ticks="WSne",
+    show=False,
+    **args_plot,
 )
 
 print("Computing strains")
-args_param_s = (E, v, R, Te, lmax)
-
 # Strain
 (
     stress_theta,
@@ -155,7 +150,7 @@ args_param_s = (E, v, R, Te, lmax)
     tot_theta,
     tot_phi,
     tot_thetaphi,
-) = Displacement_strains_shtools(A_lm, w_lm, *args_param_s, quiet=quiet)
+) = ThinShell_init.compute_strains()
 
 # Principal strains
 (
@@ -178,7 +173,7 @@ pysh.SHGrid.from_array(min_strain * 1e3).plot(
     ticks="WSne",
     cb_label="Minimum principal horizontal strain ($\\times 10^{-3}$)",
     cmap_limits=[-6, 20],
-    **args_plot
+    **args_plot,
 )
 pysh.SHGrid.from_array(max_strain * 1e3).plot(
     ax=ax2,
@@ -186,14 +181,14 @@ pysh.SHGrid.from_array(max_strain * 1e3).plot(
     cmap_limits=[-6, 20],
     ticks="wSnE",
     ylabel=None,
-    **args_plot
+    **args_plot,
 )
 pysh.SHGrid.from_array(sum_strain * 1e3).plot(
     ax=ax3,
     cb_label="Sum of principal horizontal strains ($\\times 10^{-3}$)",
     cmap_limits=[-6, 20],
     ticks="WSne",
-    **args_plot
+    **args_plot,
 )
 pysh.SHGrid.from_array(principal_angle).plot(
     ax=ax4,
@@ -207,7 +202,7 @@ pysh.SHGrid.from_array(principal_angle).plot(
 )
 
 # Plot strain direction
-skip_i = int(lmax / 5)
+skip_i = int(lmax / 3)
 skip = (slice(None, None, skip_i), slice(None, None, skip_i))
 grid_long, grid_lat = np.meshgrid(
     pysh.SHGrid.from_array(principal_angle).lons(),

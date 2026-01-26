@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pyshtools as pysh
 from cmcrameri import cm
-from Displacement_strain_planet import Thin_shell_matrix_nmax, Thin_shell_matrix
+from Displacement_strain_planet import ThinShell
 from pyshtools.expand import MakeGridDH
 
 #################################################################
@@ -47,15 +47,18 @@ rhol = 1150.0  # Surface density
 E = 100e9  # Young's modulus
 v = 0.25  # Poisson's ratio
 
-print("Elastic thickness is %.2f km" % (Te / 1e3))
-print("Mean crustal thickness is %.2f km" % (c / 1e3))
-print("Crustal density is %.2f kg m-3" % (rhoc))
-print("Polar cap density is %.2f kg m-3" % (rhol))
+print(f"Elastic thickness is {Te / 1e3:.2f} km")
+print(f"Mean crustal thickness is {c / 1e3:.2f} km")
+print(f"Crustal density is {rhoc:.2f} kg m-3")
+print(f"Polar cap density is {rhol:.2f} kg m-3")
 
-# Slightly different inputs between Thin_shell_matrix_nmax and Thin_shell_matrix
-args_param_m = (g0, R, c, Te, rhom, rhoc, rhol, lmax, E, v, mass)
-args_param_m2 = (g0, R, c, Te, rhom, rhoc, rhol, rhobar, lmax, E, v)
-args_expand = dict(sampling=2, lmax=lmax, extend=False)
+# Initialize the ThinShell inversion with the mass-sheet approximation (nmax = 1)
+ThinShell_init = ThinShell(
+    g0, R, c, Te, rhom, rhoc, rhol, lmax, E, v, mass, nmax=1, iterate=False
+)
+
+# Some arguments for plotting
+args_expand = dict(lmax=lmax, extend=False)
 args_fig = dict(figsize=(12, 10), dpi=100)
 args_plot = dict(tick_interval=[45, 30], colorbar="bottom", cmap=cm.bilbao)
 
@@ -80,51 +83,47 @@ iter = 0
 iter_out = 200
 residuals = 1e10
 residuals_min = 5  # Minimum residual (m) to exit the iterative process
+
 while (residuals > residuals_min) and (iter < iter_out):
     iter += 1
     if iter == 1:
         # Here we call Thin_shell_matrix_nmax which is going to build and output the inversion
         # matrix ('sols') together with the first flexure solution. The 'sols' will be then used
         # in the faster Thin_shell_matrix below to interate flexure until convergence
-        out = Thin_shell_matrix_nmax(
-            *args_param_m,
+        sols = ThinShell_init.invert_matrix_nmax(
             dc_lm=zeros.copy(),  # No crustal root variations
             drhom_lm=zeros.copy(),  # No internal density variations
             H_lm=thick.copy(),
-            nmax=1  # Mass-sheet approximation
-        )
-        w_deflec1 = out[0]  # w_lm
-        sols = out[-1]  # matrix solutions
+        )  # matrix solutions
+        w_deflec1 = ThinShell_init.w_lm
 
         # In Thin_shell_matrix_nmax, the flexure coefficients are referenced to R (mean pl. rad.), # so we remove R. MakeGridDH is a SHTOOLs routine that expands spherical harmonic
         # coefficients to a 2D grid.
-        min1 = R - np.min(MakeGridDH(w_deflec1, **args_expand))
+        min1 = R - np.min(w_deflec1.expand(**args_expand).data)
     else:
         # Here we set first_inv to false given that the inversion matrix has already been built
         # above and input the 'sols' obtained above
-        out = Thin_shell_matrix(
-            *args_param_m2,
+        outs = ThinShell_init.invert_matrix(
             first_inv=False,
             lambdify_func=sols,
             dc_lm=zeros.copy(),
             drhom_lm=zeros.copy(),
-            H_lm=(thick - w_deflec1).copy()  # Update thickness
-        )
-        w_deflec1 = out[0]  # w_lm
+            H_lm=(thick - w_deflec1.coeffs).copy(),  # Update thickness
+        )[0]
+        w_deflec1 = pysh.SHCoeffs.from_array(outs)
 
         # In Thin_shell_matrix, the flexure coefficients are referenced to 0
-        min2 = -np.min(MakeGridDH(w_deflec1, **args_expand))
+        min2 = -np.min(w_deflec1.expand(**args_expand).data)
 
         # Criterion for residuals
         residuals = np.abs(min1 - min2)
         print(
-            "Iteration %s, maximum flexure %.3f km, residuals %.3f km"
-            % (iter, min2 / 1e3, residuals / 1e3)
+            f"Iteration {iter}, maximum flexure {min2 / 1e3:.3f} km, residuals {residuals / 1e3:.3f} km"
         )
         min1 = min2
-print("Iteration method, maximum flexure %.3f km" % (min2 / 1e3))
+print(f"Iteration method, maximum flexure {min2 / 1e3:.3f} km")
 
-############## Single step method with add_equation #############
+############## One step method with add_equation #############
 # The South Polar cap thickness is given without flexure. We thus
 # use the add_equation option to tell the model that the 'thick'
 # coefficients are equal to topography (H_lm) without flexure (w_lm),
@@ -137,33 +136,30 @@ print("Iteration method, maximum flexure %.3f km" % (min2 / 1e3))
 # The input equation is thus thick = 'add_array1 = (H_lm + w_lm)'
 # or 'add_array1 - (H_lm + w_lm)' in the package's left hand side only
 # equation convention.
-out = Thin_shell_matrix_nmax(
-    *args_param_m,
+ThinShell_init.invert_matrix_nmax(
     dc_lm=zeros.copy(),  # No crustal root variations
     drhom_lm=zeros.copy(),  # No internal density variations
     add_equation="add_array1 - (H_lm + w_lm)",
     add_arrays=thick.copy(),
-    iterate=False,
-    nmax=1  # Mass-sheet approximation
 )
-w_deflec2 = out[0]  # w_lm
-min2 = R - np.min(MakeGridDH(w_deflec2, **args_expand))
-print("Single step method, maximum flexure %.3f km" % (min2 / 1e3))
+w_deflec2 = ThinShell_init.w_lm
+min2 = R - np.min(w_deflec2.expand(**args_expand).data)
+print(f"One step method, maximum flexure {min2/1e3:.3f} km")
 
 ###################### Plotting the results #####################
 # Set degree-0 flexure SHCoeffs to zero
-w_deflec1[0, 0, 0] = 0
-w_deflec2[0, 0, 0] = 0
+w_deflec1.coeffs[0, 0, 0] = 0
+w_deflec2.coeffs[0, 0, 0] = 0
 
 f, (ax1, ax2) = plt.subplots(1, 2)
 # Use SHTOOLs to plot
 # If cartopy is installed, it is easy to plot this in south polar projection
 # First import cartopy –– "from cartopy import crs as ccrs"
 # add the argument to the plot() function below –– projection = ccrs.Orthographic(central_latitude=-90)
-(pysh.SHCoeffs.from_array(w_deflec1 / 1e3).expand(lmax=2 * lmax, lmax_calc=lmax)).plot(
+(w_deflec1 / 1e3).expand(lmax=2 * lmax, lmax_calc=lmax).plot(
     ax=ax1, cb_label="Flexure (km)", ticks="wSnE", ylabel=None, show=False, **args_plot
 )
-(pysh.SHCoeffs.from_array(w_deflec2 / 1e3).expand(lmax=2 * lmax, lmax_calc=lmax)).plot(
+(w_deflec2 / 1e3).expand(lmax=2 * lmax, lmax_calc=lmax).plot(
     ax=ax2, cb_label="Flexure (km)", ticks="wSnE", ylabel=None, show=False, **args_plot
 )
 plt.show()
