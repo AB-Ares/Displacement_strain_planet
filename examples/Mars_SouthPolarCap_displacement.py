@@ -87,10 +87,10 @@ residuals_min = 5  # Minimum residual (m) to exit the iterative process
 while (residuals > residuals_min) and (iter < iter_out):
     iter += 1
     if iter == 1:
-        # Here we call Thin_shell_matrix_nmax which is going to build and output the inversion
-        # matrix ('sols') together with the first flexure solution. The 'sols' will be then used
+        # Here we call Thin_shell_matrix_nmax which is going to build the inversion
+        # matrix (stored in ThinShell_init.sols) together with the first flexure solution. The 'sols' will be then used
         # in the faster Thin_shell_matrix below to interate flexure until convergence
-        sols = ThinShell_init.invert_matrix_nmax(
+        ThinShell_init.invert_matrix_nmax(
             dc_lm=zeros.copy(),  # No crustal root variations
             drhom_lm=zeros.copy(),  # No internal density variations
             H_lm=thick.copy(),
@@ -105,7 +105,7 @@ while (residuals > residuals_min) and (iter < iter_out):
         # above and input the 'sols' obtained above
         outs = ThinShell_init.invert_matrix(
             first_inv=False,
-            lambdify_func=sols,
+            lambdify_func=ThinShell_init.sols,
             dc_lm=zeros.copy(),
             drhom_lm=zeros.copy(),
             H_lm=(thick - w_deflec1.coeffs).copy(),  # Update thickness

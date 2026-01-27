@@ -147,6 +147,7 @@ class ThinShell:
         self.Gc_lm = None
         self.G_lm = None
         self.H_lm = None
+        self.sols = None
 
     def copy(self):
         """
@@ -759,18 +760,18 @@ class ThinShell:
         # Determine how symbols are listed in the outputs because
         # solutions order depends on the input symbol order,
         # which depends on the user inputs.
-        a_symbs = np.array(a_symb_uknwn + a_symb_knwn).astype("str")
-        idx_w_lm = int(np.where(a_symbs == "w_lm1")[0])
-        idx_G_lm = int(np.where(a_symbs == "G_lm1")[0])
-        idx_Gc_lm = int(np.where(a_symbs == "Gc_lm1")[0])
-        idx_H_lm = int(np.where(a_symbs == "H_lm1")[0])
-        idx_omega_lm = int(np.where(a_symbs == "omega_lm1")[0])
+        a_symbs = tuple(str(x) for x in a_symb_uknwn + a_symb_knwn)
+        idx_w_lm = a_symbs.index("w_lm1")
+        idx_G_lm = a_symbs.index("G_lm1")
+        idx_Gc_lm = a_symbs.index("Gc_lm1")
+        idx_H_lm = a_symbs.index("H_lm1")
+        idx_omega_lm = a_symbs.index("omega_lm1")
 
         if not drholm_profile_check:
-            idx_drhom_lm = int(np.where(a_symbs == "drhom_lm1")[0])
+            idx_drhom_lm = a_symbs.index("drhom_lm1")
 
-        idx_dc_lm = int(np.where(a_symbs == "dc_lm1")[0])
-        idx_q_lm = int(np.where(a_symbs == "q_lm1")[0])
+        idx_dc_lm = a_symbs.index("dc_lm1")
+        idx_q_lm = a_symbs.index("q_lm1")
 
         if remove_equation is not None and not quiet and first_inv:
             print(f"Removing equation for: {remove_equation}.")
@@ -1571,8 +1572,9 @@ class ThinShell:
             self.Gc_lm = SHCoeffs.from_array(Gc_lm_o)
             self.G_lm = SHCoeffs.from_array(G_lm_o)
             self.H_lm = SHCoeffs.from_array(H_lm_o)
+            self.sols = lambdify_func_o
 
-            return lambdify_func_o
+            return
 
         # Correct for density contrast in surface or crust–mantle relief
         # relief, and/or finite-amplitude correction
@@ -2063,8 +2065,7 @@ class ThinShell:
         self.Gc_lm = SHCoeffs.from_array(Gc_lm_o)
         self.G_lm = SHCoeffs.from_array(G_lm_o)
         self.H_lm = SHCoeffs.from_array(H_lm_o)
-
-        return lambdify_func_o
+        self.sols = lambdify_func_o
 
     # ==== Displacement_strains_shtools ====
 
@@ -2302,7 +2303,7 @@ def test_symb(str_symb, arr, constraint_test, not_constraint, arr_symb):
     out = (
         arr
         if str_symb in constraint_test
-        else arr_symb[int(np.where(not_constraint == str_symb)[0])]
+        else arr_symb[np.argwhere(str_symb == not_constraint)[0][0]]
     )
 
     return out
