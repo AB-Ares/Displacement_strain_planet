@@ -310,7 +310,7 @@ class ThinShell:
             each of the depths specified in rho_depth.
             Size must be (2,lmax+1,lmax+1,len(rho_depth)).
         rho_depth : array, optional, default = None
-            Depth array associated with the input mantle density variations.
+            Depth array associated with the input interior density variations.
         base_drho : float, optional, default = None
             Lower depth for the of the density contrast. If None, set to c.
         top_drho : float, optional, default = None
@@ -743,7 +743,7 @@ class ThinShell:
         )
 
         if drholm_profile_check:
-            # Add the mantle density profile as known
+            # Add the interior density profile as a known
             for i in range(len(rho_depth)):
                 add_constraints += f" drho_lm1_{i} "
             # Remove drhom_lm1 from the constraints
@@ -920,7 +920,7 @@ class ThinShell:
                 if rho_depth is not None
                 else 1
             ):
-                print("Filtering drhom (mantle density)")
+                print("Filtering drhom (interior density)")
             elif np.sum(DCfilter_mohoD) != lmax + 1:
                 print("Filtering dc_lm (crust–mantle relief)")
 
@@ -934,7 +934,7 @@ class ThinShell:
                     )
                 )
 
-                # Add Mantle density anomalies
+                # Add interior density anomalies
                 if drholm_profile_check:
                     drho_lm1_ = var(
                         ", ".join([f"drho_lm1_{i}" for i in range(len(rho_depth))])
@@ -1427,7 +1427,7 @@ class ThinShell:
             the depths specified in rho_depth.
             Size must be (len(rho_depth), 2,lmax+1,lmax+1).
         rho_depth : array, optional, default = None
-            Depth array associated with the input mantle density variations.
+            Depth array associated with the input interior density variations.
         rho_crust_parallel : bool, optional, default = False
             If true, assume that density variations in the crust have
             relief parallel to the surface topography.

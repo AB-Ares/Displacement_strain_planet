@@ -1005,7 +1005,7 @@ def Principal_strainstress_angle(s_theta, s_phi, s_theta_phi):
         (s_theta + s_phi) - np.sqrt((s_theta - s_phi) ** 2 + 4 * s_theta_phi**2)
     )
     max_strain = 0.5 * (
-        (s_theta + s_phi) - np.sqrt((s_theta - s_phi) ** 2 + 4 * s_theta_phi**2)
+        (s_theta + s_phi) + np.sqrt((s_theta - s_phi) ** 2 + 4 * s_theta_phi**2)
     )
     sum_strain = min_strain + max_strain
     principal_angle = 0.5 * np.arctan2(2 * s_theta_phi, s_theta - s_phi) * 180.0 / np.pi

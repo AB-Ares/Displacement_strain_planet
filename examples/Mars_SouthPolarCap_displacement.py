@@ -79,14 +79,14 @@ zeros = pysh.SHCoeffs.from_zeros(lmax=lmax).coeffs
 # need to iterate to update the load as a function of flexure. Below,
 # we interate until the maximum flexure difference between subsequent
 # iteration becomes negligible.
-iter = 0
+itx = 0
 iter_out = 200
 residuals = 1e10
 residuals_min = 5  # Minimum residual (m) to exit the iterative process
 
-while (residuals > residuals_min) and (iter < iter_out):
-    iter += 1
-    if iter == 1:
+while (residuals > residuals_min) and (itx < iter_out):
+    itx += 1
+    if itx == 1:
         # Here we call Thin_shell_matrix_nmax which is going to build the inversion
         # matrix (stored in ThinShell_init.sols) together with the first flexure solution. The 'sols' will be then used
         # in the faster Thin_shell_matrix below to interate flexure until convergence
