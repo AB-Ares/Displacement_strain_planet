@@ -991,8 +991,8 @@ class ThinShell:
                                 (rhol * H_lm1 + drhol * w_lm1) * RCRl[l]  # RCRl1[l]
                                 + drho
                                 * (w_lm1 - dc_lm1)
-                                * RCR # **3
-                                / DCfilter_mohoDc[l]  
+                                * RCR  # **3
+                                / DCfilter_mohoDc[l]
                                 + sum(
                                     drho_lm1_[i]
                                     * Rl3[l]
@@ -1254,7 +1254,7 @@ class ThinShell:
                 add_arr = ""
                 for i in [0] if single_add_arrays else range(np.shape(add_arrays)[0]):
                     if i + 1 not in add_muls:
-                        add_arr += f"'add_array{i + 1}': add_arrays[{i if not single_add_arrays else ''}:, l, : l + 1], "
+                        add_arr += f"'add_array{i + 1}': add_arrays[{i if not single_add_arrays else ''}, :, l, : l + 1], "
                 args_linsolve = dict(args_linsolve, **dict(eval(f"{{{add_arr}}}")))
 
             if drholm_profile_check:
@@ -1270,6 +1270,7 @@ class ThinShell:
                         )
                     }
                 )
+
             outs = np.concatenate(
                 np.array(lambdify_func[l](**args_linsolve), dtype=object)
             )

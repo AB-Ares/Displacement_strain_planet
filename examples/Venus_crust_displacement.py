@@ -172,13 +172,13 @@ pysh.SHGrid.from_array(min_strain * 1e3).plot(
     ax=ax1,
     ticks="WSne",
     cb_label="Minimum principal horizontal strain ($\\times 10^{-3}$)",
-    cmap_limits=[-6, 20],
+    cmap_limits=[-10, 10],
     **args_plot,
 )
 pysh.SHGrid.from_array(max_strain * 1e3).plot(
     ax=ax2,
     cb_label="Maximum principal horizontal strain ($\\times 10^{-3}$)",
-    cmap_limits=[-6, 20],
+    cmap_limits=[-10, 10],
     ticks="wSnE",
     ylabel=None,
     **args_plot,
@@ -186,7 +186,7 @@ pysh.SHGrid.from_array(max_strain * 1e3).plot(
 pysh.SHGrid.from_array(sum_strain * 1e3).plot(
     ax=ax3,
     cb_label="Sum of principal horizontal strains ($\\times 10^{-3}$)",
-    cmap_limits=[-6, 20],
+    cmap_limits=[-10, 10],
     ticks="WSne",
     **args_plot,
 )

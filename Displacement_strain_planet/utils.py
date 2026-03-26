@@ -85,7 +85,7 @@ def spectral_degrad(
         else:
             mask = (deg_str_grd > d_strength_prev) * (deg_str_grd <= d_strength)
 
-        if np.sum(mask) != 0:
+        if np.any(mask):
             if smoothing:
                 for deg, weight in zip(smoothing_m[0], smoothing_m[1]):
                     degraded_grd.data[mask] += (
