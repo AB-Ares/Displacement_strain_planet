@@ -6,8 +6,72 @@ from pathlib import Path
 import numpy as np
 from pyshtools.gravmag import CilmPlusRhoHDH
 from pyshtools.legendre import PlmBar_d1
-from pyshtools.expand import SHGLQ, MakeGridPoint
+from pyshtools.expand import SHGLQ, MakeGridPoint, SHExpandDH, MakeGridDH
 from pyshtools.shclasses.shgrid import SHGrid
+
+# ==== SH_Mul ====
+
+
+def SH_Mul(
+    clm1,
+    clm2,
+    grid1=None,
+    grid2=None,
+    extend=False,
+    lmax_calc=None,
+    lmax=None,
+    sampling=2,
+):
+    """
+    Perform the multiplication of two spherical harmonic functions.
+
+    Returns
+    -------
+    array, size(2, lmax+1, lmax+1)
+        The real spherical harmonic coefficients corresponding to the multiplication of clm1 and clm2 in the space domain.
+
+    Parameters
+    ----------
+    clm1 : array, size (2,lmax+1,lmax+1)
+        The spherical harmonic coefficients of the first function.
+    clm2 : array, size (2,lmax+1,lmax+1)
+        The spherical harmonic coefficients of the second function.
+    grid1 : array, size (2*lmax+2,2*(2*lmax+2))
+        The grid expandsion of the first function.
+    grid2 : array, size (2*lmax+2,2*(2*lmax+2))
+        The grid expandsion of the second function.
+    extend : optional, bool, default = False
+        If True, compute the longitudinal band for 360 E and the latitudinal band for 90 S. This increases each of the dimensions of griddh by 1.
+    lmax_calc : optional, integer, default = None
+        The maximum spherical harmonic degree used in evaluating the function. This must be less than or equal to lmax, and does not affect the number of samples of the output grid.
+    lmax : optional, integer, default = None
+        The maximum spherical harmonic degree of the function, which determines the sampling n of the output grid.
+    sampling : optional, string, default = 2
+        If 2 (default) the input grid is equally sampled (n by 2n). If 1, the grid is equally spaced (n by n).
+
+    """
+    if grid1 is None:
+        grid1 = MakeGridDH(
+            clm1,
+            lmax=lmax,
+            extend=extend,
+            lmax_calc=lmax_calc,
+            sampling=sampling,
+        )
+
+    if grid2 is None:
+        grid2 = MakeGridDH(
+            clm2,
+            lmax=lmax,
+            extend=extend,
+            lmax_calc=lmax_calc,
+            sampling=sampling,
+        )
+
+    return SHExpandDH(
+        grid1 * grid2, lmax_calc=lmax_calc, sampling=sampling
+    )
+
 
 # ==== spectral_degrad ====
 
@@ -46,10 +110,16 @@ def spectral_degrad(
 
     clm_deg0 = clm[0, 0, 0].copy()
     clm[0, 0, 0] = 0.0
-    arr_deg_str = range(
-        int(np.floor(np.min(deg_str_grd)) + 1),
-        int(np.max(deg_str_grd)) + 2 if lmax_calc is None else lmax_calc - 1,
-    )
+
+    if not clm.flags["F_CONTIGUOUS"]:  # Convert to Fortran array for faster calculation
+        clm = np.asfortranarray(clm)
+
+    # arr_deg_str = range(
+    #    int(np.floor(np.min(deg_str_grd)) + 1),
+    #    int(np.max(deg_str_grd)) + 2 if lmax_calc is None else lmax_calc - 1,
+    # )
+
+    arr_deg_str = np.unique(deg_str_grd).astype(int)
     degraded_grd = SHGrid.from_array(deg_str_grd) * 0.0
     grid_lon, grid_lat = np.meshgrid(degraded_grd.lons(), degraded_grd.lats())
 
@@ -75,35 +145,33 @@ def spectral_degrad(
                 "constant",
             )
 
+    # d_strength_prev = -1
     for d_strength in arr_deg_str:
         if not quiet:
             print(f"Degree {d_strength:5d} / {arr_deg_str[-1]:5d}", end="\r")
 
         # Get lat/lon mask where the degree-strength is a specific value
-        if d_strength == arr_deg_str[0]:
-            mask = deg_str_grd <= d_strength
-        else:
-            mask = (deg_str_grd > d_strength_prev) * (deg_str_grd <= d_strength)
+        mask = deg_str_grd == float(d_strength)
+        # (deg_str_grd > d_strength_prev) * (deg_str_grd <= d_strength)
 
-        if np.any(mask):
-            if smoothing:
-                for deg, weight in zip(smoothing_m[0], smoothing_m[1]):
-                    degraded_grd.data[mask] += (
-                        MakeGridPoint(
-                            clm,
-                            lat=grid_lat[mask],
-                            lon=grid_lon[mask],
-                            lmax=d_strength + deg,
-                        )
-                        * weight
-                        / weight_sum
+        if smoothing:
+            for deg, weight in zip(smoothing_m[0], smoothing_m[1]):
+                degraded_grd.data[mask] += (
+                    MakeGridPoint(
+                        clm,
+                        lat=grid_lat[mask],
+                        lon=grid_lon[mask],
+                        lmax=d_strength + deg,
                     )
-            else:
-                degraded_grd.data[mask] = MakeGridPoint(
-                    clm, lat=grid_lat[mask], lon=grid_lon[mask], lmax=d_strength
+                    * weight
+                    / weight_sum
                 )
+        else:
+            degraded_grd.data[mask] = MakeGridPoint(
+                clm, lat=grid_lat[mask], lon=grid_lon[mask], lmax=d_strength
+            )
 
-        d_strength_prev = d_strength
+        # d_strength_prev = d_strength
 
     return degraded_grd.data + clm_deg0
 

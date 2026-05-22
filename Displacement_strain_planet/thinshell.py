@@ -10,7 +10,7 @@ from sympy.parsing.sympy_parser import parse_expr
 from pyshtools.expand import MakeGridDH
 from pyshtools.shclasses import SHCoeffs
 from pyshtools.gravmag import CilmPlusRhoHDH
-from .utils import DownContFilter, corr_nmax_drho
+from .utils import DownContFilter, corr_nmax_drho, SH_Mul
 
 
 class ThinShell:
@@ -1222,7 +1222,7 @@ class ThinShell:
 
                 if remove_equation is not None and l != 1:
                     for item in [remove_equation]:
-                        Eqns.pop(int(np.where(equation_order == item)[0]))
+                        Eqns.pop(int(np.where(equation_order == item)[0][0]))
 
                 # Rearange system of equations using sympy.
                 sol = linsolve(Eqns, a_symb_uknwn + a_symb_knwn)
@@ -1587,7 +1587,9 @@ class ThinShell:
             precomp_w_grid,
             precomp_dc_grid,
             precomprho_grid_c,
+            comp_rho_grid,
         ) = (
+            False,
             False,
             False,
             False,
@@ -1619,6 +1621,7 @@ class ThinShell:
 
         if drhom_lm is not None and any_drho:
             rho_grid = MakeGridDH(drhom_lm, **args_grid)
+            comp_rho_grid = True
             precomp_drho = True
             if drhom_lm[0, 0, 0] > 1000:
                 if base_drho <= c:
@@ -1760,6 +1763,11 @@ class ThinShell:
             )
             first_inv, comp_w_grid = False, False
 
+            if not precomp_drho:
+                comp_rho_grid = False
+            if not precomp_H_grid:
+                comp_H_grid = False
+
             # Precompute some sums that will be used later for checks
             any_dc = np.sum(dc_lm_o[:, 1:, :]) != 0 if any_dc is None else any_dc
             any_w = np.sum(w_lm_o[:, 1:, :]) != 0 if any_w is None else any_w
@@ -1803,6 +1811,7 @@ class ThinShell:
                 and rho_depth is None
             ):
                 rho_grid = MakeGridDH(drhom_lm_o, **args_grid)
+                comp_rho_grid = True
 
                 if drhom_lm_o[0, 0, 0] > 1000:
                     if base_drho <= c:
@@ -1828,23 +1837,36 @@ class ThinShell:
 
             # Correction for density variations in the surface topography relief
             if density_var_H:
+                if not precomp_H_grid:
+                    H_grid = MakeGridDH(H_lm_o, **args_grid)
+                    comp_H_grid = True
+                if not comp_rho_grid and not precomp_drho:
+                    comp_rho_grid = True
+                    rho_grid = MakeGridDH(drhom_lm_o, **args_grid)
+                mul_drho_H = SH_Mul(
+                    drhom_lm_o, H_lm_o, grid1=rho_grid, grid2=H_grid, **args_grid
+                )
+                mul_drho_HG = SH_Mul(
+                    drhom_lm_o, H_lm_o - G_lm_o, grid1=rho_grid, **args_grid
+                )
                 drho_H = rhol
                 H_drho_grid = rho_grid
-                drho_omega_corr = v1v * drhom_lm_o * self.g0 * self.Te * H_lm_o / R
-                drho_q_corr = drhom_lm_o * (H_lm_o - G_lm_o) * self.g0
+                drho_omega_corr = v1v * mul_drho_H * self.g0 * self.Te / R
+                drho_q_corr = mul_drho_HG * self.g0
 
             # Correction for density variations in the crust–mantle relief
             if density_var_dc:
+                if not comp_rho_grid and not precomp_drho:
+                    comp_rho_grid = True
+                    rho_grid = MakeGridDH(drhom_lm_o, **args_grid)
+
+                mul_drho_dc = SH_Mul(drhom_lm_o, dc_lm_o, grid1=rho_grid, **args_grid)
                 if density_var_H:
-                    drho_omega_corr += (
-                        v1v * drhom_lm_o * gmoho * (self.Te - c) * dc_lm_o / R
-                    )
-                    drho_q_corr += drhom_lm_o * dc_lm_o * gmoho
+                    drho_omega_corr += v1v * mul_drho_dc * gmoho * (self.Te - c) / R
+                    drho_q_corr += mul_drho_dc * gmoho
                 else:
-                    drho_omega_corr = (
-                        v1v * drhom_lm_o * gmoho * (self.Te - c) * dc_lm_o / R
-                    )
-                    drho_q_corr = drhom_lm_o * dc_lm_o * gmoho
+                    drho_omega_corr = v1v * mul_drho_dc * gmoho * (self.Te - c) / R
+                    drho_q_corr = mul_drho_dc * gmoho
                 if not precomprho_grid_c:
                     drho_wdc = rhom - rhoc
                     if base_drho <= c:
@@ -1858,15 +1880,19 @@ class ThinShell:
             if density_var_w:
                 drho_w = (rhoc - rhol) if rhoc != rhol else 1
                 w_drho_grid = rhoc - rho_grid
+
+                mul_drho_w = SHExpandDH(
+                    w_drho_grid * w_grid, lmax_calc=lmax_calc, sampling=sampling
+                )
                 if density_var_H or density_var_dc:
-                    drho_omega_corr += v1v * drhom_lm_o * self.g0 * self.Te * w_lm_o / R
-                    drho_q_corr += drhom_lm_o * w_lm_o * self.g0
+                    drho_omega_corr += v1v * mul_drho_w * self.g0 * self.Te / R
+                    drho_q_corr += mul_drho_w * self.g0
                 else:
-                    drho_omega_corr = v1v * drhom_lm_o * self.g0 * self.Te * w_lm_o / R
-                    drho_q_corr = drhom_lm_o * w_lm_o * self.g0
+                    drho_omega_corr = v1v * mul_drho_w * self.g0 * self.Te / R
+                    drho_q_corr = mul_drho_w * self.g0
 
             if drhom_crust is not None:
-                if not precomp_H_grid:
+                if not precomp_H_grid and not comp_H_grid:
                     H_grid = MakeGridDH(H_lm_o, **args_grid)
                 delta_H_geoid = corr_nmax_drho(
                     H_lm_o,
@@ -1899,7 +1925,7 @@ class ThinShell:
             ):
                 # If density variations in surface relief or first iteration and H_lm
                 # is an input or H_lm is not an input
-                if not precomp_H_grid:
+                if not precomp_H_grid and not comp_H_grid:
                     H_grid = MakeGridDH(H_lm_o, **args_grid)
 
                 delta_H_geoid = corr_nmax_drho(
