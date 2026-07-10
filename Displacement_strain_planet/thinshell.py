@@ -62,8 +62,6 @@ class ThinShell:
             Density of the crust.
         rhol : float
             Density of the surface topography.
-        rhobar : float
-            Mean density of the planet.
         lmax : int
             Maximum spherical harmonic degree of calculations.
         E : float
@@ -296,7 +294,7 @@ class ThinShell:
             geoid at the surface.
         H_lm : array, size(2,lmax+1,lmax+1)
             Array with the spherical harmonic coefficients of the
-            surface topography.
+            planet's shape.
         lambdify_func : array, size(2,lmax+1,lmax+1)
             Array with the lambda functions (size lmax+1) of all
             components. Lambda functions can be used to
@@ -318,7 +316,7 @@ class ThinShell:
             to 0 km (surface).
         H_lm : array, size(2,lmax+1,lmax+1), optional, default = None
             Array with the spherical harmonic coefficients of the
-            surface topography.
+            planet's shape.
         drhom_lm : array, size(2,lmax+1,lmax+1), optional, default = None
             Array with the spherical harmonic coefficients of the
             lateral density variations.
@@ -354,6 +352,8 @@ class ThinShell:
         remove_equation : string, optional, default = None
             String of the equation to be removed. This must be either
             'G_lm', 'Gc_lm', 'w_lm', 'omega_lm', or 'q_lm'.
+        quiet : bool, default = False
+            if False, print some information regarding the function
         w_corr : array size(2,lmax+1,lmax+1), optional, default = None
             Array with spherical harmonic coefficients for finite-amplitude
             and or lateral density variations corrections of the w_lm relief.
@@ -423,6 +423,7 @@ class ThinShell:
         constraint_test = input_constraints[num_array_test]
         # Other arrays
         not_constraint = input_constraints[~num_array_test]
+        _zero_expr = parse_expr("0")
 
         if lmax < 0:
             raise ValueError(
@@ -747,7 +748,7 @@ class ThinShell:
             for i in range(len(rho_depth)):
                 add_constraints += f" drho_lm1_{i} "
             # Remove drhom_lm1 from the constraints
-            add_constraints.replace(" drhom_lm1", "")
+            add_constraints = add_constraints.replace(" drhom_lm1", "")
             not_constraint = not_constraint[not_constraint != ["drhom_lm"]]
             constraint_test = constraint_test[constraint_test != ["drhom_lm"]]
 
@@ -1041,7 +1042,7 @@ class ThinShell:
                             drhol * g0 * v1v * Te
                             - rhoc * gmoho * (c if c < Te else 0)
                             # If crust-mantle interface below Te, no tangential load associated
-                            - rhom * gTe * np.max([Te - c, 0])
+                            - rhom * gTe * max(Te - c, 0)
                             # If crust-mantle interface below Te, no tangential load associated
                         )
                         * w_lm1
@@ -1049,7 +1050,7 @@ class ThinShell:
                         + v1v
                         * drho
                         * gmoho
-                        * np.max([Te - c, 0])
+                        * max(Te - c, 0)
                         * (dc_lm1 - w_lm1)
                         / R
                         - 0.5
@@ -1058,7 +1059,7 @@ class ThinShell:
                             drho_lm1_[i]
                             * gdrho[i]
                             * (Te - top_drho)
-                            * (np.min([M[i], Te - top_drho]) if top_drho < Te else 0)
+                            * (min(M[i], Te - top_drho) if top_drho < Te else 0)
                             for i in range(len(rho_depth))
                         )
                         # If mantle load below Te, no tangential load associated
@@ -1069,7 +1070,7 @@ class ThinShell:
                         * mass_correc
                         * gdrho_c
                         * Te
-                        * np.min([M_c, Te])
+                        * min(M_c, Te)
                         / R
                         + drho_omega_corr1,
                     ]
@@ -1141,7 +1142,7 @@ class ThinShell:
                             drhol * g0 * v1v * Te
                             - rhoc * gmoho * (c if c < Te else 0)
                             # If crust-mantle interface below Te, no tangential load associated
-                            - rhom * gTe * np.max([Te - c, 0])
+                            - rhom * gTe * max(Te - c, 0)
                             # If crust-mantle interface below Te, no tangential load associated
                         )
                         * w_lm1
@@ -1149,7 +1150,7 @@ class ThinShell:
                         + v1v
                         * drho
                         * gmoho
-                        * np.max([Te - c, 0])
+                        * max(Te - c, 0)
                         * (dc_lm1 - w_lm1)
                         / R
                         - 0.5
@@ -1158,7 +1159,7 @@ class ThinShell:
                         * mass_correc
                         * gdrho
                         * (Te - top_drho)
-                        * (np.min([M, Te - top_drho]) if top_drho < Te else 0)
+                        * (min(M, Te - top_drho) if top_drho < Te else 0)
                         # If mantle load below Te, no tangential load associated
                         / R + drho_omega_corr1,
                     ]
@@ -1185,7 +1186,7 @@ class ThinShell:
                             f"Additional equation starting at degree {l} is "
                             f"{add_equation_subbed if add_equation_subbed != parse_expr('0') else '0 = 0'}"
                         )
-                    if add_equation_subbed != parse_expr("0"):
+                    if add_equation_subbed != _zero_expr:
                         Eqns.insert(len(Eqns), add_equation_subbed)
                     else:
                         if np.size(input_constraints) - sum_array_test != 5:
@@ -1254,7 +1255,7 @@ class ThinShell:
                 add_arr = ""
                 for i in [0] if single_add_arrays else range(np.shape(add_arrays)[0]):
                     if i + 1 not in add_muls:
-                        add_arr += f"'add_array{i + 1}': add_arrays[{i if not single_add_arrays else ''}, :, l, : l + 1], "
+                        add_arr += f"'add_array{i + 1}': add_arrays[{i + ',' if not single_add_arrays else ''} :, l, : l + 1], "
                 args_linsolve = dict(args_linsolve, **dict(eval(f"{{{add_arr}}}")))
 
             if drholm_profile_check:
@@ -1384,7 +1385,7 @@ class ThinShell:
         ----------
         H_lm : array, size(2,lmax+1,lmax+1), optional, default = None
             Array with the spherical harmonic coefficients of the
-            surface topography.
+            planet's shape.
         drhom_lm : array, size(2,lmax+1,lmax+1), optional, default = None
             Array with the spherical harmonic coefficients of the
             lateral density variations.
@@ -1579,23 +1580,10 @@ class ThinShell:
 
         # Correct for density contrast in surface or crust–mantle relief
         # relief, and/or finite-amplitude correction
-        density_var_H, density_var_dc, density_var_w = False, False, False
+        density_var_H = density_var_dc = density_var_w = False
         # Precompute grids
-        (
-            precomp_drho,
-            precomp_H_grid,
-            precomp_w_grid,
-            precomp_dc_grid,
-            precomprho_grid_c,
-            comp_rho_grid,
-        ) = (
-            False,
-            False,
-            False,
-            False,
-            False,
-            False,
-        )
+        precomp_drho = precomp_H_grid = precomp_w_grid = precomp_dc_grid = precomprho_grid_c = comp_rho_grid = False
+
         if drhom_lm is None or any_drho:
             if top_drho == 0 or (rho_depth is not None and 0 in rho_depth):
                 # Correct for density variations in the surface
@@ -1616,8 +1604,8 @@ class ThinShell:
         # contrast is multipled in the thin-shell code and
         # we set the density contrast to 1. This will be changed later if required.
         ones = np.ones((2 * (self.lmaxgrid + 1), 2 * (2 * (self.lmaxgrid + 1))))
-        H_drho_grid, w_drho_grid, wdc_drho_grid = ones, ones, ones
-        drho_H, drho_wdc, drho_w = 1.0, 1.0, 1.0
+        H_drho_grid = w_drho_grid = wdc_drho_grid = ones
+        drho_H = drho_wdc = drho_w = 1.0
 
         if drhom_lm is not None and any_drho:
             rho_grid = MakeGridDH(drhom_lm, **args_grid)
@@ -1683,15 +1671,11 @@ class ThinShell:
         # and or finite-amplitude corrections
         shape = (2, self.lmax + 1, self.lmax + 1)
         # crust–mantle relief
-        delta_wdc_geoid = np.zeros(shape)
         # Deflected topography relief
-        delta_w_geoid = np.zeros(shape)
         # Surface topography relief
-        delta_H_geoid = np.zeros(shape)
         # Tangential load potential corrections due to density
         # variations at the reliefs
-        drho_omega_corr = np.zeros(shape)
-        drho_q_corr = np.zeros(shape)
+        delta_wdc_geoid = delta_w_geoid = delta_H_geoid = drho_omega_corr = drho_q_corr = np.zeros(shape)
 
         # Precompute grids
         if H_lm is not None:
@@ -1811,6 +1795,7 @@ class ThinShell:
                 and rho_depth is None
             ):
                 rho_grid = MakeGridDH(drhom_lm_o, **args_grid)
+                rho_grid_var = rho_grid.copy() # Used in SH_mul for the corr factors
                 comp_rho_grid = True
 
                 if drhom_lm_o[0, 0, 0] > 1000:
@@ -1842,13 +1827,14 @@ class ThinShell:
                     comp_H_grid = True
                 if not comp_rho_grid and not precomp_drho:
                     comp_rho_grid = True
-                    rho_grid = MakeGridDH(drhom_lm_o, **args_grid)
+                    rho_grid = MakeGridDH(drhom_lm_o, **args_grid) 
+
                 mul_drho_H = SH_Mul(
-                    drhom_lm_o, H_lm_o, grid1=rho_grid, grid2=H_grid, **args_grid
-                )
+                    drhom_lm_o, H_lm_o, grid1=rho_grid_var, grid2=H_grid, **args_grid
+                ) # only take variations
                 mul_drho_HG = SH_Mul(
-                    drhom_lm_o, H_lm_o - G_lm_o, grid1=rho_grid, **args_grid
-                )
+                    drhom_lm_o, H_lm_o-G_lm_o, grid1=rho_grid_var, **args_grid
+                ) # only take variations
                 drho_H = rhol
                 H_drho_grid = rho_grid
                 drho_omega_corr = v1v * mul_drho_H * self.g0 * self.Te / R
@@ -1860,13 +1846,15 @@ class ThinShell:
                     comp_rho_grid = True
                     rho_grid = MakeGridDH(drhom_lm_o, **args_grid)
 
-                mul_drho_dc = SH_Mul(drhom_lm_o, dc_lm_o, grid1=rho_grid, **args_grid)
+                # negative because density contrast (rhom-rhoc) matters here
+                mul_drho_dc = SH_Mul(drhom_lm_o, dc_lm_o, grid1=-rho_grid_var if base_drho <= c else rho_grid_var, **args_grid)
                 if density_var_H:
-                    drho_omega_corr += v1v * mul_drho_dc * gmoho * (self.Te - c) / R
+                    drho_omega_corr += v1v * mul_drho_dc * gmoho * max(self.Te - c, 0) / R
                     drho_q_corr += mul_drho_dc * gmoho
                 else:
-                    drho_omega_corr = v1v * mul_drho_dc * gmoho * (self.Te - c) / R
+                    drho_omega_corr = v1v * mul_drho_dc * gmoho * max(self.Te - c, 0) / R
                     drho_q_corr = mul_drho_dc * gmoho
+
                 if not precomprho_grid_c:
                     drho_wdc = rhom - rhoc
                     if base_drho <= c:
@@ -1881,9 +1869,7 @@ class ThinShell:
                 drho_w = (rhoc - rhol) if rhoc != rhol else 1
                 w_drho_grid = rhoc - rho_grid
 
-                mul_drho_w = SHExpandDH(
-                    w_drho_grid * w_grid, lmax_calc=lmax_calc, sampling=sampling
-                )
+                mul_drho_w = SH_Mul(drhom_lm_o, w_lm_o, grid1=-rho_grid_var if top_drho == 0 else rho_grid_var, **args_grid)
                 if density_var_H or density_var_dc:
                     drho_omega_corr += v1v * mul_drho_w * self.g0 * self.Te / R
                     drho_q_corr += mul_drho_w * self.g0
@@ -2083,7 +2069,7 @@ class ThinShell:
 
         self.w_lm = SHCoeffs.from_array(w_lm_o)
         self.A_lm = SHCoeffs.from_array(A_lm_o)
-        self.moho_lm = SHCoeffs.from_array(w_lm_o - dc_lm_o)
+        self.moho_lm = SHCoeffs.from_array(moho_lm_o)
         self.crust_lm = SHCoeffs.from_array(H_lm_o - moho_lm_o)
         self.dc_lm = SHCoeffs.from_array(dc_lm_o)
         self.drhom_lm = SHCoeffs.from_array(drhom_lm_o)
@@ -2172,12 +2158,12 @@ class ThinShell:
         quiet = self.quiet
 
         if lmax != self.w_lm.lmax:
-            if quiet is False:
+            if not quiet:
                 print(f"Padding w_lm from lmax = {self.w_lm.lmax} to {lmax}")
             self.w_lm = self.w_lm.pad(lmax=lmax)
 
         if lmax != self.A_lm.lmax:
-            if quiet is False:
+            if not quiet:
                 print(f"Padding A_lm from lmax = {self.A_lm.lmax} to {lmax}")
             self.A_lm = self.A_lm.pad(lmax=lmax)
 
@@ -2251,6 +2237,7 @@ class ThinShell:
         lapla_a = SHCoeffs.from_zeros(lmax)
         for l in range(lmax + 1):
             lapla_a.coeffs[:, l, : l + 1] = l * (l + 1)
+
         A_lmd2_t = -(
             (self.A_lm * lapla_a).expand(**kw_exp).data + A_lm_d1_t_cot + A_lmd2_p_csc2
         )

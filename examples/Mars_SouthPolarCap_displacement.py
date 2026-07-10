@@ -23,7 +23,7 @@ from pyshtools.expand import MakeGridDH
 # q_lm net load on the lithosphere,
 # Gc_lm geoid at the moho depth,
 # G_lm geoid at the surface,
-# H_lm topography,
+# H_lm planet's shape,
 # and the linear solution sols expressed as lambda functions
 # of all components. Lambda functions can be used to re-calculate
 # the same problem with different inputs very fast.
@@ -126,7 +126,7 @@ print(f"Iteration method, maximum flexure {min2 / 1e3:.3f} km")
 ############## One step method with add_equation #############
 # The South Polar cap thickness is given without flexure. We thus
 # use the add_equation option to tell the model that the 'thick'
-# coefficients are equal to topography (H_lm) without flexure (w_lm),
+# coefficients are equal to shape (H_lm) without flexure (w_lm),
 # and redesign the load equation.
 # The equation has to be written in symbolic math and respect the
 # Displacement_strain_planet nomenclature.

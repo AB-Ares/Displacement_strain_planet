@@ -77,7 +77,7 @@ def SH_Mul(
 
 
 def spectral_degrad(
-    clm, deg_str_grd, lmax_calc=None, smoothing=False, smoothing_m=None, quiet=False
+    clm, deg_str_grd, lmax_calc=None, smoothing=False, smoothing_m=None, quiet=True
 ):
     """
     Perform a spectral degradation to the input spherical harmonic
@@ -107,17 +107,11 @@ def spectral_degrad(
     quiet : bool, optional, default = True
         If True, prints the function progress.
     """
-
-    clm_deg0 = clm[0, 0, 0].copy()
+    clm_deg0 = clm[0, 0, 0]
     clm[0, 0, 0] = 0.0
 
     if not clm.flags["F_CONTIGUOUS"]:  # Convert to Fortran array for faster calculation
         clm = np.asfortranarray(clm)
-
-    # arr_deg_str = range(
-    #    int(np.floor(np.min(deg_str_grd)) + 1),
-    #    int(np.max(deg_str_grd)) + 2 if lmax_calc is None else lmax_calc - 1,
-    # )
 
     arr_deg_str = np.unique(deg_str_grd).astype(int)
     degraded_grd = SHGrid.from_array(deg_str_grd) * 0.0
@@ -255,8 +249,6 @@ def corr_nmax_drho(
     # Density contrast in the relief correction.
     if density_var and nmax == 1:
         MS_lm_drho, D = CilmPlusRhoHDH(shape_grid, nmax, mass, rho_grid, lmax=lmax)
-        # MS_lm_drho_cst = MS_lm_nmax.copy()
-        # MS_lm_drho_cst *= D**2
         MS_lm_nmax *= D**2
 
         # Divide because the thin-shell code multiplies by
@@ -276,7 +268,7 @@ def corr_nmax_drho(
 # ==== DownContFilter ====
 
 
-def DownContFilter(l, half, R_ref, D_relief, filter_type="Mc", quiet=False):
+def DownContFilter(l, half, R_ref, D_relief, filter_type="Mc", quiet=True):
     """
     Compute the downward minimum-amplitude or
     -curvature filter of Wieczorek & Phillips,
@@ -565,8 +557,8 @@ def SH_deriv_store(
             f"Grid format non recognized allowed are 'DH' and 'GLQ', input was {grid}"
         )
 
-    if Path(poly_file).exists() == 0:
-        if quiet is False:
+    if not Path(poly_file).exists():
+        if not quiet:
             print(
                 "Pre-compute SH derivatives, may take some"
                 + f" time depending on lmax and lmaxgrid, which are {lmax} and {lmaxgrid}."
@@ -611,7 +603,7 @@ def SH_deriv_store(
             sign_conversion = False
             for t_i, theta in enumerate(theta_range):
                 t_i_s = nlat - t_i
-                if quiet is False:
+                if not quiet:
                     print(f" colatitude {int(theta * 180 / np.pi)} of 90", end="\r")
                 if theta == 0:
                     dp_theta = np.zeros((index_size))
@@ -735,7 +727,7 @@ def SH_deriv_store(
                 if theta == 0:
                     dp_theta = np.zeros((index_size))
                     p_theta = np.zeros((index_size))
-                if quiet is False:
+                if not quiet:
                     print(
                         f" colatitude {int(theta_180)} of {colat_max}",
                         end="\r",
@@ -863,7 +855,7 @@ def SH_deriv_store(
                     )
 
         if save:
-            if quiet is False:
+            if not quiet:
                 print(f"Saving SH derivatives at: {path}")
             if compressed:
                 np.savez_compressed(
@@ -888,11 +880,11 @@ def SH_deriv_store(
                     ],
                 )
         else:
-            if quiet is False:
+            if not quiet:
                 print("Not saving SH derivatives")
     else:
         if compressed:
-            if quiet is False:
+            if not quiet:
                 print(
                     "Loading precomputed compressed SH derivatives for strain calculations"
                 )
@@ -903,10 +895,10 @@ def SH_deriv_store(
                 Y_lm_d2_phi_a = data["Y_lm_d2_p"]
                 Y_lm_d2_thetaphi_a = data["Y_lm_d2_tp"]
                 y_lm_save = data["Y_lm"]
-            if quiet is False:
+            if not quiet:
                 print("Loading done")
         else:
-            if quiet is False:
+            if not quiet:
                 print("Loading precomputed SH derivatives for strain calculations")
             (
                 Y_lm_d1_theta_a,
@@ -916,7 +908,7 @@ def SH_deriv_store(
                 Y_lm_d2_thetaphi_a,
                 y_lm_save,
             ) = np.load(poly_file, allow_pickle=True)
-            if quiet is False:
+            if not quiet:
                 print("Loading done")
 
     return (

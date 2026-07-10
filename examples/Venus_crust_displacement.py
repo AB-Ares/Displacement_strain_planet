@@ -10,10 +10,10 @@ from Displacement_strain_planet import (
 #################################################################
 # In this example, we solve for the displacement of the surface of
 # Venus by calling the function `ThinShell.invert_matrix_nmax`, assuming
-# that the gravity and topography of the planet are compensated by
+# that the gravity and shape of the planet are compensated by
 # a combination of crustal root variations and flexure.
 # 3 assumptions are required to solve the system, and we here assume
-# that the observed topography and geoid are known, and that there
+# that the observed shape and geoid are known, and that there
 # are no density variations in the interior.
 #
 # Next, we will plot the associated principal horizontal strains,
@@ -38,7 +38,7 @@ from Displacement_strain_planet import (
 # q_lm net load on the lithosphere,
 # Gc_lm geoid at the moho depth,
 # G_lm geoid at the surface, and
-# H_lm topography.
+# H_lm planet's shape.
 #
 # And the linear solution sols expressed as lambda functions
 # of all components. Lambda functions can be used to re-calculate
@@ -49,9 +49,9 @@ quiet = False
 lmax = 40  # Maximum spherical harmonic degree to perform all
 # calculations
 pot_clm = pysh.datasets.Venus.MGNP180U(lmax=lmax)
-topo_clm = pysh.datasets.Venus.VenusTopo719(lmax=lmax)
+shape_clm = pysh.datasets.Venus.VenusTopo719(lmax=lmax) # shape of Venus
 
-R = topo_clm.coeffs[0, 0, 0]  # Mean planetary radius
+R = shape_clm.coeffs[0, 0, 0]  # Mean planetary radius
 pot_clm = pot_clm.change_ref(r0=R)  # Downward continue to Mean
 # planetary radius
 
@@ -104,7 +104,7 @@ zeros = pysh.SHCoeffs.from_zeros(lmax=lmax).coeffs
 
 print("Computing displacements and crustal root variations")
 ThinShell_init.invert_matrix_nmax(
-    G_lm=geoid_clm.coeffs, H_lm=topo_clm.coeffs, drhom_lm=zeros.copy()
+    G_lm=geoid_clm.coeffs, H_lm=shape_clm.coeffs, drhom_lm=zeros.copy()
 )
 
 # Plotting
