@@ -700,7 +700,7 @@ class ThinShell:
             for i, depth in enumerate(rho_depth):
                 R_top_drho = R - depth
                 R_base_drho = R - depth - M[i]
-                R_drho_mid = (R_top_drho + R_top_drho) / 2.0
+                R_drho_mid = (R_top_drho + R_base_drho) / 2.0
                 gdrho[i] = (
                     g0
                     * (
@@ -713,7 +713,7 @@ class ThinShell:
                 )
 
         else:
-            R_drho_mid = (R_top_drho + R_top_drho) / 2.0
+            R_drho_mid = (R_top_drho + R_base_drho) / 2.0
             if top_drho <= c:
                 gdrho = (
                     g0
