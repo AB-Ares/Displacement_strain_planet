@@ -2248,7 +2248,7 @@ class ThinShell:
         # Beuthe 2008 formulas
         eps_theta = R_m1 * A_lmd2_t + w_deflec_ylm
         eps_phi = R_m1 * (A_lmd2_p_csc2 + A_lm_d1_t_cot) + w_deflec_ylm
-        omega = R_m1 * (A_lmd2_tp * (1 + csc) - A_lm_d1_p.data * cotcsc)
+        omega = 2.0 * R_m1 * (A_lmd2_tp * csc - A_lm_d1_p.data * cotcsc)
 
         kappa_theta = n_Rm2 * w_lmd2_t + (-R_m1) * w_deflec_ylm
         kappa_phi = n_Rm2 * (w_lmd2_p_csc2 + w_lm_d1_t_cot) + (-R_m1) * w_deflec_ylm
