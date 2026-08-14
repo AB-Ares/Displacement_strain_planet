@@ -1830,13 +1830,13 @@ class ThinShell:
                     rho_grid = MakeGridDH(drhom_lm_o, **args_grid) 
 
                 mul_drho_H = SH_Mul(
-                    drhom_lm_o, H_lm_o, grid1=rho_grid_var, grid2=H_grid, **args_grid
+                    drhom_lm_o, H_lm_o, grid1=rho_grid_var, grid2=H_grid - R, **args_grid
                 ) # only take variations
                 mul_drho_HG = SH_Mul(
                     drhom_lm_o, H_lm_o-G_lm_o, grid1=rho_grid_var, **args_grid
                 ) # only take variations
                 drho_H = rhol
-                H_drho_grid = rho_grid
+                H_drho_grid = rho_grid_var + rhol
                 drho_omega_corr = v1v * mul_drho_H * self.g0 * self.Te / R
                 drho_q_corr = mul_drho_HG * self.g0
 
